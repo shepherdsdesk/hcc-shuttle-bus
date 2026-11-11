@@ -1,0 +1,15 @@
+{
+  "name": "HCC 셔틀버스 · 할렐루야 셔틀버스 실시간 안내",
+  "short_name": "HCC 셔틀버스",
+  "description": "할렐루야교회 셔틀버스가 지금 어디쯤 오는지 알려 드립니다.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f1ea",
+  "theme_color": "#1f3a68",
+  "lang": "ko",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

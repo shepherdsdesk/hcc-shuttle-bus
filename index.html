@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HCC 셔틀버스 · 할렐루야 셔틀버스 실시간 안내</title>
+<meta name="description" content="할렐루야교회 셔틀버스(야탑역 · 파킹엔젤스)가 지금 어디쯤 오는지 실시간으로 알려 드립니다.">
+<meta name="theme-color" content="#1f3a68">
+<link rel="manifest" id="manifestLink" href="manifest.webmanifest">
+<script>if(location.hash==="#driver"){document.getElementById("manifestLink").href="manifest-driver.webmanifest";}</script>
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" id="iosTitle" content="HCC 셔틀버스">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root{--bg:#f4f1ea;--card:#fff;--ink:#1d2433;--sub:#6b7280;--line:#e6e1d6;--navy:#1f3a68;--navy-soft:#e7edf7;--green:#2f7d5b;--green-soft:#e4f2ea;--amber:#d98a1c;--red:#c2412d}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans KR",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .app{max-width:480px;margin:0 auto;min-height:100vh;padding:env(safe-area-inset-top) 0 calc(30px + env(safe-area-inset-bottom))}
+  header{padding:16px 18px 12px;display:flex;align-items:center;gap:11px}
+  .logo{width:40px;height:40px;border-radius:12px;background:var(--navy);display:grid;place-items:center;color:#fff;flex:none}
+  header h1{font-size:21px;margin:0;font-weight:900;letter-spacing:-.4px}
+  header small{display:block;font-size:12px;color:var(--sub);font-weight:500;margin-top:1px}
+  .conn{margin-left:auto;font-size:11px;color:var(--sub);display:flex;align-items:center;gap:5px;white-space:nowrap}
+  .conn i{width:8px;height:8px;border-radius:50%;background:#c9c4b8;display:inline-block}
+  .conn.ok i{background:#3fb871}
+
+  .routes{display:flex;gap:8px;padding:0 14px 12px}
+  .routes button{flex:1;border:1.5px solid var(--line);background:var(--card);border-radius:14px;padding:11px 12px;font:inherit;text-align:left;cursor:pointer;color:var(--ink)}
+  .routes button b{display:block;font-size:15.5px}
+  .routes button span{font-size:12px;color:var(--sub)}
+  .routes button.on.yatap{border-color:var(--navy);background:var(--navy-soft)}
+  .routes button.on.park{border-color:var(--green);background:var(--green-soft)}
+
+  .card{background:var(--card);margin:0 14px 12px;border-radius:18px;padding:14px;box-shadow:0 1px 0 var(--line)}
+  .card h2{font-size:13.5px;color:var(--sub);margin:0 0 10px;font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:8px}
+  #map{height:300px;border-radius:12px;overflow:hidden;background:#e8e4da;z-index:0}
+  .maptip{font-size:12px;color:var(--sub);margin-top:8px;line-height:1.5}
+
+  .stop{display:flex;align-items:center;gap:12px;padding:13px 0;border-top:1px solid var(--line)}
+  .stop:first-child{border-top:0}
+  .stop .dot{width:13px;height:13px;border-radius:50%;border:3.5px solid currentColor;flex:none}
+  .stop .info{flex:1;min-width:0}
+  .stop .name{font-weight:700;font-size:16px;color:var(--ink)}
+  .stop .meta{font-size:12px;color:var(--sub);margin-top:2px}
+  .eta{text-align:right;min-width:92px}
+  .eta b{font-size:21px;font-weight:900;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .eta b.soon{color:var(--red)}
+  .eta b.none{font-size:14px;color:#9ca3af}
+  .eta small{display:block;font-size:11.5px;color:var(--sub);margin-top:1px}
+  .bell{border:1.5px solid var(--line);background:#fff;border-radius:12px;width:42px;height:42px;cursor:pointer;display:grid;place-items:center;flex:none;color:#9ca3af}
+  .bell.on{background:#fff4e0;border-color:var(--amber);color:var(--amber)}
+  .bell svg{width:19px;height:19px}
+
+  .buslist{display:flex;flex-direction:column;gap:9px}
+  .bus{display:flex;align-items:center;gap:10px;font-size:14px}
+  .chip{min-width:48px;text-align:center;font-weight:900;font-size:12.5px;color:#fff;border-radius:8px;padding:4px 6px}
+  .tag{font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px;background:#e3f6ea;color:var(--green);margin-left:auto;white-space:nowrap}
+  .tag.old{background:#fdeee9;color:var(--red)}
+  .empty{font-size:13.5px;color:var(--sub);padding:2px 0;line-height:1.6}
+
+  .tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+  .tabs button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer;color:var(--ink)}
+  .tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+  th{font-size:12px;color:var(--sub);font-weight:700;text-align:left;padding:6px 4px;border-bottom:1px solid var(--line)}
+  td{padding:6px 4px;border-bottom:1px solid #f1ede4;vertical-align:top}
+  .t{display:inline-block;min-width:46px}
+  .past{color:#bdb8ac}
+  .next{font-weight:900;color:var(--red)}
+  .note{font-size:12px;color:var(--sub);margin-top:9px;line-height:1.65}
+
+  .install{display:none}
+  .install.show{display:block}
+  .install p{margin:0;font-size:13px;line-height:1.65}
+  .install button{margin-top:10px}
+  .btn{border:0;border-radius:12px;padding:11px 14px;font:inherit;font-weight:700;cursor:pointer;background:var(--ink);color:#fff;font-size:14px}
+  .btn.ghost{background:#efebe2;color:var(--ink)}
+
+  .toast{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top));transform:translate(-50%,-160%);transition:transform .35s;z-index:1000;width:min(440px,calc(100% - 24px));background:var(--ink);color:#fff;border-radius:16px;padding:13px 15px;display:flex;gap:10px;align-items:flex-start;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+  .toast.show{transform:translate(-50%,0)}
+  .toast b{display:block;font-size:15px}
+  .toast span{font-size:13px;opacity:.85}
+  .toast button{margin-left:auto;background:transparent;border:0;color:#fff;font-size:20px;cursor:pointer}
+
+  .foot{font-size:11.5px;color:var(--sub);text-align:center;margin-top:18px;line-height:1.8;padding:0 20px}
+  .foot a{color:var(--sub)}
+
+  /* 버스 마커 */
+  .busmk{width:34px;height:26px;border-radius:8px;color:#fff;font-weight:900;font-size:13px;display:grid;place-items:center;border:2.5px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+  .busmk.old{opacity:.5}
+  .stopmk{width:18px;height:18px;border-radius:50%;background:#fff;border:4px solid var(--navy);box-shadow:0 1px 3px rgba(0,0,0,.3)}
+  .leaflet-tooltip.stoplbl{background:#fff;border:0;box-shadow:0 1px 4px rgba(0,0,0,.2);font:700 12px "Noto Sans KR",sans-serif;padding:3px 7px;border-radius:7px}
+
+  /* 기사님 */
+  .drv{padding:0 14px}
+  .lbl{font-size:14px;color:var(--sub);font-weight:700;margin:16px 2px 8px}
+  .pick{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .pick.four{grid-template-columns:repeat(4,1fr)}
+  .pick button{border:2px solid var(--line);background:#fff;border-radius:14px;padding:17px 6px;font:inherit;font-size:17px;font-weight:700;cursor:pointer;color:var(--ink)}
+  .pick button.on{border-color:var(--ink);background:var(--ink);color:#fff}
+  .big{width:100%;border:0;border-radius:18px;padding:22px;font:inherit;font-size:23px;font-weight:900;cursor:pointer;margin-top:18px;color:#fff}
+  .big.start{background:var(--green)}
+  .big.stop{background:var(--red)}
+  .big:disabled{opacity:.45;cursor:default}
+  .pin{width:100%;font:inherit;font-size:28px;letter-spacing:10px;text-align:center;padding:14px;border-radius:14px;border:2px solid var(--line);background:#fff}
+  .live{background:#14361f;color:#e9f7ee;border-radius:20px;padding:18px;margin-top:14px}
+  .live.bad{background:#4a1a12}
+  .live .st{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px}
+  .pulse{width:12px;height:12px;border-radius:50%;background:#46d07f;box-shadow:0 0 0 0 rgba(70,208,127,.7);animation:p 1.6s infinite;flex:none}
+  .live.bad .pulse{background:#ff8a70;animation:none}
+  @keyframes p{70%{box-shadow:0 0 0 12px rgba(70,208,127,0)}100%{box-shadow:0 0 0 0 rgba(70,208,127,0)}}
+  .live h3{font-size:26px;margin:12px 0 2px;font-weight:900}
+  .live .row{display:flex;justify-content:space-between;font-size:14.5px;padding:9px 0;border-top:1px solid rgba(255,255,255,.12)}
+  .warn{font-size:13px;color:var(--sub);background:#fff;border-radius:14px;padding:12px 14px;margin-top:12px;line-height:1.65}
+  .err{color:var(--red);font-size:13.5px;font-weight:700;margin-top:10px;line-height:1.6}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;place-items:center;z-index:2000}
+  .modal.show{display:grid}
+  .modal .box{background:#fff;border-radius:18px;padding:20px;width:min(340px,90%);text-align:center}
+  .modal .box p{margin:0 0 16px;font-weight:700;font-size:16px}
+  .modal .box div{display:flex;gap:8px}
+  .modal .box button{flex:1}
+  .hide{display:none!important}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="14" rx="3"/><path d="M4 11h16M8 21v-4M16 21v-4"/><circle cx="8" cy="14" r=".7" fill="currentColor"/><circle cx="16" cy="14" r=".7" fill="currentColor"/></svg></div>
+    <div><h1 id="appTitle">HCC 셔틀버스</h1><small id="appSub">할렐루야 셔틀버스 실시간 안내</small></div>
+    <div class="conn" id="conn"><i></i><span>연결 중</span></div>
+  </header>
+
+  <!-- ===== 성도님 화면 ===== -->
+  <section id="saint">
+    <div class="routes">
+      <button class="yatap on" data-route="yatap"><b>야탑역 셔틀</b><span>BYC 앞 ↔ 교회</span></button>
+      <button class="park" data-route="park"><b>파킹엔젤스</b><span>테크노파크 C동 ↔ 교회</span></button>
+    </div>
+
+    <div class="card">
+      <h2><span>지금 버스 위치</span><span id="busCount" style="font-weight:500"></span></h2>
+      <div id="map"></div>
+      <div class="maptip" id="mapTip"></div>
+    </div>
+
+    <div class="card">
+      <h2><span>정류장 도착 예상</span><span style="font-weight:500;font-size:12px">🔔 근처에 오면 알림</span></h2>
+      <div id="stops"></div>
+    </div>
+
+    <div class="card">
+      <h2><span>운행 중인 버스</span></h2>
+      <div class="buslist" id="buses"></div>
+    </div>
+
+    <div class="card">
+      <h2><span>배차 시간표</span></h2>
+      <div class="tabs" id="ttTabs"></div>
+      <div id="tt"></div>
+    </div>
+
+    <div class="card install" id="install">
+      <h2><span>홈 화면에 추가하기</span></h2>
+      <p id="installMsg"></p>
+      <button class="btn hide" id="installBtn">홈 화면에 추가</button>
+    </div>
+  </section>
+
+  <!-- ===== 기사님 화면 (#driver) ===== -->
+  <section id="driver" class="hide">
+    <div class="drv">
+      <div id="drvPin" class="hide">
+        <div class="lbl">기사님 운행 번호를 입력하세요</div>
+        <input class="pin" id="pinInput" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="••••••">
+        <button class="big start" id="pinBtn">확인</button>
+        <div class="err" id="pinErr"></div>
+        <div class="warn">운행 번호는 셔틀 담당자에게 받으세요. 한 번 입력하면 이 휴대폰에서는 다시 묻지 않습니다.</div>
+      </div>
+
+      <div id="drvSetup" class="hide">
+        <div class="lbl">① 노선을 고르세요</div>
+        <div class="pick" id="drvRoute">
+          <button data-route="yatap" class="on">야탑역 셔틀</button>
+          <button data-route="park">파킹엔젤스</button>
+        </div>
+        <div class="lbl">② 몇 호차인가요?</div>
+        <div class="pick four" id="drvBus"></div>
+        <button class="big start" id="startBtn">운행 시작</button>
+        <div class="err" id="startErr"></div>
+        <div class="warn"><b>운행 중에는 화면을 켜 둔 채</b> 거치대에 꽂아 주세요. 다른 앱으로 넘어가거나 화면이 꺼지면 위치 보내기가 멈춥니다. 충전기를 꼭 연결해 주세요.<br>처음 시작할 때 ‘위치 사용’을 물으면 <b>허용</b>을 눌러 주세요.</div>
+      </div>
+
+      <div id="drvLive" class="hide">
+        <div class="live" id="liveBox">
+          <div class="st"><span class="pulse"></span><span id="liveState">위치 찾는 중…</span></div>
+          <h3 id="liveTitle"></h3>
+          <div style="font-size:13px;opacity:.8" id="liveSent">-</div>
+          <div style="margin-top:12px">
+            <div class="row"><span>GPS 정확도</span><b id="liveAcc">-</b></div>
+            <div class="row"><span>보낸 횟수</span><b id="liveCount">0회</b></div>
+            <div class="row"><span>화면 꺼짐 방지</span><b id="liveWake">-</b></div>
+          </div>
+        </div>
+        <button class="big stop" id="stopBtn">운행 종료</button>
+        <div class="warn">이 화면을 그대로 켜 두세요. 운행을 마치면 꼭 <b>운행 종료</b>를 눌러 주세요.</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot">
+    만든 사람 AI목양지원센터 · 이세진 목사<br>
+    셔틀 문의 : 교회 안내실 031-780-9600<br>
+    지도 © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> 기여자
+  </div>
+</div>
+
+<div class="toast" id="toast"><div style="font-size:24px">🚌</div><div><b id="toastT"></b><span id="toastS"></span></div><button id="toastX" aria-label="닫기">×</button></div>
+<div class="modal" id="modal"><div class="box"><p>운행을 종료할까요?<br><span style="font-weight:400;font-size:13px;color:#6b7280">성도님 화면에서 이 버스가 사라집니다.</span></p><div><button class="btn ghost" id="mNo">계속 운행</button><button class="btn" id="mYes" style="background:#c2412d">종료</button></div></div></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import { getDatabase, ref, onValue, set, remove, get, onDisconnect, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+
+// ================= 설정 =================
+const firebaseConfig = {
+  apiKey: "AIzaSyBwaQjrMr0AwBYW-RagoQ3XrQDxXc8UGn0",
+  authDomain: "hcc-shuttle-bus.firebaseapp.com",
+  databaseURL: "https://hcc-shuttle-bus-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "hcc-shuttle-bus",
+  storageBucket: "hcc-shuttle-bus.firebasestorage.app",
+  messagingSenderId: "1010817566139",
+  appId: "1:1010817566139:web:03c1a8571481f1ddf8f09e"
+};
+const SEND_EVERY_MS = 5000;      // 기사님 위치 전송 간격
+const STALE_MS = 90 * 1000;      // 이 시간 동안 신호가 없으면 '신호 약함'
+const GONE_MS = 10 * 60 * 1000;  // 이 시간 지나면 화면에서 숨김
+const NEAR_M = 700;              // 알림 거리(약 2~3분)
+const BUS_SPEED_M_PER_MIN = 330; // 시내 평균 약 20km/h
+const ROAD_FACTOR = 1.35;        // 직선거리 → 도로거리 보정
+
+// ================= 노선 · 정류장 =================
+const ROUTES = {
+  yatap:{ name:"야탑역 셔틀", color:"#1f3a68", buses:4,
+    stops:[ {id:"byc", name:"야탑역 BYC 앞", sub:"2번 출구 신한은행 앞 대로변", lat:37.41093, lng:127.12925},
+            {id:"church", name:"할렐루야교회", sub:"교회 앞", lat:37.41037, lng:127.15612} ],
+    tip:"중간 구간은 손을 들면 세워 드려요. 지도에서 버스 위치를 보고 미리 나와 계세요." },
+  park:{ name:"파킹엔젤스", color:"#2f7d5b", buses:4,
+    stops:[ {id:"cdong", name:"테크노파크 C동", sub:"주차 후 탑승", lat:37.40476, lng:127.15562},
+            {id:"dmv", name:"차량등록사업소 주차장", sub:"경유", lat:37.40723, lng:127.15396},
+            {id:"church", name:"할렐루야교회", sub:"교회 앞", lat:37.41037, lng:127.15612} ],
+    tip:"주일에만 운행합니다. 테크노파크 C동 → 차량등록사업소 → 교회 순서로 돕니다." }
+};
+const BUSCOL = ["#1f3a68","#c2412d","#d98a1c","#6b4fa0"];
+const busColor = (route,b) => route==="park" ? ["#2f7d5b","#5a9e2f","#127a8a","#7a6a2f"][(b-1)%4] : BUSCOL[(b-1)%4];
+
+// ================= 시간표 (교회 홈페이지 셔틀버스 안내) =================
+const SUN_COLS = ["1부 예배 (08:00)","2부 예배 (09:30)","3부 예배 (11:30)","4부 뉴웨이브 (13:30)","주일 오후"];
+const SUN = {
+  yatap:[["06:40","07:05","07:20","07:35","07:50","08:05","08:25"],["08:40","08:55","09:10","09:25","09:40","10:00"],["10:20","10:35","10:50","11:05","11:20","11:35","11:50","12:10"],["12:30","12:45","13:00","13:15","13:30","13:45","14:00","14:20"],["14:40","15:00","15:20","15:40","16:00","16:20","16:40"]],
+  church:[["06:55","07:10","07:25","07:40","07:55","08:15"],["08:30","08:45","09:00","09:15","09:30","09:50"],["10:10","10:25","10:40","10:55","11:10","11:25","11:40","12:00"],["12:20","12:35","12:50","13:05","13:20","13:35","13:50","14:10"],["14:30","14:50","15:10","15:30","15:50","16:10","16:30","17:00"]]
+};
+const AM=["9:10","9:30","9:50","10:10","10:30","10:50","11:10","11:30","11:40"], AMC=["9:00","9:20","9:40","10:00","10:20","10:40","11:00","11:20","11:30"];
+const PM=["13:10","13:30","13:50","14:10","14:30","14:50","15:10","15:40","16:10","16:40"], PMC=["13:00","13:20","13:40","14:00","14:20","14:40","15:00","15:30","16:00","16:30"];
+const WEEK = {
+  yatap:{2:[...AM,"12:40",...PM],3:[...AM,"12:30","12:50",...PM],4:[...AM,...PM],
+         5:["9:10","9:40","10:10","10:40","11:10","11:40","13:10","13:40","14:10","14:40","15:10","15:40","16:10","16:40","19:00","19:15","19:30","19:45","20:00","20:10"],
+         6:[...AM,...PM.slice(0,8)]},
+  church:{2:[...AMC,"12:30",...PMC],3:[...AMC,"12:20","12:40",...PMC],4:[...AMC,...PMC],
+         5:["9:00","9:30","10:00","10:30","11:00","11:30","13:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30","17:05","18:50","19:05","19:20","19:35","19:50","20:00","22:10"],
+         6:[...AMC,...PMC.slice(0,8)]}
+};
+let PARK_TIMES = []; // Firebase config/parkTimes 에서 읽음 (예: "8:00,8:10,8:20")
+
+// ================= 도우미 =================
+const $ = id => document.getElementById(id);
+const setH = (el,h) => { if(el._h!==h){ el._h=h; el.innerHTML=h; } };
+const toM = s => { const [h,m]=String(s).trim().split(":").map(Number); return h*60+m; };
+const nowKST = () => { const d=new Date(Date.now()+9*3600e3); return {day:d.getUTCDay(), min:d.getUTCHours()*60+d.getUTCMinutes()+d.getUTCSeconds()/60}; };
+const dist = (a,b) => { const R=6371000, r=Math.PI/180; const dLat=(b.lat-a.lat)*r, dLng=(b.lng-a.lng)*r;
+  const x=Math.sin(dLat/2)**2+Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin(dLng/2)**2; return 2*R*Math.asin(Math.sqrt(x)); };
+const km = m => m<1000 ? Math.round(m/10)*10+"m" : (m/1000).toFixed(1)+"km";
+const storage = { get(k){ try{return localStorage.getItem(k);}catch(_){return null;} }, set(k,v){ try{localStorage.setItem(k,v);}catch(_){} } };
+let toastTimer;
+function toast(t,s){ $("toastT").textContent=t; $("toastS").textContent=s||""; $("toast").classList.add("show");
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>$("toast").classList.remove("show"),6000); }
+$("toastX").onclick=()=>$("toast").classList.remove("show");
+
+// ================= Firebase =================
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+let offset = 0, uid = null;
+onValue(ref(db,".info/serverTimeOffset"), s=>{ offset=s.val()||0; });
+onValue(ref(db,".info/connected"), s=>{ const ok=!!s.val(); $("conn").classList.toggle("ok",ok); $("conn").querySelector("span").textContent= ok?"실시간 연결":"연결 끊김"; });
+const serverNow = () => Date.now()+offset;
+const authReady = new Promise(res=>{ onAuthStateChanged(auth,u=>{ if(u){ uid=u.uid; res(u);} }); });
+signInAnonymously(auth).catch(e=>{ console.error(e); toast("연결에 문제가 있어요","잠시 후 다시 열어 주세요."); });
+
+const isDriverPage = location.hash==="#driver";
+
+// =====================================================================
+//                              성도님 화면
+// =====================================================================
+const S = { route: storage.get("route")||"yatap", tt:null, live:{yatap:{},park:{}}, alerts:JSON.parse(storage.get("alerts")||"{}"), prev:{}, notified:{} };
+let map, stopLayer, busLayer, busMarkers={};
+
+function initMap(){
+  map = L.map("map",{zoomControl:true,attributionControl:false});
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(map);
+  stopLayer = L.layerGroup().addTo(map); busLayer = L.layerGroup().addTo(map);
+}
+function drawStopsOnMap(){
+  stopLayer.clearLayers(); busLayer.clearLayers(); busMarkers={};
+  const r=ROUTES[S.route];
+  r.stops.forEach(s=>{
+    const icon=L.divIcon({className:"",html:`<div class="stopmk" style="border-color:${r.color}"></div>`,iconSize:[18,18],iconAnchor:[9,9]});
+    L.marker([s.lat,s.lng],{icon,interactive:false}).addTo(stopLayer)
+      .bindTooltip(s.name,{permanent:true,direction:"top",offset:[0,-10],className:"stoplbl"});
+  });
+  map.fitBounds(L.latLngBounds(r.stops.map(s=>[s.lat,s.lng])),{padding:[40,40],maxZoom:16});
+  $("mapTip").textContent=r.tip;
+}
+function liveBuses(route){
+  const now=serverNow(); const out=[];
+  Object.entries(S.live[route]||{}).forEach(([bus,v])=>{
+    if(!v || typeof v.lat!=="number") return;
+    const age = now-(v.ts||0); if(age>GONE_MS) return;
+    out.push({bus:+bus, lat:v.lat, lng:v.lng, age, old: age>STALE_MS});
+  });
+  return out.sort((a,b)=>a.bus-b.bus);
+}
+function drawBusesOnMap(){
+  const list=liveBuses(S.route); const seen={};
+  list.forEach(b=>{
+    seen[b.bus]=1;
+    const html=`<div class="busmk ${b.old?'old':''}" style="background:${busColor(S.route,b.bus)}">${b.bus}</div>`;
+    if(!busMarkers[b.bus]){ busMarkers[b.bus]=L.marker([b.lat,b.lng],{icon:L.divIcon({className:"",html,iconSize:[34,26],iconAnchor:[17,13]}),zIndexOffset:1000}).addTo(busLayer); busMarkers[b.bus]._html=html; }
+    else { busMarkers[b.bus].setLatLng([b.lat,b.lng]); if(busMarkers[b.bus]._html!==html){ busMarkers[b.bus].setIcon(L.divIcon({className:"",html,iconSize:[34,26],iconAnchor:[17,13]})); busMarkers[b.bus]._html=html; } }
+  });
+  Object.keys(busMarkers).forEach(k=>{ if(!seen[k]){ busLayer.removeLayer(busMarkers[k]); delete busMarkers[k]; } });
+  $("busCount").textContent = list.length ? `${list.length}대 운행 중` : "";
+}
+
+// 시간표상 다음 출발
+function scheduleFor(route,stopId,day){
+  if(route==="yatap"){
+    if(stopId==="byc") return day===0? SUN.yatap.flat() : (WEEK.yatap[day]||[]);
+    if(stopId==="church") return day===0? SUN.church.flat() : (WEEK.church[day]||[]);
+  }
+  if(route==="park" && day===0){
+    if(stopId==="cdong") return PARK_TIMES;
+  }
+  return [];
+}
+function nextScheduled(route,stopId){
+  const {day,min}=nowKST(); const list=scheduleFor(route,stopId,day).map(toM).sort((a,b)=>a-b);
+  const n=list.find(m=>m>=Math.floor(min)); if(n==null) return null;
+  return {t:n, inMin:n-min};
+}
+const hhmm = m => Math.floor(m/60)+":"+String(m%60).padStart(2,"0");
+
+// 실시간 도착 예상: 다가오는 버스 중 가장 가까운 것
+function liveEta(route,stop){
+  let best=null;
+  liveBuses(route).forEach(b=>{
+    if(b.old) return;
+    const d=dist(b,stop); const key=route+b.bus+stop.id; const p=S.prev[key];
+    const approaching = d<250 || p==null || d < p.d - 15 || (p.approaching && d <= p.d + 15);
+    if(p==null || Math.abs(d-p.d)>15) S.prev[key]={d,approaching};
+    if(!approaching) return;
+    const eta = d*ROAD_FACTOR/BUS_SPEED_M_PER_MIN;
+    if(!best || eta<best.eta) best={bus:b.bus,d,eta};
+  });
+  return best;
+}
+const bellSvg=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>`;
+function drawStopList(){
+  const r=ROUTES[S.route];
+  setH($("stops"), r.stops.map(s=>{
+    const key=S.route+":"+s.id, on=!!S.alerts[key];
+    const le=liveEta(S.route,s), ns=nextScheduled(S.route,s.id);
+    let main, small;
+    if(le){ const m=le.eta; main=`<b class="${m<3?'soon':''}">${m<1?'곧 도착':'약 '+Math.ceil(m)+'분'}</b>`; small=`${le.bus}호차 · ${km(le.d)}`; }
+    else if(ns){ main=`<b class="none">${hhmm(ns.t)} 출발</b>`; small= ns.inMin<1?'시간표상 곧 출발':`시간표상 ${Math.ceil(ns.inMin)}분 후`; }
+    else { main=`<b class="none">운행 없음</b>`; small = (S.route==="park" && nowKST().day!==0) ? "주일에만 운행" : (S.route==="park" && s.id!=="cdong" ? "실시간 위치로 안내" : "오늘 운행이 없거나 끝났어요"); }
+    return `<div class="stop" style="color:${r.color}"><span class="dot"></span>
+      <div class="info"><div class="name">${s.name}</div><div class="meta">${s.sub}</div></div>
+      <div class="eta">${main}<small>${small}</small></div>
+      <button class="bell ${on?'on':''}" data-key="${key}" aria-label="${s.name} 도착 알림">${bellSvg}</button></div>`;
+  }).join(""));
+}
+$("stops").addEventListener("click", async ev=>{
+  const b=ev.target.closest(".bell"); if(!b) return;
+  const k=b.dataset.key; S.alerts[k]=!S.alerts[k]; if(!S.alerts[k]) delete S.alerts[k];
+  storage.set("alerts",JSON.stringify(S.alerts));
+  if(S.alerts[k]){
+    let msg="버스가 이 정류장 근처(약 2~3분 거리)에 오면 알려 드려요. 이 화면을 열어 두세요.";
+    try{ if("Notification" in window && Notification.permission==="default"){ await Notification.requestPermission(); } }catch(_){}
+    toast("알림을 켰어요", msg);
+  }
+  b._h=null; $("stops")._h=null; drawStopList();
+});
+function drawBusList(){
+  const list=liveBuses(S.route);
+  setH($("buses"), list.length? list.map(b=>{
+    const r=ROUTES[S.route]; let near=null;
+    r.stops.forEach(s=>{ const d=dist(b,s); if(!near||d<near.d) near={s,d}; });
+    const where = near.d<150 ? `${near.s.name} 앞` : `${near.s.name}에서 ${km(near.d)}`;
+    return `<div class="bus"><span class="chip" style="background:${busColor(S.route,b.bus)}">${b.bus}호차</span><span>${where}</span>
+      <span class="tag ${b.old?'old':''}">${b.old?'신호 약함':'● 실시간'}</span></div>`;
+  }).join("") : `<div class="empty">지금 위치를 보내는 버스가 없습니다.<br>기사님이 운행을 시작하면 여기에 나타나요.</div>`);
+}
+
+// 알림
+async function notify(title,body){
+  toast(title,body);
+  try{ navigator.vibrate && navigator.vibrate([250,120,250]); }catch(_){}
+  try{
+    if("Notification" in window && Notification.permission==="granted" && navigator.serviceWorker){
+      const reg=await navigator.serviceWorker.getRegistration();
+      if(reg) reg.showNotification(title,{body,icon:"icon-192.png",badge:"icon-192.png",tag:"shuttle",renotify:true});
+    }
+  }catch(_){}
+}
+function checkAlerts(){
+  Object.keys(S.alerts).forEach(key=>{
+    const [route,stopId]=key.split(":"); const stop=ROUTES[route]?.stops.find(s=>s.id===stopId); if(!stop) return;
+    liveBuses(route).forEach(b=>{
+      if(b.old) return;
+      const d=dist(b,stop); const nk=key+":"+b.bus;
+      if(d<=NEAR_M && !S.notified[nk]){
+        const p=S.prev[route+b.bus+stopId];
+        if(p && p.approaching===false && d>250) return;
+        S.notified[nk]=1;
+        const m=Math.max(1,Math.ceil(d*ROAD_FACTOR/BUS_SPEED_M_PER_MIN));
+        notify(`${b.bus}호차가 곧 도착해요`, `${stop.name}까지 약 ${m}분 (${km(d)}) · ${ROUTES[route].name}`);
+      }
+      if(d>NEAR_M*1.8) delete S.notified[nk]; // 멀어지면 다음 접근 때 다시 알림
+    });
+  });
+}
+
+// 시간표
+function drawTT(){
+  const {day,min}=nowKST();
+  if(S.tt==null) S.tt = String([0,2,3,4,5,6].includes(day)?day:0);
+  const tabs = S.route==="yatap" ? [["0","주일"],["2","화"],["3","수"],["4","목"],["5","금"],["6","토"]] : [["0","주일"]];
+  if(!tabs.find(t=>t[0]===S.tt)) S.tt="0";
+  setH($("ttTabs"), tabs.map(t=>`<button data-tt="${t[0]}" class="${S.tt===t[0]?'on':''}">${t[1]}</button>`).join(""));
+  const today = String(day)===S.tt;
+  const mark = (list) => { const n= today ? list.map(toM).filter(m=>m>=Math.floor(min)).sort((a,b)=>a-b)[0] : null;
+    return t => !today ? "" : (toM(t)<Math.floor(min) ? "past" : (toM(t)===n ? "next" : "")); };
+  let h="";
+  if(S.route==="park"){
+    if(!PARK_TIMES.length) h=`<div class="empty">파킹엔젤스 시간표는 준비 중입니다.<br>지도에서 버스 위치를 실시간으로 확인해 주세요.</div>`;
+    else { const c=mark(PARK_TIMES);
+      h=`<table><tr><th>테크노파크 C동 출발 (주일)</th></tr><tr><td>${PARK_TIMES.map(t=>`<span class="t ${c(t)}">${t}</span>`).join(" ")}</td></tr></table>`; }
+  } else if(S.tt==="0"){
+    const cy=mark(SUN.yatap.flat()), cc=mark(SUN.church.flat());
+    h=`<table><tr><th>예배</th><th>야탑역 출발</th><th>교회 출발</th></tr>`+
+      SUN_COLS.map((c,i)=>`<tr><td style="font-size:12px;color:#6b7280">${c}</td><td>${SUN.yatap[i].map(t=>`<span class="t ${cy(t)}">${t}</span>`).join(" ")}</td><td>${SUN.church[i].map(t=>`<span class="t ${cc(t)}">${t}</span>`).join(" ")}</td></tr>`).join("")+`</table>`;
+  } else {
+    const d=+S.tt, Y=WEEK.yatap[d], C=WEEK.church[d], cy=mark(Y), cc=mark(C); let rows="";
+    for(let i=0;i<Math.max(Y.length,C.length);i++) rows+=`<tr><td class="${Y[i]?cy(Y[i]):''}">${Y[i]||""}</td><td class="${C[i]?cc(C[i]):''}">${C[i]||""}</td></tr>`;
+    h=`<table><tr><th>야탑역 출발</th><th>교회 출발</th></tr>${rows}</table>`;
+  }
+  if(S.route==="yatap") h+=`<div class="note">※ 야탑역 정류장: 2번 출구 신한은행 앞 대로변(BYC 앞). 3분 전에 나와 기다려 주세요.<br>※ 평일은 화~토 운행, 월요일·공휴일은 쉽니다. 시간표는 교회 사정에 따라 바뀔 수 있습니다.</div>`;
+  setH($("tt"),h);
+}
+$("ttTabs").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; S.tt=b.dataset.tt; drawTT(); });
+
+function selectRoute(r){
+  S.route=r; storage.set("route",r);
+  document.querySelectorAll(".routes button").forEach(x=>x.classList.toggle("on",x.dataset.route===r));
+  drawStopsOnMap(); refreshSaint(); drawTT();
+}
+document.querySelectorAll(".routes button").forEach(b=>b.onclick=()=>selectRoute(b.dataset.route));
+function refreshSaint(){ drawBusesOnMap(); drawStopList(); drawBusList(); checkAlerts(); }
+
+// 홈 화면 설치 안내
+let deferredPrompt=null;
+function setupInstall(){
+  const standalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+  if(standalone) return;
+  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  $("install").classList.add("show");
+  $("installMsg").innerHTML = ios
+    ? "사파리 아래쪽 <b>공유 버튼(□↑)</b> → <b>‘홈 화면에 추가’</b>를 누르면 앱처럼 쓸 수 있어요. 아이폰은 홈 화면에 추가해야 알림을 받을 수 있습니다."
+    : "홈 화면에 추가하면 앱처럼 바로 열 수 있어요. 크롬 오른쪽 위 <b>⋮</b> → <b>‘홈 화면에 추가’</b>를 눌러 주세요.";
+  window.addEventListener("beforeinstallprompt",e=>{ e.preventDefault(); deferredPrompt=e; $("installBtn").classList.remove("hide"); });
+  $("installBtn").onclick=async()=>{ if(!deferredPrompt) return; deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; $("installBtn").classList.add("hide"); };
+}
+
+function startSaint(){
+  initMap(); selectRoute(S.route); setupInstall();
+  onValue(ref(db,"live"), s=>{ const v=s.val()||{}; S.live={yatap:v.yatap||{}, park:v.park||{}}; refreshSaint(); });
+  onValue(ref(db,"config/parkTimes"), s=>{ const v=s.val(); PARK_TIMES = typeof v==="string" ? v.split(",").map(x=>x.trim()).filter(x=>/^\d{1,2}:\d{2}$/.test(x)) : []; drawTT(); refreshSaint(); });
+  setInterval(()=>{ refreshSaint(); drawTT(); }, 5000);
+  document.addEventListener("visibilitychange",()=>{ if(!document.hidden){ refreshSaint(); drawTT(); } });
+}
+
+// =====================================================================
+//                              기사님 화면
+// =====================================================================
+const D = { route: storage.get("drvRoute")||"yatap", bus: +(storage.get("drvBus")||1), on:false, watch:null, lastSent:0, count:0, wake:null, last:null, busRef:null, tick:null };
+
+function drvShow(which){ ["drvPin","drvSetup","drvLive"].forEach(id=>$(id).classList.toggle("hide",id!==which)); }
+function drawDrvSetup(){
+  $("drvRoute").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.route===D.route));
+  const n=ROUTES[D.route].buses; if(D.bus>n) D.bus=1;
+  $("drvBus").innerHTML=Array.from({length:n},(_,i)=>i+1).map(i=>`<button data-b="${i}" class="${D.bus===i?'on':''}">${i}호차</button>`).join("");
+}
+$("drvRoute").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; D.route=b.dataset.route; storage.set("drvRoute",D.route); drawDrvSetup(); });
+$("drvBus").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; D.bus=+b.dataset.b; storage.set("drvBus",D.bus); drawDrvSetup(); });
+
+$("pinBtn").onclick=async()=>{
+  const pin=$("pinInput").value.trim(); $("pinErr").textContent="";
+  if(!/^\d{4,8}$/.test(pin)){ $("pinErr").textContent="숫자 4~8자리를 입력해 주세요."; return; }
+  $("pinBtn").disabled=true;
+  try{ await authReady; await set(ref(db,"drivers/"+uid),{pin, at:serverTimestamp()}); drvShow("drvSetup"); drawDrvSetup(); }
+  catch(e){ $("pinErr").textContent="운행 번호가 맞지 않습니다. 셔틀 담당자에게 확인해 주세요."; }
+  $("pinBtn").disabled=false;
+};
+
+async function keepAwake(){
+  try{ if("wakeLock" in navigator){ D.wake=await navigator.wakeLock.request("screen"); $("liveWake").textContent="켜짐"; D.wake.addEventListener("release",()=>{ if(D.on) $("liveWake").textContent="꺼짐 — 화면을 다시 켜 주세요"; }); }
+       else $("liveWake").textContent="지원 안 됨 — 화면 자동 꺼짐을 꺼 주세요"; }
+  catch(_){ $("liveWake").textContent="실패 — 화면 자동 꺼짐을 꺼 주세요"; }
+}
+function liveState(text,bad){ $("liveState").textContent=text; $("liveBox").classList.toggle("bad",!!bad); }
+
+async function sendPos(p){
+  D.last=p;
+  const now=Date.now(); if(now-D.lastSent < SEND_EVERY_MS - 300) return;
+  D.lastSent=now;
+  const c=p.coords;
+  try{
+    await set(D.busRef,{lat:+c.latitude.toFixed(6), lng:+c.longitude.toFixed(6), acc:Math.round(c.accuracy||0),
+      spd: c.speed==null?null:Math.round(c.speed*3.6), hd: c.heading==null||isNaN(c.heading)?null:Math.round(c.heading),
+      ts:serverTimestamp(), uid});
+    D.count++; $("liveCount").textContent=D.count+"회";
+    $("liveAcc").textContent= c.accuracy ? `약 ${Math.round(c.accuracy)}m` : "-";
+    liveState("위치 보내는 중 · 5초마다",false);
+  }catch(e){ liveState("전송 실패 — 인터넷 연결을 확인해 주세요",true); }
+}
+
+$("startBtn").onclick=async()=>{
+  $("startErr").textContent="";
+  if(!("geolocation" in navigator)){ $("startErr").textContent="이 휴대폰은 위치 기능을 쓸 수 없습니다."; return; }
+  $("startBtn").disabled=true;
+  try{
+    await authReady;
+    D.busRef=ref(db,`live/${D.route}/${D.bus}`);
+    const cur=(await get(D.busRef)).val();
+    if(cur && cur.uid!==uid && serverNow()-(cur.ts||0) < STALE_MS){
+      $("startErr").textContent=`지금 다른 휴대폰에서 ${D.bus}호차가 운행 중입니다. 다른 호차 번호를 골라 주세요.`;
+      $("startBtn").disabled=false; return;
+    }
+    await onDisconnect(D.busRef).remove();
+  }catch(e){
+    $("startErr").textContent="운행 권한이 없습니다. 운행 번호를 다시 입력해 주세요.";
+    $("startBtn").disabled=false; drvShow("drvPin"); return;
+  }
+  D.on=true; D.count=0; D.lastSent=0;
+  $("liveTitle").textContent=`${D.bus}호차 · ${ROUTES[D.route].name}`;
+  liveState("위치 찾는 중…",false); drvShow("drvLive"); keepAwake();
+  D.watch=navigator.geolocation.watchPosition(sendPos, err=>{
+    if(err.code===1) liveState("위치 권한이 꺼져 있어요 — 설정에서 크롬의 위치를 ‘허용’해 주세요",true);
+    else liveState("GPS 신호를 찾는 중… 하늘이 보이는 곳에서 잠시 기다려 주세요",true);
+  },{enableHighAccuracy:true, maximumAge:3000, timeout:20000});
+  // 버스가 멈춰 있어도(신호 대기 등) 계속 살아 있음을 알림
+  D.tick=setInterval(()=>{ if(D.last && Date.now()-D.lastSent>SEND_EVERY_MS*2) { D.lastSent=0; sendPos(D.last); }
+    const sec=Math.round((Date.now()-D.lastSent)/1000); $("liveSent").textContent = D.lastSent? `마지막 전송 ${sec<2?'방금':sec+'초 전'}` : "-"; },1000);
+  $("startBtn").disabled=false;
+};
+async function stopDriving(){
+  D.on=false;
+  if(D.watch!=null) navigator.geolocation.clearWatch(D.watch); D.watch=null;
+  clearInterval(D.tick);
+  try{ D.wake && await D.wake.release(); }catch(_){}
+  try{ await remove(D.busRef); await onDisconnect(D.busRef).cancel(); }catch(_){}
+  drvShow("drvSetup"); drawDrvSetup();
+}
+$("stopBtn").onclick=()=>$("modal").classList.add("show");
+$("mNo").onclick=()=>$("modal").classList.remove("show");
+$("mYes").onclick=()=>{ $("modal").classList.remove("show"); stopDriving(); };
+document.addEventListener("visibilitychange",()=>{
+  if(!D.on) return;
+  if(!document.hidden){ keepAwake(); if(D.last){ D.lastSent=0; } }
+});
+window.addEventListener("beforeunload",e=>{ if(D.on){ e.preventDefault(); e.returnValue=""; } });
+
+async function startDriver(){
+  $("saint").classList.add("hide"); $("driver").classList.remove("hide");
+  $("appSub").textContent="기사님 운행 화면"; document.title="HCC 셔틀버스 · 기사님"; $("iosTitle").content="셔틀 기사님";
+  await authReady;
+  try{ const me=(await get(ref(db,"drivers/"+uid))).val(); if(me){ drvShow("drvSetup"); drawDrvSetup(); } else drvShow("drvPin"); }
+  catch(_){ drvShow("drvPin"); }
+}
+
+// ================= 시작 =================
+if("serviceWorker" in navigator){ navigator.serviceWorker.register("sw.js").catch(()=>{}); }
+if(isDriverPage) startDriver(); else startSaint();
+window.addEventListener("hashchange",()=>location.reload());
+</script>
+</body>
+</html>

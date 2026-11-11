@@ -1,0 +1,21 @@
+{
+  "rules": {
+    "live": {
+      ".read": true,
+      "$route": {
+        "$bus": {
+          ".write": "auth != null && root.child('drivers').child(auth.uid).exists() && ($route === 'yatap' || $route === 'park') && $bus.matches(/^[1-9]$/)",
+          ".validate": "!newData.exists() || (newData.child('lat').isNumber() && newData.child('lng').isNumber() && newData.child('ts').isNumber() && newData.child('uid').val() === auth.uid)"
+        }
+      }
+    },
+    "drivers": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid && newData.exists() && newData.child('pin').isString() && newData.child('pin').val().matches(/^[0-9]{4,8}$/) && root.child('pins').child(newData.child('pin').val()).exists()"
+      }
+    },
+    "pins": { ".read": false, ".write": false },
+    "config": { ".read": true, ".write": false }
+  }
+}
