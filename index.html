@@ -92,6 +92,8 @@
   /* 버스 마커 */
   .busmk{width:34px;height:26px;border-radius:8px;color:#fff;font-weight:900;font-size:13px;display:grid;place-items:center;border:2.5px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35)}
   .busmk.old{opacity:.5}
+  .busmk.dir{width:auto;padding:0 8px;white-space:nowrap;gap:4px;display:inline-flex;align-items:center;font-size:12.5px}
+  .busmk.dir i{font-style:normal;font-weight:700;opacity:.95}
   .stopmk{width:18px;height:18px;border-radius:50%;background:#fff;border:4px solid var(--navy);box-shadow:0 1px 3px rgba(0,0,0,.3)}
   .leaflet-tooltip.stoplbl{background:#fff;border:0;box-shadow:0 1px 4px rgba(0,0,0,.2);font:700 12px "Noto Sans KR",sans-serif;padding:3px 7px;border-radius:7px}
 
@@ -123,6 +125,20 @@
   .modal .box p{margin:0 0 16px;font-weight:700;font-size:16px}
   .modal .box div{display:flex;gap:8px}
   .modal .box button{flex:1}
+  .notice{margin:0 14px 12px;background:#fff4e0;border:1.5px solid #f0c47a;color:#6b4a0f;border-radius:14px;padding:11px 14px;font-size:14.5px;font-weight:700;line-height:1.55;display:flex;gap:8px}
+  .btn.small{padding:7px 11px;font-size:13px}
+  .sec{font-size:13px;color:var(--sub);margin:0 0 10px;line-height:1.55}
+  .ridebtns{display:flex;flex-wrap:wrap;gap:8px}
+  .ridebtn{flex:1;min-width:120px;border:0;border-radius:14px;padding:15px 10px;font:inherit;font-size:16.5px;font-weight:900;color:#fff;cursor:pointer}
+  .ridedone{display:flex;align-items:center;gap:10px;background:#e3f6ea;border-radius:14px;padding:12px 14px;font-weight:700;color:#14532d;font-size:15px}
+  .ridedone button,.waiton button{margin-left:auto;flex:none}
+  .waitbtn{width:100%;border:1.5px dashed #c9c4b8;background:#fbfaf6;border-radius:14px;padding:13px;font:inherit;font-size:15.5px;font-weight:700;cursor:pointer;color:var(--ink);margin-top:10px;line-height:1.5}
+  .waiton{display:flex;align-items:center;gap:10px;background:#fff4e0;border-radius:14px;padding:12px 14px;font-weight:700;color:#6b4a0f;margin-top:10px;font-size:14px}
+  .modal .box .cnt{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px}
+  .cnt button{border:2px solid var(--line);background:#fff;border-radius:12px;padding:14px 0;font:inherit;font-size:19px;font-weight:900;cursor:pointer;color:var(--ink)}
+  #drvMap{height:230px;border-radius:14px;margin-top:12px;overflow:hidden;z-index:0}
+  .waitmk{width:18px;height:18px;border-radius:50%;background:#d98a1c;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.45)}
+  .memk{width:16px;height:16px;border-radius:50%;background:#2563eb;border:3px solid #fff;box-shadow:0 0 0 6px rgba(37,99,235,.2)}
   .hide{display:none!important}
 </style>
 </head>
@@ -136,6 +152,7 @@
 
   <!-- ===== 성도님 화면 ===== -->
   <section id="saint">
+    <div class="notice hide" id="notice"></div>
     <div class="routes">
       <button class="yatap on" data-route="yatap"><b>야탑역 셔틀</b><span>BYC 앞 ↔ 교회</span></button>
       <button class="park" data-route="park"><b>파킹엔젤스</b><span>테크노파크 C동 ↔ 교회</span></button>
@@ -145,6 +162,11 @@
       <h2><span>지금 버스 위치</span><span id="busCount" style="font-weight:500"></span></h2>
       <div id="map"></div>
       <div class="maptip" id="mapTip"></div>
+    </div>
+
+    <div class="card">
+      <h2><span>탑승 · 기다림</span></h2>
+      <div id="ride"></div>
     </div>
 
     <div class="card">
@@ -182,6 +204,7 @@
       </div>
 
       <div id="drvSetup" class="hide">
+        <div style="font-size:19px;font-weight:900;margin:14px 2px 0" id="drvHello">기사님, 안녕하세요</div>
         <div class="lbl">① 노선을 고르세요</div>
         <div class="pick" id="drvRoute">
           <button data-route="yatap" class="on">야탑역 셔틀</button>
@@ -200,13 +223,18 @@
           <h3 id="liveTitle"></h3>
           <div style="font-size:13px;opacity:.8" id="liveSent">-</div>
           <div style="margin-top:12px">
+            <div class="row"><span>이번 회차</span><b id="liveLeg">-</b></div>
+            <div class="row"><span>탑승 (앱으로 누른 분)</span><b id="liveRide">0명</b></div>
+            <div class="row"><span>길에서 기다리는 분</span><b id="liveWait">0명</b></div>
             <div class="row"><span>GPS 정확도</span><b id="liveAcc">-</b></div>
             <div class="row"><span>보낸 횟수</span><b id="liveCount">0회</b></div>
             <div class="row"><span>화면 꺼짐 방지</span><b id="liveWake">-</b></div>
           </div>
         </div>
+        <div id="drvMap"></div>
+        <div class="maptip">주황색 점 = 길에서 기다리는 성도님 (정차 후 확인해 주세요)</div>
         <button class="big stop" id="stopBtn">운행 종료</button>
-        <div class="warn">이 화면을 그대로 켜 두세요. 운행을 마치면 꼭 <b>운행 종료</b>를 눌러 주세요.</div>
+        <div class="warn">이 화면을 그대로 켜 두세요. 운전 중에는 화면을 만지지 마세요. 운행을 마치면 꼭 <b>운행 종료</b>를 눌러 주세요.</div>
       </div>
     </div>
   </section>
@@ -221,11 +249,13 @@
 <div class="toast" id="toast"><div style="font-size:24px">🚌</div><div><b id="toastT"></b><span id="toastS"></span></div><button id="toastX" aria-label="닫기">×</button></div>
 <div class="modal" id="modal"><div class="box"><p>운행을 종료할까요?<br><span style="font-weight:400;font-size:13px;color:#6b7280">성도님 화면에서 이 버스가 사라집니다.</span></p><div><button class="btn ghost" id="mNo">계속 운행</button><button class="btn" id="mYes" style="background:#c2412d">종료</button></div></div></div>
 
+<div class="modal" id="cntModal"><div class="box"><p id="cntTitle">몇 분이 함께 타셨나요?</p><div class="cnt" id="cntBtns"><button data-n="1">1</button><button data-n="2">2</button><button data-n="3">3</button><button data-n="4">4</button><button data-n="5">5</button></div><div><button class="btn ghost" id="cntNo">취소</button></div></div></div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import { getDatabase, ref, onValue, set, remove, get, onDisconnect, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+import { getDatabase, ref, onValue, set, update, push, remove, get, onDisconnect, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
 // ================= 설정 =================
 const firebaseConfig = {
@@ -243,6 +273,7 @@ const GONE_MS = 10 * 60 * 1000;  // 이 시간 지나면 화면에서 숨김
 const NEAR_M = 700;              // 알림 거리(약 2~3분)
 const BUS_SPEED_M_PER_MIN = 330; // 시내 평균 약 20km/h
 const ROAD_FACTOR = 1.35;        // 직선거리 → 도로거리 보정
+const WAIT_MS = 15 * 60 * 1000;   // '여기서 기다려요' 자동 해제 시간
 
 // ================= 노선 · 정류장 =================
 const ROUTES = {
@@ -276,6 +307,9 @@ const WEEK = {
          6:[...AMC,...PMC.slice(0,8)]}
 };
 let PARK_TIMES = []; // Firebase config/parkTimes 에서 읽음 (예: "8:00,8:10,8:20")
+let TIMES = {};      // 관리자 페이지에서 고친 시간표 (config/times)
+const parseTimes = v => String(v||"").split(/[,\s]+/).map(x=>x.trim()).filter(x=>/^\d{1,2}:\d{2}$/.test(x));
+const timesOr = (key,def) => { const v=TIMES[key]; return (typeof v==="string" && parseTimes(v).length) ? parseTimes(v) : def; };
 
 // ================= 도우미 =================
 const $ = id => document.getElementById(id);
@@ -284,6 +318,7 @@ const toM = s => { const [h,m]=String(s).trim().split(":").map(Number); return h
 const nowKST = () => { const d=new Date(Date.now()+9*3600e3); return {day:d.getUTCDay(), min:d.getUTCHours()*60+d.getUTCMinutes()+d.getUTCSeconds()/60}; };
 const dist = (a,b) => { const R=6371000, r=Math.PI/180; const dLat=(b.lat-a.lat)*r, dLng=(b.lng-a.lng)*r;
   const x=Math.sin(dLat/2)**2+Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin(dLng/2)**2; return 2*R*Math.asin(Math.sqrt(x)); };
+const kstDate = ms => new Date(ms+9*3600e3).toISOString().slice(0,10);
 const km = m => m<1000 ? Math.round(m/10)*10+"m" : (m/1000).toFixed(1)+"km";
 const storage = { get(k){ try{return localStorage.getItem(k);}catch(_){return null;} }, set(k,v){ try{localStorage.setItem(k,v);}catch(_){} } };
 let toastTimer;
@@ -307,13 +342,15 @@ const isDriverPage = location.hash==="#driver";
 // =====================================================================
 //                              성도님 화면
 // =====================================================================
-const S = { route: storage.get("route")||"yatap", tt:null, live:{yatap:{},park:{}}, alerts:JSON.parse(storage.get("alerts")||"{}"), prev:{}, notified:{} };
-let map, stopLayer, busLayer, busMarkers={};
+const jget = k => { try{ return JSON.parse(storage.get(k)||"null"); }catch(_){ return null; } };
+const S = { route: storage.get("route")||"yatap", tt:null, live:{yatap:{},park:{}}, alerts:jget("alerts")||{}, prev:{}, notified:{},
+            myBoard: jget("myBoard"), myWait: jget("myWait"), pickBus:null };
+let map, stopLayer, busLayer, meLayer, busMarkers={};
 
 function initMap(){
   map = L.map("map",{zoomControl:true,attributionControl:false});
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(map);
-  stopLayer = L.layerGroup().addTo(map); busLayer = L.layerGroup().addTo(map);
+  stopLayer = L.layerGroup().addTo(map); busLayer = L.layerGroup().addTo(map); meLayer = L.layerGroup().addTo(map);
   map.on("dragstart",()=>{ userMoved=true; });
   // 화면 크기가 정해진 뒤(글꼴·레이아웃 로딩 후)에 다시 맞춤
   if("ResizeObserver" in window) new ResizeObserver(()=>{ map.invalidateSize(); if(!userMoved) fitMap(); }).observe($("map"));
@@ -341,7 +378,7 @@ function liveBuses(route){
   Object.entries(S.live[route]||{}).forEach(([bus,v])=>{
     if(!v || typeof v.lat!=="number") return;
     const age = now-(v.ts||0); if(age>GONE_MS) return;
-    out.push({bus:+bus, lat:v.lat, lng:v.lng, age, old: age>STALE_MS});
+    out.push({bus:+bus, lat:v.lat, lng:v.lng, age, old: age>STALE_MS, trip:v.trip||null, to:v.to||""});
   });
   return out.sort((a,b)=>a.bus-b.bus);
 }
@@ -349,9 +386,11 @@ function drawBusesOnMap(){
   const list=liveBuses(S.route); const seen={};
   list.forEach(b=>{
     seen[b.bus]=1;
-    const html=`<div class="busmk ${b.old?'old':''}" style="background:${busColor(S.route,b.bus)}">${b.bus}</div>`;
-    if(!busMarkers[b.bus]){ busMarkers[b.bus]=L.marker([b.lat,b.lng],{icon:L.divIcon({className:"",html,iconSize:[34,26],iconAnchor:[17,13]}),zIndexOffset:1000}).addTo(busLayer); busMarkers[b.bus]._html=html; }
-    else { busMarkers[b.bus].setLatLng([b.lat,b.lng]); if(busMarkers[b.bus]._html!==html){ busMarkers[b.bus].setIcon(L.divIcon({className:"",html,iconSize:[34,26],iconAnchor:[17,13]})); busMarkers[b.bus]._html=html; } }
+    const html= b.to ? `<div class="busmk dir ${b.old?'old':''}" style="background:${busColor(S.route,b.bus)}">${b.bus}<i>→ ${b.to}</i></div>`
+                     : `<div class="busmk ${b.old?'old':''}" style="background:${busColor(S.route,b.bus)}">${b.bus}</div>`;
+    const mkIcon=()=>L.divIcon({className:"",html,iconSize:null,iconAnchor:[17,13]});
+    if(!busMarkers[b.bus]){ busMarkers[b.bus]=L.marker([b.lat,b.lng],{icon:mkIcon(),zIndexOffset:1000}).addTo(busLayer); busMarkers[b.bus]._html=html; }
+    else { busMarkers[b.bus].setLatLng([b.lat,b.lng]); if(busMarkers[b.bus]._html!==html){ busMarkers[b.bus].setIcon(mkIcon()); busMarkers[b.bus]._html=html; } }
   });
   Object.keys(busMarkers).forEach(k=>{ if(!seen[k]){ busLayer.removeLayer(busMarkers[k]); delete busMarkers[k]; } });
   $("busCount").textContent = list.length ? `${list.length}대 운행 중` : "";
@@ -360,8 +399,8 @@ function drawBusesOnMap(){
 // 시간표상 다음 출발
 function scheduleFor(route,stopId,day){
   if(route==="yatap"){
-    if(stopId==="byc") return day===0? SUN.yatap.flat() : (WEEK.yatap[day]||[]);
-    if(stopId==="church") return day===0? SUN.church.flat() : (WEEK.church[day]||[]);
+    if(stopId==="byc") return day===0? timesOr("sun_yatap",SUN.yatap.flat()) : timesOr(`d${day}_yatap`,WEEK.yatap[day]||[]);
+    if(stopId==="church") return day===0? timesOr("sun_church",SUN.church.flat()) : timesOr(`d${day}_church`,WEEK.church[day]||[]);
   }
   if(route==="park" && day===0){
     if(stopId==="cdong") return PARK_TIMES;
@@ -380,6 +419,7 @@ function liveEta(route,stop){
   let best=null;
   liveBuses(route).forEach(b=>{
     if(b.old) return;
+    if(b.to && stopDest(route,stop.id) && stopDest(route,stop.id)!==b.to && dist(b,stop)>250) return;
     const d=dist(b,stop); const key=route+b.bus+stop.id; const p=S.prev[key];
     const approaching = d<250 || p==null || d < p.d - 15 || (p.approaching && d <= p.d + 15);
     if(p==null || Math.abs(d-p.d)>15) S.prev[key]={d,approaching};
@@ -389,6 +429,8 @@ function liveEta(route,stop){
   });
   return best;
 }
+// 종점 정류장 → 그 정류장으로 가는 버스의 행선지 이름
+function stopDest(route,stopId){ return ({yatap:{church:"교회", byc:"야탑역"}, park:{church:"교회", cdong:"C동", dmv:"교회"}})[route]?.[stopId]||null; }
 const bellSvg=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>`;
 function drawStopList(){
   const r=ROUTES[S.route];
@@ -422,7 +464,7 @@ function drawBusList(){
     const r=ROUTES[S.route]; let near=null;
     r.stops.forEach(s=>{ const d=dist(b,s); if(!near||d<near.d) near={s,d}; });
     const where = near.d<150 ? `${near.s.name} 앞` : `${near.s.name}에서 ${km(near.d)}`;
-    return `<div class="bus"><span class="chip" style="background:${busColor(S.route,b.bus)}">${b.bus}호차</span><span>${where}</span>
+    return `<div class="bus"><span class="chip" style="background:${busColor(S.route,b.bus)}">${b.bus}호차</span><span>${b.to?`<b>${b.to}행</b> · `:''}${where}</span>
       <span class="tag ${b.old?'old':''}">${b.old?'신호 약함':'● 실시간'}</span></div>`;
   }).join("") : `<div class="empty">지금 위치를 보내는 버스가 없습니다.<br>기사님이 운행을 시작하면 여기에 나타나요.</div>`);
 }
@@ -471,12 +513,13 @@ function drawTT(){
     if(!PARK_TIMES.length) h=`<div class="empty">파킹엔젤스 시간표는 준비 중입니다.<br>지도에서 버스 위치를 실시간으로 확인해 주세요.</div>`;
     else { const c=mark(PARK_TIMES);
       h=`<table><tr><th>테크노파크 C동 출발 (주일)</th></tr><tr><td>${PARK_TIMES.map(t=>`<span class="t ${c(t)}">${t}</span>`).join(" ")}</td></tr></table>`; }
-  } else if(S.tt==="0"){
+  } else if(S.tt==="0" && !(TIMES.sun_yatap||TIMES.sun_church)){
     const cy=mark(SUN.yatap.flat()), cc=mark(SUN.church.flat());
     h=`<table><tr><th>예배</th><th>야탑역 출발</th><th>교회 출발</th></tr>`+
       SUN_COLS.map((c,i)=>`<tr><td style="font-size:12px;color:#6b7280">${c}</td><td>${SUN.yatap[i].map(t=>`<span class="t ${cy(t)}">${t}</span>`).join(" ")}</td><td>${SUN.church[i].map(t=>`<span class="t ${cc(t)}">${t}</span>`).join(" ")}</td></tr>`).join("")+`</table>`;
   } else {
-    const d=+S.tt, Y=WEEK.yatap[d], C=WEEK.church[d], cy=mark(Y), cc=mark(C); let rows="";
+    const d=+S.tt, k=d===0?"sun":"d"+d;
+    const Y=timesOr(k+"_yatap", d===0?SUN.yatap.flat():WEEK.yatap[d]), C=timesOr(k+"_church", d===0?SUN.church.flat():WEEK.church[d]), cy=mark(Y), cc=mark(C); let rows="";
     for(let i=0;i<Math.max(Y.length,C.length);i++) rows+=`<tr><td class="${Y[i]?cy(Y[i]):''}">${Y[i]||""}</td><td class="${C[i]?cc(C[i]):''}">${C[i]||""}</td></tr>`;
     h=`<table><tr><th>야탑역 출발</th><th>교회 출발</th></tr>${rows}</table>`;
   }
@@ -491,7 +534,71 @@ function selectRoute(r){
   drawStopsOnMap(); refreshSaint(); drawTT();
 }
 document.querySelectorAll(".routes button").forEach(b=>b.onclick=()=>selectRoute(b.dataset.route));
-function refreshSaint(){ drawBusesOnMap(); drawStopList(); drawBusList(); checkAlerts(); }
+function refreshSaint(){ drawBusesOnMap(); drawStopList(); drawBusList(); checkAlerts(); drawRide(); }
+
+// ---------- 탑승 · 기다림 ----------
+function waitingNow(){ const w=S.myWait; return w && (serverNow()-w.ts) < WAIT_MS ? w : null; }
+function drawRide(){
+  const r=S.route, list=liveBuses(r).filter(b=>!b.old && b.trip);
+  const mb=S.myBoard;
+  const boarded = mb && mb.route===r && S.live[r]?.[mb.bus]?.trip===mb.trip;
+  let h="";
+  if(boarded){
+    h=`<div class="ridedone">✓ ${mb.bus}호차에 타셨어요 · ${mb.n}명<button class="btn ghost small" data-act="unboard">취소</button></div>`;
+  } else {
+    h=`<p class="sec">버스에 타셨으면 <b>탑승</b>을 눌러 주세요. 교회가 셔틀 이용 인원을 파악하는 데 쓰입니다.</p>`;
+    h+= list.length ? `<div class="ridebtns">${list.map(b=>`<button class="ridebtn" data-act="board" data-bus="${b.bus}" style="background:${busColor(r,b.bus)}">${b.bus}호차 탑승${b.to?`<br><span style="font-size:12.5px;font-weight:700;opacity:.9">${b.to}행</span>`:''}</button>`).join("")}</div>`
+                    : `<div class="empty">운행 중인 버스가 있으면 탑승 버튼이 나타나요.</div>`;
+    const w=waitingNow();
+    if(w && w.route===r) h+=`<div class="waiton">🙋 기다리는 중 · 기사님 화면에 표시돼요<button class="btn ghost small" data-act="unwait">취소</button></div>`;
+    else h+=`<button class="waitbtn" data-act="wait">🙋 여기서 기다려요<br><span style="font-weight:500;font-size:12.5px;color:#6b7280">길에서 기다리실 때 누르면 지금 위치가 기사님 화면에 표시됩니다 (15분 뒤 자동 해제)</span></button>`;
+  }
+  setH($("ride"),h);
+  // 지도에 내 위치(기다리는 중일 때)
+  const w=waitingNow(); meLayer.clearLayers();
+  if(w && w.route===r && !boarded) L.marker([w.lat,w.lng],{icon:L.divIcon({className:"",html:'<div class="memk"></div>',iconSize:[16,16],iconAnchor:[8,8]}),interactive:false}).addTo(meLayer);
+  if(S.myWait && !w){ clearWait(); }
+}
+async function clearWait(){
+  const w=S.myWait; S.myWait=null; storage.set("myWait","null");
+  if(w){ try{ await authReady; await remove(ref(db,`wait/${w.route}/${uid}`)); }catch(_){} }
+}
+$("ride").addEventListener("click", async e=>{
+  const b=e.target.closest("[data-act]"); if(!b) return;
+  const act=b.dataset.act;
+  if(act==="board"){ S.pickBus=+b.dataset.bus; $("cntTitle").textContent=`${S.pickBus}호차 · 몇 분이 함께 타셨나요?`; $("cntModal").classList.add("show"); }
+  if(act==="unboard"){
+    const mb=S.myBoard; S.myBoard=null; storage.set("myBoard","null"); $("ride")._h=null; drawRide();
+    try{ await remove(ref(db,`board/${mb.date}/${mb.route}/${mb.bus}/${mb.trip}/${uid}`)); }catch(_){}
+  }
+  if(act==="wait"){
+    if(!("geolocation" in navigator)){ toast("위치를 쓸 수 없어요","이 휴대폰에서는 위치 기능을 쓸 수 없습니다."); return; }
+    b.disabled=true; b.firstChild.textContent="🙋 위치 확인 중…";
+    navigator.geolocation.getCurrentPosition(async p=>{
+      const lat=+p.coords.latitude.toFixed(6), lng=+p.coords.longitude.toFixed(6);
+      try{ await authReady; await set(ref(db,`wait/${S.route}/${uid}`),{lat,lng,ts:serverTimestamp()});
+        S.myWait={route:S.route,lat,lng,ts:serverNow()}; storage.set("myWait",JSON.stringify(S.myWait));
+        toast("기사님께 알렸어요","버스가 오면 손을 들어 주세요. 15분 뒤 자동으로 해제됩니다.");
+      }catch(_){ toast("전송하지 못했어요","잠시 후 다시 눌러 주세요."); }
+      $("ride")._h=null; drawRide();
+    }, err=>{ toast("위치를 확인하지 못했어요", err.code===1?"위치 사용을 허용해 주세요.":"잠시 후 다시 눌러 주세요."); $("ride")._h=null; drawRide(); },
+    {enableHighAccuracy:true, timeout:15000, maximumAge:30000});
+  }
+  if(act==="unwait"){ await clearWait(); $("ride")._h=null; drawRide(); }
+});
+$("cntNo").onclick=()=>$("cntModal").classList.remove("show");
+$("cntBtns").addEventListener("click", async e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  const n=+b.dataset.n, r=S.route, bus=S.pickBus; $("cntModal").classList.remove("show");
+  const trip=S.live[r]?.[bus]?.trip; if(!trip){ toast("탑승을 기록하지 못했어요","버스 운행이 막 바뀌었어요. 다시 눌러 주세요."); return; }
+  const date=kstDate(serverNow());
+  try{ await authReady; await set(ref(db,`board/${date}/${r}/${bus}/${trip}/${uid}`),{n, ts:serverTimestamp()});
+    S.myBoard={date,route:r,bus,trip,n}; storage.set("myBoard",JSON.stringify(S.myBoard));
+    if(waitingNow()) clearWait();
+    toast("탑승이 확인됐어요",`${bus}호차 · ${n}명 · 감사합니다!`);
+  }catch(_){ toast("탑승을 기록하지 못했어요","잠시 후 다시 눌러 주세요."); }
+  $("ride")._h=null; drawRide();
+});
 
 // 홈 화면 설치 안내
 let deferredPrompt=null;
@@ -510,7 +617,11 @@ function setupInstall(){
 function startSaint(){
   initMap(); selectRoute(S.route); setupInstall();
   onValue(ref(db,"live"), s=>{ const v=s.val()||{}; S.live={yatap:v.yatap||{}, park:v.park||{}}; refreshSaint(); });
-  onValue(ref(db,"config/parkTimes"), s=>{ const v=s.val(); PARK_TIMES = typeof v==="string" ? v.split(",").map(x=>x.trim()).filter(x=>/^\d{1,2}:\d{2}$/.test(x)) : []; drawTT(); refreshSaint(); });
+  onValue(ref(db,"config"), s=>{ const c=s.val()||{};
+    PARK_TIMES = parseTimes(c.parkTimes); TIMES = c.times||{};
+    const n=c.notice; const show = n && n.on && n.text;
+    $("notice").classList.toggle("hide",!show); if(show) $("notice").innerHTML=`<span>📢</span><span>${String(n.text).replace(/[<>&]/g,ch=>({"<":"&lt;",">":"&gt;","&":"&amp;"}[ch]))}</span>`;
+    $("tt")._h=null; drawTT(); refreshSaint(); });
   setInterval(()=>{ refreshSaint(); drawTT(); }, 5000);
   document.addEventListener("visibilitychange",()=>{ if(!document.hidden){ refreshSaint(); drawTT(); } });
 }
@@ -518,7 +629,73 @@ function startSaint(){
 // =====================================================================
 //                              기사님 화면
 // =====================================================================
-const D = { route: storage.get("drvRoute")||"yatap", bus: +(storage.get("drvBus")||1), on:false, watch:null, lastSent:0, count:0, wake:null, last:null, busRef:null, tick:null };
+const D = { route: storage.get("drvRoute")||"yatap", bus: +(storage.get("drvBus")||1), on:false, watch:null, lastSent:0, count:0, wake:null, last:null, busRef:null, tick:null,
+            pin:null, name:"", date:null, sid:null, leg:1, legFrom:null, atT:null, trip:null, unBoard:null, unWait:null, map:null, me:null, waitLayer:null };
+const TERMINALS = { yatap:["byc","church"], park:["cdong","church"] };
+// 어느 종점에서 출발했으면 어디로 가는지
+const DEST = { yatap:{byc:"교회", church:"야탑역"}, park:{cdong:"교회", church:"C동"} };
+const logPath = (...p) => ["logs",D.date,D.sid,...p].join("/");
+function watchBoard(){
+  if(D.unBoard) D.unBoard();
+  D.unBoard = onValue(ref(db,`board/${D.date}/${D.route}/${D.bus}/${D.trip}`), s=>{
+    let n=0; s.forEach(c=>{ n+= +(c.val()?.n||0); }); $("liveRide").textContent=n+"명"; }, ()=>{});
+}
+function showLeg(name){ $("liveLeg").textContent = `${D.leg}회차 · ${name}${D.to?` → ${D.to}`:''}`; }
+function newLeg(stop){
+  D.leg++; D.legFrom=stop.id; D.trip=`${D.sid}_${D.leg}`; D.to=DEST[D.route][stop.id]||"";
+  set(ref(db,logPath("legs",D.leg)),{from:stop.name, to:D.to, t:serverTimestamp()}).catch(()=>{});
+  showLeg(stop.name+" 출발"); watchBoard();
+  D.lastSent=0; // 회차·방향이 바뀌면 바로 알림
+}
+// 종점(정류장 80m 안)에 들어오면 새 회차, 150m 밖으로 나가면 출발 시각 기록
+function legCheck(lat,lng){
+  const stops=ROUTES[D.route].stops.filter(s=>TERMINALS[D.route].includes(s.id));
+  let near=null; stops.forEach(s=>{ const d=dist({lat,lng},s); if(!near||d<near.d) near={s,d}; });
+  if(!near) return;
+  if(D.legFrom===null){
+    D.legFrom = near.d<150 ? near.s.id : "mid";
+    if(near.d<150){ D.to=DEST[D.route][near.s.id]||""; update(ref(db,logPath("legs",1)),{from:near.s.name, to:D.to}).catch(()=>{}); showLeg(near.s.name+" 출발"); D.atT=near.s.id; }
+    else D.guess={lat,lng};
+    return;
+  }
+  // 중간에서 운행을 시작했으면 100m 움직인 뒤 가까워지는 종점으로 행선지 추정
+  if(D.legFrom==="mid" && !D.to && D.guess && dist({lat,lng},D.guess)>100){
+    let best=null; stops.forEach(s=>{ const gain=dist(D.guess,s)-dist({lat,lng},s); if(!best||gain>best.gain) best={s,gain}; });
+    if(best && best.gain>50){ const name=best.s.id==="church"?"교회":(D.route==="yatap"?"야탑역":"C동"); D.to=name; showLeg(name+" 방향"); update(ref(db,logPath("legs",1)),{to:name}).catch(()=>{}); }
+    else D.guess={lat,lng};
+  }
+  if(near.d<80){ if(D.legFrom!==near.s.id) newLeg(near.s); D.atT=near.s.id; }
+  else if(D.atT){ const t=ROUTES[D.route].stops.find(s=>s.id===D.atT);
+    if(dist({lat,lng},t)>150){ update(ref(db,logPath("legs",D.leg)),{dep:serverTimestamp()}).catch(()=>{}); D.atT=null; } }
+}
+function initDrvMap(){
+  if(!D.map){
+    D.map=L.map("drvMap",{zoomControl:false,attributionControl:false,dragging:true});
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(D.map);
+    D.waitLayer=L.layerGroup().addTo(D.map);
+  }
+  D.waitLayer.clearLayers(); if(D.me){ D.me.remove(); D.me=null; }
+  const r=ROUTES[D.route];
+  r.stops.forEach(s=>L.marker([s.lat,s.lng],{icon:L.divIcon({className:"",html:`<div class="stopmk" style="border-color:${r.color}"></div>`,iconSize:[18,18],iconAnchor:[9,9]}),interactive:false}).addTo(D.waitLayer));
+  setTimeout(()=>{ D.map.invalidateSize(); D.map.fitBounds(L.latLngBounds(r.stops.map(s=>[s.lat,s.lng])),{padding:[30,30],maxZoom:16,animate:false}); },50);
+  if(D.unWait) D.unWait();
+  if(!D.waitMarkers) D.waitMarkers=L.layerGroup().addTo(D.map);
+  const waitMarkers=D.waitMarkers;
+  D.unWait = onValue(ref(db,`wait/${D.route}`), s=>{
+    waitMarkers.clearLayers(); let n=0; const now=serverNow();
+    s.forEach(c=>{ const v=c.val(); if(v && typeof v.lat==="number" && now-(v.ts||0)<WAIT_MS){ n++;
+      L.marker([v.lat,v.lng],{icon:L.divIcon({className:"",html:'<div class="waitmk"></div>',iconSize:[18,18],iconAnchor:[9,9]}),interactive:false}).addTo(waitMarkers); } });
+    $("liveWait").textContent=n+"명";
+  }, ()=>{ $("liveWait").textContent="-"; });
+}
+function moveMe(lat,lng){
+  if(!D.map) return;
+  const html= D.to ? `<div class="busmk dir" style="background:${busColor(D.route,D.bus)}">${D.bus}<i>→ ${D.to}</i></div>` : `<div class="busmk" style="background:${busColor(D.route,D.bus)}">${D.bus}</div>`;
+  const icon=L.divIcon({className:"",html,iconSize:null,iconAnchor:[17,13]});
+  if(!D.me){ D.me=L.marker([lat,lng],{icon,zIndexOffset:1000,interactive:false}).addTo(D.map); D.me._html=html; }
+  else { D.me.setLatLng([lat,lng]); if(D.me._html!==html){ D.me.setIcon(icon); D.me._html=html; } }
+  if(!D.map._userMoved) D.map.setView([lat,lng], Math.max(D.map.getZoom()||15,15), {animate:false});
+}
 
 function drvShow(which){ ["drvPin","drvSetup","drvLive"].forEach(id=>$(id).classList.toggle("hide",id!==which)); }
 function drawDrvSetup(){
@@ -533,7 +710,7 @@ $("pinBtn").onclick=async()=>{
   const pin=$("pinInput").value.trim(); $("pinErr").textContent="";
   if(!/^\d{4,8}$/.test(pin)){ $("pinErr").textContent="숫자 4~8자리를 입력해 주세요."; return; }
   $("pinBtn").disabled=true;
-  try{ await authReady; await set(ref(db,"drivers/"+uid),{pin, at:serverTimestamp()}); drvShow("drvSetup"); drawDrvSetup(); }
+  try{ await authReady; await set(ref(db,"drivers/"+uid),{pin, at:serverTimestamp()}); await loadMe(); drvShow("drvSetup"); drawDrvSetup(); }
   catch(e){ $("pinErr").textContent="운행 번호가 맞지 않습니다. 셔틀 담당자에게 확인해 주세요."; }
   $("pinBtn").disabled=false;
 };
@@ -547,13 +724,14 @@ function liveState(text,bad){ $("liveState").textContent=text; $("liveBox").clas
 
 async function sendPos(p){
   D.last=p;
+  try{ legCheck(p.coords.latitude,p.coords.longitude); moveMe(p.coords.latitude,p.coords.longitude); }catch(_){}
   const now=Date.now(); if(now-D.lastSent < SEND_EVERY_MS - 300) return;
   D.lastSent=now;
   const c=p.coords;
   try{
     await set(D.busRef,{lat:+c.latitude.toFixed(6), lng:+c.longitude.toFixed(6), acc:Math.round(c.accuracy||0),
       spd: c.speed==null?null:Math.round(c.speed*3.6), hd: c.heading==null||isNaN(c.heading)?null:Math.round(c.heading),
-      ts:serverTimestamp(), uid});
+      ts:serverTimestamp(), uid, trip:D.trip, to:D.to||""});
     D.count++; $("liveCount").textContent=D.count+"회";
     $("liveAcc").textContent= c.accuracy ? `약 ${Math.round(c.accuracy)}m` : "-";
     liveState("위치 보내는 중 · 5초마다",false);
@@ -573,6 +751,12 @@ $("startBtn").onclick=async()=>{
       $("startBtn").disabled=false; return;
     }
     await onDisconnect(D.busRef).remove();
+    // 운행 기록 시작
+    D.date=kstDate(serverNow());
+    const sref=push(ref(db,`logs/${D.date}`)); D.sid=sref.key;
+    await set(sref,{uid, pin:D.pin||"", name:D.name||"", route:D.route, bus:D.bus, start:serverTimestamp()});
+    D.leg=1; D.legFrom=null; D.atT=null; D.trip=`${D.sid}_1`; D.to=""; D.guess=null;
+    await set(ref(db,logPath("legs",1)),{from:"운행 시작", t:serverTimestamp()});
   }catch(e){
     $("startErr").textContent="운행 권한이 없습니다. 운행 번호를 다시 입력해 주세요.";
     $("startBtn").disabled=false; drvShow("drvPin"); return;
@@ -580,6 +764,8 @@ $("startBtn").onclick=async()=>{
   D.on=true; D.count=0; D.lastSent=0;
   $("liveTitle").textContent=`${D.bus}호차 · ${ROUTES[D.route].name}`;
   liveState("위치 찾는 중…",false); drvShow("drvLive"); keepAwake();
+  $("liveRide").textContent="0명"; $("liveWait").textContent="0명"; showLeg("운행 시작");
+  initDrvMap(); watchBoard();
   D.watch=navigator.geolocation.watchPosition(sendPos, err=>{
     if(err.code===1) liveState("위치 권한이 꺼져 있어요 — 설정에서 크롬의 위치를 ‘허용’해 주세요",true);
     else liveState("GPS 신호를 찾는 중… 하늘이 보이는 곳에서 잠시 기다려 주세요",true);
@@ -595,6 +781,8 @@ async function stopDriving(){
   clearInterval(D.tick);
   try{ D.wake && await D.wake.release(); }catch(_){}
   try{ await remove(D.busRef); await onDisconnect(D.busRef).cancel(); }catch(_){}
+  try{ await update(ref(db,logPath()),{end:serverTimestamp(), sent:D.count, legs_n:D.leg}); }catch(_){}
+  if(D.unBoard){ D.unBoard(); D.unBoard=null; } if(D.unWait){ D.unWait(); D.unWait=null; }
   drvShow("drvSetup"); drawDrvSetup();
 }
 $("stopBtn").onclick=()=>$("modal").classList.add("show");
@@ -610,8 +798,17 @@ async function startDriver(){
   $("saint").classList.add("hide"); $("driver").classList.remove("hide");
   $("appSub").textContent="기사님 운행 화면"; document.title="HCC 셔틀버스 · 기사님"; $("iosTitle").content="셔틀 기사님";
   await authReady;
-  try{ const me=(await get(ref(db,"drivers/"+uid))).val(); if(me){ drvShow("drvSetup"); drawDrvSetup(); } else drvShow("drvPin"); }
+  try{ if(await loadMe()){ drvShow("drvSetup"); drawDrvSetup(); } else drvShow("drvPin"); }
   catch(_){ drvShow("drvPin"); }
+}
+// 이 휴대폰에 등록된 운행 번호와 기사님 이름 확인 (번호가 지워졌으면 다시 입력)
+async function loadMe(){
+  const me=(await get(ref(db,"drivers/"+uid))).val(); if(!me||!me.pin) return false;
+  const p=(await get(ref(db,"pins/"+me.pin))).val();
+  if(!p){ $("pinErr").textContent="운행 번호가 바뀌었습니다. 새 번호를 입력해 주세요."; return false; }
+  D.pin=me.pin; D.name = (p && typeof p==="object" && p.name) ? p.name : "";
+  $("drvHello").textContent = D.name ? `${D.name} 기사님, 안녕하세요` : "기사님, 안녕하세요";
+  return true;
 }
 
 // ================= 시작 =================

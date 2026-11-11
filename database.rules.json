@@ -1,21 +1,78 @@
 {
   "rules": {
-    "live": {
-      ".read": true,
-      "$route": {
-        "$bus": {
-          ".write": "auth != null && root.child('drivers').child(auth.uid).exists() && ($route === 'yatap' || $route === 'park') && $bus.matches(/^[1-9]$/)",
-          ".validate": "!newData.exists() || (newData.child('lat').isNumber() && newData.child('lng').isNumber() && newData.child('ts').isNumber() && newData.child('uid').val() === auth.uid)"
-        }
+    "admins": {
+      ".read": "(auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
+      ".write": "(auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
+      "$key": {
+        ".validate": "newData.child('email').isString()"
+      }
+    },
+    "pins": {
+      ".read": "(auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
+      ".write": "(auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
+      "$pin": {
+        ".read": "auth != null && root.child('drivers').child(auth.uid).child('pin').val() === $pin",
+        ".validate": "$pin.matches(/^[0-9]{4,8}$/) && (newData.val() === true || newData.child('name').isString())"
       }
     },
     "drivers": {
+      ".read": "(auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
+      ".write": "(auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
         ".write": "auth != null && auth.uid === $uid && newData.exists() && newData.child('pin').isString() && newData.child('pin').val().matches(/^[0-9]{4,8}$/) && root.child('pins').child(newData.child('pin').val()).exists()"
       }
     },
-    "pins": { ".read": false, ".write": false },
-    "config": { ".read": true, ".write": false }
+    "live": {
+      ".read": true,
+      "$route": {
+        "$bus": {
+          ".write": "(((auth != null && root.child('drivers').child(auth.uid).child('pin').exists() && root.child('pins').child(root.child('drivers').child(auth.uid).child('pin').val()).exists())) && ($route === 'yatap' || $route === 'park') && $bus.matches(/^[1-9]$/)) || (((auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())) && !newData.exists())",
+          ".validate": "!newData.exists() || (newData.child('lat').isNumber() && newData.child('lng').isNumber() && newData.child('ts').isNumber() && newData.child('uid').val() === auth.uid && newData.child('trip').isString())"
+        }
+      }
+    },
+    "logs": {
+      ".read": "(auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
+      ".write": "(auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
+      "$date": {
+        "$sid": {
+          ".write": "((auth != null && root.child('drivers').child(auth.uid).child('pin').exists() && root.child('pins').child(root.child('drivers').child(auth.uid).child('pin').val()).exists())) && ((!data.exists() && newData.child('uid').val() === auth.uid) || (data.exists() && data.child('uid').val() === auth.uid && newData.exists()))"
+        }
+      }
+    },
+    "board": {
+      ".read": "(auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
+      ".write": "(auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
+      "$date": {
+        "$route": {
+          "$bus": {
+            "$trip": {
+              ".read": "(auth != null && root.child('drivers').child(auth.uid).child('pin').exists() && root.child('pins').child(root.child('drivers').child(auth.uid).child('pin').val()).exists())",
+              "$uid": {
+                ".read": "auth != null && auth.uid === $uid",
+                ".write": "auth != null && auth.uid === $uid && (!newData.exists() || root.child('live').child($route).child($bus).child('trip').val() === $trip)",
+                ".validate": "!newData.exists() || (newData.child('n').isNumber() && newData.child('n').val() >= 1 && newData.child('n').val() <= 9 && newData.child('ts').isNumber())"
+              }
+            }
+          }
+        }
+      }
+    },
+    "wait": {
+      ".read": "((auth != null && root.child('drivers').child(auth.uid).child('pin').exists() && root.child('pins').child(root.child('drivers').child(auth.uid).child('pin').val()).exists())) || ((auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists()))",
+      ".write": "(auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
+      "$route": {
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid",
+          ".write": "auth != null && auth.uid === $uid && ($route === 'yatap' || $route === 'park')",
+          ".validate": "!newData.exists() || (newData.child('lat').isNumber() && newData.child('lng').isNumber() && newData.child('ts').isNumber())"
+        }
+      }
+    },
+    "config": {
+      ".read": true,
+      ".write": "(auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())"
+    }
   }
 }
