@@ -314,6 +314,16 @@ function initMap(){
   map = L.map("map",{zoomControl:true,attributionControl:false});
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(map);
   stopLayer = L.layerGroup().addTo(map); busLayer = L.layerGroup().addTo(map);
+  map.on("dragstart",()=>{ userMoved=true; });
+  // 화면 크기가 정해진 뒤(글꼴·레이아웃 로딩 후)에 다시 맞춤
+  if("ResizeObserver" in window) new ResizeObserver(()=>{ map.invalidateSize(); if(!userMoved) fitMap(); }).observe($("map"));
+  window.addEventListener("load",()=>{ map.invalidateSize(); if(!userMoved) fitMap(); });
+}
+let userMoved=false;
+function fitMap(){
+  const r=ROUTES[S.route];
+  map.invalidateSize();
+  map.fitBounds(L.latLngBounds(r.stops.map(s=>[s.lat,s.lng])),{padding:[40,40],maxZoom:16,animate:false});
 }
 function drawStopsOnMap(){
   stopLayer.clearLayers(); busLayer.clearLayers(); busMarkers={};
@@ -323,7 +333,7 @@ function drawStopsOnMap(){
     L.marker([s.lat,s.lng],{icon,interactive:false}).addTo(stopLayer)
       .bindTooltip(s.name,{permanent:true,direction:"top",offset:[0,-10],className:"stoplbl"});
   });
-  map.fitBounds(L.latLngBounds(r.stops.map(s=>[s.lat,s.lng])),{padding:[40,40],maxZoom:16});
+  fitMap();
   $("mapTip").textContent=r.tip;
 }
 function liveBuses(route){
@@ -476,7 +486,7 @@ function drawTT(){
 $("ttTabs").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; S.tt=b.dataset.tt; drawTT(); });
 
 function selectRoute(r){
-  S.route=r; storage.set("route",r);
+  S.route=r; userMoved=false; storage.set("route",r);
   document.querySelectorAll(".routes button").forEach(x=>x.classList.toggle("on",x.dataset.route===r));
   drawStopsOnMap(); refreshSaint(); drawTT();
 }
