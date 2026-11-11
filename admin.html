@@ -132,6 +132,18 @@
           <span class="muted">운행 번호는 기사님 휴대폰에서 처음 한 번 입력합니다. 숫자 4~8자리.</span>
         </div>
       </div>
+      <div class="card">
+        <h2>엑셀로 한꺼번에 <small>양식을 받아 채운 뒤 올리면 여러 분을 한 번에 추가·수정합니다</small></h2>
+        <div class="row">
+          <button class="btn ghost" id="xTpl">📄 엑셀 양식 받기</button>
+          <button class="btn ghost" id="xExport">⬇️ 현재 목록 엑셀로 받기</button>
+          <label class="btn" for="xFile" style="cursor:pointer">⬆️ 엑셀 올리기</label>
+          <input type="file" id="xFile" accept=".xlsx,.xls,.csv" hidden>
+        </div>
+        <p class="muted" style="margin:10px 0 0;line-height:1.7">· <b>운행번호를 비워 두면</b> 자동으로 만들어 드립니다. · 이미 있는 운행번호를 적으면 그분의 이름·연락처·메모가 <b>수정</b>됩니다.<br>
+        · 엑셀에 없는 기사님은 지워지지 않습니다. 삭제는 아래 목록에서 하세요. · 올리기 전에 미리보기로 확인한 뒤 적용합니다.</p>
+        <div id="xPreview"></div>
+      </div>
       <div class="card"><h2>기사님 목록 <small id="drvCount"></small></h2><div class="tblwrap" id="drvTbl"></div></div>
     </section>
 
@@ -377,6 +389,71 @@ $("drvTbl").addEventListener("click",async e=>{
     try{ const up={}; up["pins/"+p]=null; Object.entries(A.drivers).forEach(([u,d])=>{ if(d&&d.pin===p) up["drivers/"+u]=null; });
       await update(ref(db),up); toast("삭제했습니다"); }catch(_){ toast("삭제하지 못했습니다"); } }
 });
+
+// ---------- 엑셀 양식 · 받기 · 올리기 ----------
+const XCOLS=["이름","연락처","메모","운행번호"];
+function loadXLSX(){ return window.XLSX ? Promise.resolve(window.XLSX) : new Promise((res,rej)=>{ const sc=document.createElement("script");
+  sc.src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"; sc.onload=()=>res(window.XLSX); sc.onerror=()=>rej(new Error("엑셀 기능을 불러오지 못했습니다")); document.head.appendChild(sc); }); }
+function sheetOf(X,rows){ const ws=X.utils.aoa_to_sheet(rows); ws["!cols"]=[{wch:16},{wch:16},{wch:24},{wch:12},{wch:14}]; return ws; }
+$("xTpl").onclick=async()=>{ try{ const X=await loadXLSX(); const wb=X.utils.book_new();
+  X.utils.book_append_sheet(wb, sheetOf(X,[XCOLS]), "기사님");
+  X.utils.book_append_sheet(wb, X.utils.aoa_to_sheet([["HCC 셔틀버스 기사님 등록 양식 안내"],[""],["1. '기사님' 시트 둘째 줄부터 한 분씩 적어 주세요."],["2. 이름은 꼭 적어 주세요. 연락처·메모는 비워도 됩니다."],["3. 운행번호는 비워 두면 자동으로 만들어집니다. 직접 정하려면 숫자 4~8자리."],["4. 다 적은 뒤 관리자 페이지 → 기사님 → '엑셀 올리기'를 누르세요."],[""],["예시) 이름: 홍길동 집사 / 연락처: 010-1234-5678 / 메모: 주일 2부 야탑역 / 운행번호: (비움)"]]), "안내");
+  X.writeFile(wb,"HCC셔틀_기사님_등록양식.xlsx"); }catch(e){ toast(e.message); } };
+$("xExport").onclick=async()=>{ try{ const X=await loadXLSX(); const wb=X.utils.book_new();
+  const list=Object.entries(A.pins).map(([pin,v])=>({pin,...(v&&typeof v==="object"?v:{})})).sort((a,b)=>(a.name||"").localeCompare(b.name||"","ko"));
+  X.utils.book_append_sheet(wb, sheetOf(X,[[...XCOLS,"등록된 휴대폰"],...list.map(d=>[d.name||"",d.phone||"",d.memo||"",d.pin,devicesOf(d.pin)+"대"])]), "기사님");
+  X.writeFile(wb,`HCC셔틀_기사님목록_${kstDate(now())}.xlsx`); }catch(e){ toast(e.message); } };
+const normPhone=v=>{ let d=String(v||"").replace(/[^0-9]/g,""); if(/^1\d{8,9}$/.test(d)) d="0"+d;
+  if(/^01\d{8,9}$/.test(d)) return d.length===11? `${d.slice(0,3)}-${d.slice(3,7)}-${d.slice(7)}` : `${d.slice(0,3)}-${d.slice(3,6)}-${d.slice(6)}`; return String(v||"").trim(); };
+let xPlan=null;
+// 엑셀 행 → 추가/수정 계획 (rows: 2차원 배열)
+function planFromRows(rows){
+  const hi=rows.findIndex(r=>r.some(c=>String(c).replace(/\s/g,"")==="이름")); if(hi<0) throw new Error("첫 줄에 '이름' 칸이 있는 양식이 아닙니다. 양식을 받아 사용해 주세요.");
+  const head=rows[hi].map(c=>String(c).replace(/\s/g,""));
+  const col=n=>head.findIndex(h=>n.includes(h));
+  const ci={name:col(["이름","성함"]), phone:col(["연락처","전화","전화번호","휴대폰"]), memo:col(["메모","비고"]), pin:col(["운행번호","번호","PIN"])};
+  const used=new Set(Object.keys(A.pins)), seen=new Set(), out=[];
+  rows.slice(hi+1).forEach((r,i)=>{
+    const g=k=>ci[k]>=0? String(r[ci[k]]??"").trim() : "";
+    const name=g("name"), phone=normPhone(g("phone")), memo=g("memo"); let pin=g("pin").replace(/[^0-9]/g,"");
+    const line=hi+i+2;
+    if(!name && !phone && !memo && !pin) return;
+    if(!name){ out.push({line,act:"err",msg:"이름이 비어 있음",name,phone,memo,pin}); return; }
+    if(pin && !/^\d{4,8}$/.test(pin)){ out.push({line,act:"err",msg:"운행번호는 숫자 4~8자리",name,phone,memo,pin}); return; }
+    if(pin && seen.has(pin)){ out.push({line,act:"err",msg:"엑셀 안에 같은 운행번호가 두 번 있음",name,phone,memo,pin}); return; }
+    if(!pin){ do{ pin=randPin(); }while(used.has(pin)||seen.has(pin)); seen.add(pin); out.push({line,act:"new",auto:true,name,phone,memo,pin}); return; }
+    seen.add(pin);
+    if(A.pins[pin]){ const v=typeof A.pins[pin]==="object"?A.pins[pin]:{};
+      const same=(v.name||"")===name && (v.phone||"")===phone && (v.memo||"")===memo;
+      out.push({line,act:same?"same":"upd",name,phone,memo,pin}); }
+    else out.push({line,act:"new",name,phone,memo,pin});
+  });
+  return out;
+}
+function drawPlan(){
+  const P=xPlan; if(!P){ $("xPreview").innerHTML=""; return; }
+  const cnt=a=>P.filter(x=>x.act===a).length;
+  const lab={new:'<span class="tag">추가</span>',upd:'<span class="tag" style="background:#e7edf7;color:#1f3a68">수정</span>',same:'<span class="muted">변경 없음</span>',err:'<span class="tag old">오류</span>'};
+  $("xPreview").innerHTML=`<div style="margin-top:14px;padding:12px;border:1.5px solid var(--line);border-radius:12px">
+    <div class="row" style="margin-bottom:8px"><b>미리보기</b><span class="muted">추가 ${cnt("new")} · 수정 ${cnt("upd")} · 변경 없음 ${cnt("same")} · 오류 ${cnt("err")}</span></div>
+    <div class="tblwrap" style="max-height:340px;overflow:auto"><table><tr><th>엑셀 줄</th><th>처리</th><th>이름</th><th>연락처</th><th>메모</th><th>운행번호</th></tr>
+    ${P.map(x=>`<tr><td>${x.line}</td><td>${lab[x.act]}${x.msg?` <span class="muted">${esc(x.msg)}</span>`:""}</td><td>${esc(x.name)}</td><td>${esc(x.phone)}</td><td>${esc(x.memo)}</td><td><code>${esc(x.pin)}</code>${x.auto?' <span class="muted">자동</span>':''}</td></tr>`).join("")}</table></div>
+    <div class="row" style="margin-top:10px"><button class="btn green" id="xApply" ${cnt("new")+cnt("upd")?"":"disabled"}>적용하기 (추가 ${cnt("new")} · 수정 ${cnt("upd")})</button><button class="btn ghost" id="xCancel">취소</button>
+    ${cnt("err")?'<span class="muted">오류 줄은 빼고 적용됩니다. 엑셀을 고쳐 다시 올려도 됩니다.</span>':''}</div></div>`;
+  $("xCancel").onclick=()=>{ xPlan=null; drawPlan(); };
+  $("xApply").onclick=async()=>{ const up={};
+    xPlan.forEach(x=>{ if(x.act==="new") up["pins/"+x.pin]={name:x.name,phone:x.phone,memo:x.memo,created:serverTimestamp()};
+      if(x.act==="upd"){ up[`pins/${x.pin}/name`]=x.name; up[`pins/${x.pin}/phone`]=x.phone; up[`pins/${x.pin}/memo`]=x.memo; } });
+    try{ await update(ref(db),up); toast(`적용했습니다 · 추가 ${cnt("new")} · 수정 ${cnt("upd")}`); xPlan=null; drawPlan(); }
+    catch(_){ toast("적용하지 못했습니다"); } };
+}
+$("xFile").onchange=async e=>{ const f=e.target.files[0]; e.target.value=""; if(!f) return;
+  try{ const X=await loadXLSX(); const wb=X.read(await f.arrayBuffer(),{type:"array"});
+    const ws=wb.Sheets["기사님"]||wb.Sheets[wb.SheetNames[0]];
+    xPlan=planFromRows(X.utils.sheet_to_json(ws,{header:1,defval:"",raw:false}));
+    if(!xPlan.length){ toast("엑셀에 기사님이 한 분도 없습니다"); xPlan=null; }
+    drawPlan();
+  }catch(err){ toast(err.message||"엑셀을 읽지 못했습니다"); } };
 
 // ---------- 통계 ----------
 function lastSunday(){ const d=new Date(now()+9*3600e3); d.setUTCDate(d.getUTCDate()-d.getUTCDay()); return d.toISOString().slice(0,10); }
