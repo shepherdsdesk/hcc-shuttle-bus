@@ -193,9 +193,27 @@
   .wcauto{display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer}
   .wcauto input{width:20px!important;height:20px;margin:0!important;flex:none;accent-color:#1B2B5C}
   .wcauto{white-space:nowrap}
+  .tvrt{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-top:14px}
+  .tvrt .seg3{flex-wrap:wrap}
+  .seg3 button small{font-weight:600;opacity:.8}
   .wcauto select{width:auto!important;margin:0!important;padding:4px 8px}
   .wcauto.dim{opacity:.5}
   .wcrow{row-gap:6px}
+  .pst-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:8px 0}
+  .pst-row>b{min-width:120px}
+  .rdlist{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .rdchip{display:inline-flex;align-items:center;gap:6px;background:#FFF7E6;border:1px solid #FDE68A;color:#92400E;border-radius:999px;padding:5px 6px 5px 12px;font-size:13.5px;font-weight:700}
+  .rdchip button{border:0;background:#FDE68A;color:#78350F;border-radius:50%;width:22px;height:22px;cursor:pointer;font-weight:900}
+  .pstlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+  .pstitem{display:flex;gap:12px;border:1px solid #E2E6EE;border-radius:14px;padding:10px;background:#fff}
+  .pstitem.off{opacity:.55}
+  .pthumb{width:96px;height:128px;flex:none;border-radius:10px;background:#0F172A;display:grid;place-items:center;overflow:hidden}
+  .pthumb img{width:100%;height:100%;object-fit:contain}
+  .pmeta{display:flex;flex-direction:column;gap:6px;min-width:0;font-size:14px}
+  .pmeta input[type=date]{width:auto!important;margin:0!important;padding:3px 6px;font-size:13px}
+  .pmeta .wcauto{white-space:normal;flex-wrap:wrap}
+  .pbtns{display:flex;gap:6px;flex-wrap:wrap}
+  .badge-past{align-self:flex-start;background:#FEE2E2;color:#B91C1C;border-radius:6px;padding:1px 8px;font-size:12px;font-weight:800}
 </style>
 </head>
 <body>
@@ -436,12 +454,50 @@
       <div class="card">
         <h2>TV 화면 열기 <small>TV 브라우저나 TV에 연결한 PC에서 아래 주소를 여세요</small></h2>
         <div class="row" style="flex-wrap:wrap;gap:8px">
-          <a class="btn" href="tv.html" target="_blank" rel="noopener">두 노선 모두</a>
+          <a class="btn" href="tv.html" target="_blank" rel="noopener">TV 화면 (아래 설정대로)</a>
           <a class="btn ghost" href="tv.html?route=yatap" target="_blank" rel="noopener">야탑역 셔틀만</a>
           <a class="btn ghost" href="tv.html?route=park" target="_blank" rel="noopener">파킹엔젤스만</a>
           <a class="btn ghost" href="tv.html?layout=port-r" target="_blank" rel="noopener">세로로 세운 TV (↻)</a>
         </div>
+        <div class="tvrt"><b>보여 줄 노선</b>
+          <div class="seg3" id="tvRt">
+            <button type="button" data-tvrt="auto">자동 <small>(주일엔 파킹엔젤스도)</small></button>
+            <button type="button" data-tvrt="both">항상 두 노선</button>
+            <button type="button" data-tvrt="yatap">야탑역 셔틀만</button>
+            <button type="button" data-tvrt="park">파킹엔젤스만</button>
+          </div></div>
+        <p class="muted" style="margin:6px 0 0"><b>자동</b>: 주일에는 야탑역 셔틀과 파킹엔젤스를 함께, 평일에는 야탑역 셔틀만 보여 줍니다. 평일이라도 파킹엔젤스 버스가 실제로 운행하면 자동으로 함께 나옵니다. 위의 ‘야탑역 셔틀만·파킹엔젤스만’ 주소로 연 TV는 이 설정과 상관없이 그 노선만 보여 줍니다.</p>
         <p class="muted" style="margin:8px 0 0">TV에서 리모컨이나 마우스를 움직이면 아래에 ‘전체 화면’과 화면 방향 버튼이 나옵니다. 고른 방향은 그 TV에 저장됩니다.</p>
+      </div>
+      <div class="card" id="pstCard">
+        <h2>📰 행사 포스터 · 쉬는 날 <small>운행이 없을 때 TV에 행사 포스터를 슬라이드로 보여 줍니다</small></h2>
+        <div class="pst-row"><b>포스터 보여 줄 때</b>
+          <div class="seg3" id="pstWhen">
+            <button type="button" data-pw="rest">운행 없을 때만</button>
+            <button type="button" data-pw="always">평일 운행 중에도 (작게)</button>
+            <button type="button" data-pw="off">끄기</button>
+          </div>
+          <label class="wcauto">넘김 <select id="pstSec"><option value="5">5초</option><option value="8">8초</option><option value="10">10초</option><option value="15">15초</option></select></label>
+        </div>
+        <div class="pst-row"><label class="wcauto"><input type="checkbox" id="pstEnd"> 그날 <b>운행이 모두 끝나면</b> 포스터 화면으로 바꾸기 <small class="muted">(마지막 출발 30분 뒤)</small></label></div>
+        <div class="pst-row" style="align-items:flex-start"><b style="padding-top:8px">쉬는 날 정하기</b>
+          <div style="flex:1;min-width:280px">
+            <div class="row" style="gap:8px;flex-wrap:wrap;margin:0">
+              <input type="date" id="rdDate" style="max-width:170px;margin:0">
+              <input type="text" id="rdMemo" maxlength="40" placeholder="TV에 보일 한 줄 (예: 추수감사 행사로 쉽니다)" style="flex:1;min-width:200px;margin:0">
+              <button class="btn" id="rdAdd">추가</button>
+              <button class="btn ghost" id="rdToday">오늘 운행 쉼</button>
+            </div>
+            <div id="rdList" class="rdlist"></div>
+          </div>
+        </div>
+        <div class="pst-row" style="margin-top:6px"><b>포스터</b>
+          <label class="btn" style="cursor:pointer;margin:0">⬆️ 포스터 올리기 (여러 장)<input type="file" id="pstFile" accept="image/*" multiple hidden></label>
+          <a class="btn ghost" href="tv.html?rest=1" target="_blank" rel="noopener">TV에서 미리 보기</a>
+          <span class="muted" id="pstState"></span>
+        </div>
+        <p class="muted" style="margin:6px 0 10px">권장 규격: 세로 포스터 <b>1080×1528</b> (A4 비율) · 정사각형 <b>1080×1080</b> · 가로 <b>1920×1080</b>. 잘리지 않고 통째로 보이며 남는 곳은 포스터를 흐리게 깔아 채웁니다. 최대 12장 · 크기는 자동으로 줄여 저장합니다.</p>
+        <div id="pstList" class="pstlist"></div>
       </div>
       <div class="card">
         <h2>TV 화면 꾸미기 <small>색 테마 · 절기 장식 · 사진. 저장하면 TV에 바로 바뀝니다</small></h2>
@@ -1103,7 +1159,7 @@ async function startAdmin(){
   onValue(ref(db,"waitc"),s=>{A.waitc=s.val()||{}; drawNow();},()=>{});
   onValue(ref(db,"board/"+kstDate(now())),s=>{A.boardToday=s.val()||{}; drawNow();});
   onValue(ref(db,"admins"),s=>{A.admins=s.val()||{}; drawAdmins();});
-  onValue(ref(db,"config"),s=>{A.config=s.val()||{}; fillConfig(); drawWaitCfg(); drawNow();});
+  onValue(ref(db,"config"),s=>{A.config=s.val()||{}; fillConfig(); drawWaitCfg(); drawNow(); drawTvRt(); drawPosterAdmin();});
   setInterval(drawNow,10000);
   initStats(); initTimes();
 }
@@ -1189,6 +1245,82 @@ document.addEventListener("click",e=>{ const b=e.target.closest("[data-wm]"); if
 document.addEventListener("change",e=>{ const c=e.target.closest("[data-wa]"); if(c){ saveWaitCfg(c.dataset.wa,{auto:c.checked}); return; }
   const l=e.target.closest("[data-wl]"); if(l) saveWaitCfg(l.dataset.wl,{lineM:+l.value}); });
 
+// ---------- 행사 포스터 · 쉬는 날 (TV) ----------
+const PST_MAX=12;
+const pstCfg=()=>{ const c=A.config.tvPosters||{}; return {when:["rest","always","off"].includes(c.when)?c.when:"rest", sec:[5,8,10,15].includes(+c.sec)?+c.sec:8}; };
+const restCfg=()=>{ const c=A.config.tvRest||{}; return {afterEnd:c.afterEnd!==false, dates:c.dates||{}}; };
+let PST_THUMB={}, pstThumbUnsub=null;
+function drawPosterAdmin(){
+  if(!$("pstCard")) return;
+  const pc=pstCfg(), rc=restCfg();
+  document.querySelectorAll("[data-pw]").forEach(b=>b.classList.toggle("on",b.dataset.pw===pc.when));
+  $("pstSec").value=String(pc.sec); $("pstEnd").checked=rc.afterEnd;
+  const today=kstDate(now());
+  const ds=Object.keys(rc.dates).filter(d=>d>=today).sort();
+  $("rdList").innerHTML = ds.length ? ds.map(d=>`<span class="rdchip">${d===today?'<b>오늘</b> ':''}${d}${rc.dates[d]?` · ${esc(rc.dates[d])}`:""}<button type="button" data-rddel="${d}" aria-label="${d} 쉬는 날 지우기">×</button></span>`).join("") : `<span class="muted">정한 쉬는 날이 없습니다. 시간표에 운행이 없는 날(예: 월요일)은 따로 정하지 않아도 자동으로 포스터 화면이 됩니다.</span>`;
+  if(!pstThumbUnsub) pstThumbUnsub=onValue(ref(db,"tvmedia/posters"),s=>{ const v=s.val()||{}; PST_THUMB={}; Object.entries(v).forEach(([k,x])=>{ if(x&&x.data) PST_THUMB[k]=x.data; }); drawPosterList(); },()=>{});
+  drawPosterList();
+}
+function posterList(){ return Object.entries(A.config.tvPosterList||{}).filter(([,m])=>m).sort((a,b)=>(a[1].order||0)-(b[1].order||0)); }
+function drawPosterList(){
+  const L=posterList(), today=kstDate(now());
+  $("pstState").textContent=`${L.length} / ${PST_MAX}장`;
+  $("pstList").innerHTML = L.length ? L.map(([id,m],i)=>{ const past=m.until && m.until<today;
+    return `<div class="pstitem${m.on===false||past?' off':''}">
+      <div class="pthumb">${PST_THUMB[id]?`<img src="${PST_THUMB[id]}" alt="">`:'<span class="muted">불러오는 중…</span>'}</div>
+      <div class="pmeta"><b>${i+1}. ${esc(m.name||"포스터")}</b>
+        <label class="wcauto"><input type="checkbox" data-pon="${id}" ${m.on!==false?'checked':''}> TV에 보이기</label>
+        <label class="wcauto">보여 줄 기간 <input type="date" data-pfrom="${id}" value="${m.from||""}"> ~ <input type="date" data-puntil="${id}" value="${m.until||""}"></label>
+        ${past?'<span class="badge-past">기간 지남</span>':''}
+        <div class="pbtns"><button type="button" class="btn ghost small" data-pmv="${id}" data-d="-1" ${i===0?'disabled':''}>↑</button><button type="button" class="btn ghost small" data-pmv="${id}" data-d="1" ${i===L.length-1?'disabled':''}>↓</button><button type="button" class="btn ghost small" data-pdel="${id}" style="color:#B91C1C">🗑 지우기</button></div>
+      </div></div>`; }).join("") : `<div class="muted" style="padding:6px 0">올린 포스터가 없습니다. 포스터가 없으면 운행 없는 날에 다음 운행 안내만 크게 보여 줍니다.</div>`;
+}
+async function pstSave(path,val,msg){ try{ await set(ref(db,path),val); if(msg) toast(msg); }catch(_){ toast("저장하지 못했습니다"); } }
+document.addEventListener("click",async e=>{
+  const w=e.target.closest("[data-pw]"); if(w){ await pstSave("config/tvPosters/when",w.dataset.pw,"TV에 바로 반영됩니다"); return; }
+  const rd=e.target.closest("[data-rddel]"); if(rd){ await pstSave("config/tvRest/dates/"+rd.dataset.rddel,null,"쉬는 날을 지웠습니다"); return; }
+  const mv=e.target.closest("[data-pmv]"); if(mv){ const L=posterList(), i=L.findIndex(x=>x[0]===mv.dataset.pmv), j=i+(+mv.dataset.d); if(j<0||j>=L.length) return;
+    [L[i],L[j]]=[L[j],L[i]]; const upd={}; L.forEach(([id],k)=>upd[`config/tvPosterList/${id}/order`]=k+1); try{ await update(ref(db),upd); }catch(_){ toast("바꾸지 못했습니다"); } return; }
+  const del=e.target.closest("[data-pdel]"); if(del){ if(!confirm("이 포스터를 지울까요?")) return;
+    try{ await update(ref(db),{[`config/tvPosterList/${del.dataset.pdel}`]:null,[`tvmedia/posters/${del.dataset.pdel}`]:null}); toast("지웠습니다"); }catch(_){ toast("지우지 못했습니다"); } return; }
+});
+document.addEventListener("change",async e=>{
+  const t=e.target;
+  if(t.id==="pstSec") return pstSave("config/tvPosters/sec",+t.value,"넘김 시간을 바꿨습니다");
+  if(t.id==="pstEnd") return pstSave("config/tvRest/afterEnd",t.checked,t.checked?"운행이 끝나면 포스터 화면으로 바뀝니다":"운행이 끝나도 셔틀 화면을 그대로 둡니다");
+  if(t.dataset.pon) return pstSave(`config/tvPosterList/${t.dataset.pon}/on`,t.checked,t.checked?"TV에 보입니다":"TV에서 숨겼습니다");
+  if(t.dataset.pfrom) return pstSave(`config/tvPosterList/${t.dataset.pfrom}/from`,t.value||null,"기간을 저장했습니다");
+  if(t.dataset.puntil) return pstSave(`config/tvPosterList/${t.dataset.puntil}/until`,t.value||null,"기간을 저장했습니다");
+});
+$("rdAdd").onclick=async()=>{ const d=$("rdDate").value; if(!d){ toast("날짜를 골라 주세요"); return; }
+  await pstSave("config/tvRest/dates/"+d,$("rdMemo").value.trim(),`${d}을 쉬는 날로 정했습니다. 그날 TV는 포스터 화면이 됩니다`); $("rdDate").value=""; $("rdMemo").value=""; };
+$("rdToday").onclick=async()=>{ const d=kstDate(now()); if(!confirm("오늘을 운행 쉬는 날로 정할까요?\nTV가 바로 포스터 화면으로 바뀝니다. (버스가 실제로 운행하면 셔틀 화면으로 돌아갑니다)")) return;
+  await pstSave("config/tvRest/dates/"+d,$("rdMemo").value.trim(),"오늘을 쉬는 날로 정했습니다"); };
+function shrinkPoster(f){ return new Promise((res,rej)=>{ const url=URL.createObjectURL(f), img=new Image();
+  img.onload=()=>{ const M=1600, k=Math.min(1,M/Math.max(img.width,img.height)), w=Math.round(img.width*k), h=Math.round(img.height*k);
+    const cv=document.createElement("canvas"); cv.width=w; cv.height=h; const g=cv.getContext("2d"); g.fillStyle="#fff"; g.fillRect(0,0,w,h); g.drawImage(img,0,0,w,h);
+    let q=.85, d=cv.toDataURL("image/jpeg",q); while(d.length>850000 && q>.4){ q-=.1; d=cv.toDataURL("image/jpeg",q); }
+    URL.revokeObjectURL(url); d.length>880000 ? rej(new Error("big")) : res({data:d,w,h}); };
+  img.onerror=()=>{ URL.revokeObjectURL(url); rej(new Error("read")); }; img.src=url; }); }
+$("pstFile").onchange=async e=>{
+  const files=[...e.target.files]; e.target.value=""; if(!files.length) return;
+  const L=posterList(); let room=PST_MAX-L.length; if(room<=0){ toast(`포스터는 ${PST_MAX}장까지 올릴 수 있습니다. 지난 포스터를 지워 주세요`); return; }
+  if(files.length>room) toast(`${room}장만 올립니다 (최대 ${PST_MAX}장)`);
+  let order=L.reduce((m,[,x])=>Math.max(m,x.order||0),0), ok=0;
+  for(const f of files.slice(0,room)){
+    $("pstState").textContent=`올리는 중… ${ok+1}/${Math.min(files.length,room)}`;
+    try{ const {data,w,h}=await shrinkPoster(f); const id="p"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+      await set(ref(db,"tvmedia/posters/"+id),{data,ts:Date.now()});
+      await set(ref(db,"config/tvPosterList/"+id),{on:true,order:++order,name:f.name.replace(/\.[^.]+$/,"").slice(0,30),w,h,ts:Date.now()}); ok++;
+    }catch(err){ toast(err&&err.message==="big"?`${f.name}: 파일이 너무 커서 올리지 못했습니다`:`${f.name}: 올리지 못했습니다 (데이터베이스 규칙을 게시했는지 확인해 주세요)`); }
+  }
+  drawPosterList(); if(ok) toast(`포스터 ${ok}장을 올렸습니다`);
+};
+// ---------- TV에 보여 줄 노선 (자동: 주일엔 두 노선, 평일엔 야탑역 셔틀만) ----------
+function drawTvRt(){ const v=["auto","both","yatap","park"].includes(A.config.tvRoutes)?A.config.tvRoutes:"auto";
+  document.querySelectorAll("[data-tvrt]").forEach(b=>b.classList.toggle("on",b.dataset.tvrt===v)); }
+document.addEventListener("click",async e=>{ const b=e.target.closest("[data-tvrt]"); if(!b) return;
+  try{ await set(ref(db,"config/tvRoutes"),b.dataset.tvrt); toast("TV 화면에 바로 반영됩니다"); }catch(_){ toast("저장하지 못했습니다"); } });
 // ---------- 차량 (호차) ----------
 function busesFor(route){
   const c=A.config.buses?.[route];

@@ -188,10 +188,87 @@
   body.portrait .ttr h3{min-width:22vmin;align-self:flex-start;padding-top:.4vmin}
   body.portrait .ttr .ttls{flex:1;display:flex;flex-direction:column;gap:.8vmin}
   /* 노선 하나만 보여 줄 때 (tv.html?route=yatap) */
-  body.one .main{grid-template-columns:1.2fr 1fr .8fr}
-  body.one.portrait .main{grid-template-columns:1fr}
   body.one .rt{flex:1}
 .stop .nm .wc{font-style:normal;display:inline-block;margin-left:.6vmin;padding:.1vmin .9vmin;border-radius:99vmin;background:#F59E0B;color:#fff;font-weight:800;font-size:1.5vmin;white-space:nowrap}
+/* ===== 한 노선(평일) · 운행 없는 날(포스터) 화면 ===== */
+.nextbox{grid-area:next;background:var(--cardA,var(--card));border:.2vmin solid var(--line);border-radius:2vmin;padding:1.2vmin 1.8vmin;display:flex;flex-direction:column;gap:.8vmin;min-height:0}
+.nextbox h2{margin:0;display:flex;align-items:baseline;gap:1vmin;font-size:2.8vmin;font-weight:900}
+.nextbox h2 small{margin-left:auto;font-size:1.8vmin;color:var(--sub);font-weight:700}
+.nxs{display:grid;grid-template-columns:repeat(auto-fit,minmax(24vmin,1fr));gap:1.2vmin}
+.nx{background:var(--chip);border-radius:1.6vmin;padding:1.2vmin 1.6vmin;display:grid;grid-template-columns:auto 1fr;grid-template-areas:"lab lab" "t in" "sm sm";align-items:baseline;column-gap:1.4vmin}
+.nx .lab{grid-area:lab;font-size:1.9vmin;color:var(--sub);font-weight:800}
+.nx b{grid-area:t;font-size:6.2vmin;font-weight:900;line-height:1.05;font-variant-numeric:tabular-nums}
+.nx em{grid-area:in;font-style:normal;font-size:2.6vmin;font-weight:900;color:#FCD34D;white-space:nowrap}
+.nx small{grid-area:sm;font-size:1.8vmin;color:var(--sub);font-weight:700}
+.nx.done b{font-size:3.6vmin;color:#64748B}
+body.light .nx em{color:#B45309}
+.poster{grid-area:poster;position:relative;border-radius:2vmin;overflow:hidden;background:#000;border:.2vmin solid var(--line);min-height:0}
+.poster .pbg{position:absolute;inset:-6%;background-size:cover;background-position:center;filter:blur(3.5vmin) brightness(.45) saturate(1.2);transition:background-image 1s}
+.poster .pslides{position:absolute;inset:1.2vmin}
+.poster .pslides img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;transition:opacity 1.1s ease}
+.poster .pslides img.on{opacity:1}
+.pdots{position:absolute;bottom:1.4vmin;left:50%;transform:translateX(-50%);display:flex;gap:1vmin;background:rgba(0,0,0,.35);padding:.7vmin 1.1vmin;border-radius:99vmin}
+.pdots:empty{display:none}
+.pdots i{width:1.3vmin;height:1.3vmin;border-radius:50%;background:rgba(255,255,255,.45)}
+.pdots i.on{background:#fff;transform:scale(1.25)}
+.restbox{grid-area:rest;background:var(--cardA,var(--card));border:.2vmin solid var(--line);border-radius:2vmin;padding:2.4vmin 2.6vmin;display:flex;flex-direction:column;gap:2.2vmin;min-height:0;overflow:hidden}
+.rb-top{display:flex;align-items:center;gap:1.8vmin}
+.rb-ic{font-size:7vmin;line-height:1}
+.restbox h2{margin:0;font-size:4.2vmin;font-weight:900;line-height:1.25}
+.rb-list{display:flex;flex-direction:column;gap:1.4vmin}
+.rb-next{background:var(--chip);border-radius:1.6vmin;padding:1.6vmin 2vmin;display:flex;flex-direction:column;gap:.4vmin}
+.rb-r{display:flex;align-items:center;gap:1vmin;font-size:2.1vmin;color:var(--sub);font-weight:800}
+.rb-r i{width:1.6vmin;height:1.6vmin;border-radius:.4vmin}
+.rb-next b{font-size:4.6vmin;font-weight:900;line-height:1.1}
+.rb-next em{font-style:normal;font-size:3.4vmin;font-weight:900;color:#FCD34D}
+body.light .rb-next em{color:#B45309}
+.rb-next small{font-size:1.9vmin;color:var(--sub);font-weight:700}
+.rb-qr{margin-top:auto;display:flex;align-items:center;gap:1.8vmin}
+.rb-qr img{width:14vmin;height:14vmin;background:#fff;border-radius:1.2vmin;padding:.8vmin;image-rendering:pixelated}
+.rb-qr span{font-size:2vmin;color:var(--sub);font-weight:700;line-height:1.5}
+.rb-qr b{display:block;font-size:2.8vmin;color:var(--ink)}
+/* 한 노선 (가로) */
+body.one:not(.rest) .main{grid-template-columns:1.15fr 1fr .8fr;grid-template-rows:auto minmax(0,1fr);grid-template-areas:"map boards times" "map next times"}
+body.one.pal:not(.rest) .main{grid-template-columns:1.1fr 1fr .78fr;grid-template-rows:auto minmax(0,1fr);grid-template-areas:"map boards poster" "map next poster"}
+body.one.pal:not(.rest):not(.portrait) .times{display:none}
+body.one:not(.rest):not(.portrait) .nx b{font-size:5.2vmin}
+body.one .rt{padding:1.6vmin 2.2vmin}
+body.one .rt h2{font-size:3.2vmin}
+body.one .stop{padding:1vmin 0}
+body.one .stop .nm b{font-size:3.2vmin}
+body.one .stop .nm span{font-size:2.1vmin}
+body.one .eta b{font-size:5.2vmin}
+body.one .eta b small{font-size:3vmin}
+body.one .eta span{font-size:2vmin}
+body.one .eta.sch b{font-size:4.3vmin}
+body.one .eta.none b{font-size:3.4vmin}
+body.one .stop .nm .wc{font-size:2vmin}
+body.one .chips b{font-size:2.6vmin}
+/* 운행 없는 날 (가로): 포스터 60% + 다음 운행 안내 */
+body.rest .main{grid-template-columns:1.55fr 1fr;grid-template-rows:minmax(0,1fr);grid-template-areas:"poster rest"}
+body.rest .mapbox, body.rest .boards, body.rest .times, body.rest .nextbox{display:none!important}
+body.rest.noposter .main{grid-template-columns:minmax(0,1fr);grid-template-areas:"rest"}
+body.rest.noposter .restbox{align-items:center;justify-content:center;text-align:center}
+body.rest.noposter .restbox h2{font-size:6vmin}
+body.rest.noposter .rb-list{flex-direction:row;flex-wrap:wrap;justify-content:center}
+body.rest.noposter .rb-next{min-width:40vmin;align-items:center}
+body.rest.noposter .rb-qr{margin-top:2vmin}
+/* 세로 */
+body.portrait.one:not(.rest) .main{grid-template-columns:1fr;grid-template-rows:34% auto auto minmax(0,1fr);grid-template-areas:"map" "boards" "next" "times"}
+body.portrait.one.pal:not(.rest) .main{grid-template-columns:1fr 1fr;grid-template-rows:28% auto auto minmax(0,1fr);grid-template-areas:"map map" "boards boards" "next next" "times poster"}
+body.portrait.rest .main{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;grid-template-areas:"poster" "rest"}
+body.portrait.rest.noposter .main{grid-template-rows:minmax(0,1fr);grid-template-areas:"rest"}
+body.portrait.rest:not(.noposter) .restbox{flex-direction:row;flex-wrap:wrap;align-items:center;gap:1.6vmin 2.4vmin;padding:1.8vmin 2.2vmin}
+body.portrait.rest:not(.noposter) .restbox h2{font-size:3.4vmin}
+body.portrait.rest:not(.noposter) .rb-ic{font-size:5vmin}
+body.portrait.rest:not(.noposter) .rb-list{flex-direction:row;flex:1;flex-wrap:wrap}
+body.portrait.rest:not(.noposter) .rb-qr{margin:0}
+body.portrait.rest:not(.noposter) .rb-qr img{width:11vmin;height:11vmin}
+.rb-memo{margin:.6vmin 0 0;font-size:2.4vmin;font-weight:800;color:#FCD34D}
+body.light .rb-memo{color:#B45309}
+body.one:not(.portrait) .nextbox .nxs{flex:1;align-content:center;grid-template-columns:1fr}
+body.one:not(.portrait) .nx{grid-template-columns:auto auto 1fr;grid-template-areas:"lab lab lab" "t in sm"}
+body.one:not(.portrait) .nx small{justify-self:end}
 </style>
 </head>
 <body>
@@ -211,10 +288,13 @@
   <div class="notice hide" id="notice"></div>
   <div class="main">
     <div class="mapbox"><div id="map"></div>
-      <div class="legend" id="legend"><span><i style="background:#3B5BA9"></i>야탑역 셔틀</span><span><i style="background:#14B8A6"></i>파킹엔젤스</span><span>꽉 찬 표시 = 교회행</span><span>테두리 = 반대 방향</span></div>
+      <div class="legend" id="legend"><span data-lg="yatap"><i style="background:#3B5BA9"></i>야탑역 셔틀</span><span data-lg="park"><i style="background:#14B8A6"></i>파킹엔젤스</span><span>꽉 찬 표시 = 교회행</span><span>테두리 = 반대 방향</span></div>
     </div>
     <div class="boards" id="boards"></div>
     <section class="times" id="times"></section>
+    <section class="nextbox hide" id="nextBox"></section>
+    <section class="poster hide" id="poster" aria-label="교회 행사 안내"><div class="pbg" id="pBg"></div><div class="pslides" id="pSlides"></div><div class="pdots" id="pDots"></div></section>
+    <section class="restbox hide" id="restBox"></section>
   </div>
   <div class="ticker hide" id="ticker"><div class="tag"><i></i>교회 소식</div><div class="tk-view"><div class="tk-track" id="tkTrack"></div></div><i class="shine"></i></div>
   <footer>
@@ -460,8 +540,27 @@ function watchKakaoKey(db, ref, onValue, used, canReload){
 // =====================================================================
 const qs=new URLSearchParams(location.search);
 const ONLY=qs.get("route");
-const RT = ROUTES[ONLY] ? [ONLY] : ["yatap","park"];
-if(RT.length===1) document.body.classList.add("one");
+// 보여 줄 노선: 주소에 ?route= 가 있으면 그 노선만. 없으면 관리자 설정(config/tvRoutes)
+//  auto = 주일엔 두 노선, 평일엔 야탑역 셔틀만 (평일이라도 파킹엔젤스 버스가 실제로 운행 중이면 함께 보여 줌)
+let TV_ROUTES = "auto";
+function computeRT(){
+  if(ROUTES[ONLY]) return [ONLY];
+  if(TV_ROUTES==="both") return ["yatap","park"];
+  if(TV_ROUTES==="yatap"||TV_ROUTES==="park") return [TV_ROUTES];
+  const sunday = new Date(Date.now()+(typeof offset==="number"?offset:0)+9*3600e3).getUTCDay()===0;
+  let parkLive=false; try{ parkLive=liveBuses("park").some(b=>!b.old); }catch(_){}
+  return (sunday||parkLive) ? ["yatap","park"] : ["yatap"];
+}
+let RT = ROUTES[ONLY] ? [ONLY] : ["yatap","park"];
+document.body.classList.toggle("one",RT.length===1);
+function drawLegend(){ document.querySelectorAll("[data-lg]").forEach(x=>x.classList.toggle("hide",!RT.includes(x.dataset.lg))); }
+function applyRT(){
+  const n=computeRT(); if(n.join()===RT.join()){ try{ applyMode(); }catch(_){} return; }
+  RT=n; document.body.classList.toggle("one",RT.length===1); drawLegend();
+  try{ drawStopMarks(); drawTvPaths(); drawMap(); if(window.tvFit) tvFit(); }catch(_){}
+  const b=document.getElementById("boards"); if(b) b._h=null; try{ drawBoards(); }catch(_){}
+  try{ applyMode(); }catch(_){}
+}
 // 화면 방향: 자동 / 가로 / 세로 / 세로(화면 돌리기). 주소 뒤 ?layout=port 처럼 정할 수도 있음
 const LAYS=[["auto","자동"],["land","가로"],["port","세로"],["port-r","세로 ↻"],["port-l","세로 ↺"]];
 let LAY=(()=>{ const q=qs.get("layout"); if(LAYS.some(x=>x[0]===q)) return q; try{ const v=localStorage.getItem("tvLayout"); if(LAYS.some(x=>x[0]===v)) return v; }catch(_){} return "auto"; })();
@@ -776,6 +875,7 @@ async function initMap(){
   stopL=map.layer(); drawStopMarks();
   busL=map.layer();
   const fit=()=>{ const pts=[]; RT.forEach(r=>ROUTES[r].stops.forEach(s=>pts.push([s.lat,s.lng]))); map.resize(); map.fit(pts,{top:60,left:60,right:60,bottom:70}); };
+  window.tvFit=fit;
   fit(); window.addEventListener("resize",()=>setTimeout(fit,200));
   if("ResizeObserver" in window) new ResizeObserver(()=>fit()).observe($("map"));
 }
@@ -858,20 +958,121 @@ const wakeUp=()=>{ document.body.classList.remove("idle"); clearTimeout(idleT); 
 // 새 버전 반영과 메모리 정리를 위해 6시간마다 새로고침
 setTimeout(()=>location.reload(), 6*3600e3);
 
+// =====================================================================
+//   화면 모드: 두 노선(주일) / 한 노선(평일, 빈 곳을 '다음 출발'로 채움) / 운행 없는 날(행사 포스터)
+// =====================================================================
+const DEP_ROWS = { yatap:[["byc","야탑역 BYC 앞 → 교회"],["church","교회 → 야탑역"]], park:[["cdong","테크노파크 C동 → 교회"]] };
+const ampm = m => { const h=Math.floor(m/60), mm=String(Math.floor(m)%60).padStart(2,"0"); return (h<12?"오전 ":"오후 ")+((h%12)||12)+":"+mm; };
+let POSTER_CFG={when:"rest",sec:8}, POSTER_META={}, POSTER_IMG={}, posterUnsub=null, QR_IMG="";
+function todayStr(){ return new Date(serverNow()+9*3600e3).toISOString().slice(0,10); }
+function activePosters(){
+  const t=todayStr();
+  return Object.entries(POSTER_META||{}).filter(([id,m])=>m && m.on!==false && (!m.until || m.until>=t) && (!m.from || m.from<=t) && POSTER_IMG[id])
+    .sort((a,b)=>(a[1].order||0)-(b[1].order||0)).map(([id])=>id);
+}
+// 포스터 화면으로 바꾸는 때: ① 시간표에 운행이 없는 날 ② 관리자가 정한 쉬는 날 ③ 그날 운행이 모두 끝난 뒤(설정)
+//   어느 경우든 실제로 운행 중인 버스가 있으면 셔틀 화면을 보여 줌
+let REST_CFG={afterEnd:true, dates:{}};
+let REST_WHY="";
+function restReason(){
+  if(qs.get("rest")==="1") return "none";
+  if(RT.some(r=>liveBuses(r).some(b=>!b.old))) return "";
+  const t=todayStr(); if(REST_CFG.dates && Object.prototype.hasOwnProperty.call(REST_CFG.dates,t)) return "manual";
+  const {day,min}=nowKST();
+  const all=[]; RT.forEach(r=>(DEP_ROWS[r]||[]).forEach(([id])=>scheduleFor(r,id,day).forEach(x=>all.push(toM(x)))));
+  if(!all.length) return "none";
+  if(REST_CFG.afterEnd!==false && Math.max(...all)+30 < min) return "end";
+  return "";
+}
+function isRestDay(){ REST_WHY=restReason(); return !!REST_WHY; }
+function nextService(r){
+  const {day}=nowKST();
+  for(let k=1;k<=14;k++){ const d=(day+k)%7; let best=null;
+    const ds=new Date(serverNow()+9*3600e3+k*86400e3).toISOString().slice(0,10);
+    if(REST_CFG.dates && Object.prototype.hasOwnProperty.call(REST_CFG.dates,ds)) continue;
+    (DEP_ROWS[r]||[]).forEach(([id,lab])=>{ scheduleFor(r,id,d).map(toM).forEach(m=>{ if(best==null||m<best.m) best={m,lab}; }); });
+    if(best) return {k,d,ds,...best};
+  }
+  return null;
+}
+let MODE_SIG="";
+function applyMode(){
+  const b=document.body, one=RT.length===1, rest=isRestDay();
+  const want = POSTER_CFG.when!=="off" && (rest || (POSTER_CFG.when==="always" && one));
+  watchPosters(want);
+  const posters = want ? activePosters() : [];
+  const pal = !rest && one && POSTER_CFG.when==="always" && posters.length>0;
+  const sig=[one,rest,pal,rest&&!posters.length].join();
+  b.classList.toggle("rest",rest); b.classList.toggle("pal",pal); b.classList.toggle("noposter",rest && !posters.length);
+  ["poster"].forEach(id=>$(id).classList.toggle("hide",!(rest||pal) || !posters.length));
+  $("restBox").classList.toggle("hide",!rest);
+  $("nextBox").classList.toggle("hide",rest || !one);
+  drawPosters(posters);
+  if(rest) drawRest(); else if(one) drawNext();
+  if(sig!==MODE_SIG){ MODE_SIG=sig; setTimeout(()=>{ try{ if(window.tvFit) tvFit(); }catch(_){} },120); }
+}
+function drawNext(){
+  const r=RT[0], R=ROUTES[r], {min}=nowKST();
+  let h=`<h2>⏱ 다음 출발<small>${R.name} · 시간표 기준</small></h2><div class="nxs">`;
+  (DEP_ROWS[r]||[]).forEach(([id,lab])=>{ const l=nextList(r,id,2);
+    h+= l.length ? `<div class="nx"><span class="lab">${lab}</span><b>${hhmm(l[0])}</b><em>${inTxt(l[0]-min)}</em><small>${l[1]!=null?"그다음 "+hhmm(l[1]):"오늘 마지막 차"}</small></div>`
+                 : `<div class="nx done"><span class="lab">${lab}</span><b>운행 끝</b><small>오늘 운행이 끝났습니다</small></div>`; });
+  h+=`</div>`; setH($("nextBox"),h);
+}
+function drawRest(){
+  const memo = REST_WHY==="manual" ? String(REST_CFG.dates[todayStr()]||"").trim() : "";
+  const title = REST_WHY==="end" ? "오늘 셔틀 운행이<br>모두 끝났습니다" : "오늘은 셔틀이<br>운행하지 않습니다";
+  let h=`<div class="rb-top"><span class="rb-ic" aria-hidden="true">${REST_WHY==="end"?"🙏":"🚌"}</span><div><h2>${title}</h2>${memo?`<p class="rb-memo">${esc(memo)}</p>`:REST_WHY==="end"?`<p class="rb-memo">함께해 주셔서 감사합니다</p>`:""}</div></div><div class="rb-list">`;
+  RT.forEach(r=>{ const n=nextService(r); const R=ROUTES[r];
+    h+=`<div class="rb-next"><span class="rb-r"><i style="background:${R.color}"></i>${R.name} 다음 운행</span>${n?`<b>${n.k===1?"내일 ":""}${n.k>6?n.ds.slice(5).replace("-","/")+" ":""}${DAYNAME[n.d]}</b><em>${ampm(n.m)} 첫차</em><small>${n.lab}</small>`:`<b>시간표 확인</b>`}</div>`; });
+  h+=`</div>${QR_IMG?`<div class="rb-qr"><img src="${QR_IMG}" alt=""><span><b>휴대폰으로 확인하세요</b>시간표와 도착 알림을 받을 수 있어요</span></div>`:""}`;
+  setH($("restBox"),h);
+}
+// ---------- 행사 포스터 슬라이드 (관리자 → TV 화면 → 행사 포스터) ----------
+function watchPosters(on){
+  if(on && !posterUnsub) posterUnsub=onValue(ref(db,"tvmedia/posters"), s=>{ const v=s.val()||{}; POSTER_IMG={}; Object.entries(v).forEach(([k,x])=>{ if(x&&x.data) POSTER_IMG[k]=x.data; }); applyMode(); }, ()=>{});
+  if(!on && posterUnsub){ posterUnsub(); posterUnsub=null; POSTER_IMG={}; }
+}
+let PS={ids:"",i:0,timer:null,sec:0};
+function drawPosters(ids){
+  const key=ids.join(",");
+  if(key!==PS.ids){
+    PS.ids=key; PS.i=0;
+    $("pSlides").innerHTML=ids.map((id,k)=>`<img src="${POSTER_IMG[id]}" alt="" class="${k===0?'on':''}">`).join("");
+    $("pDots").innerHTML=ids.length>1?ids.map((_,k)=>`<i class="${k===0?'on':''}"></i>`).join(""):"";
+    $("pBg").style.backgroundImage=ids.length?`url("${POSTER_IMG[ids[0]]}")`:"none";
+  }
+  const sec=[5,8,10,15].includes(+POSTER_CFG.sec)?+POSTER_CFG.sec:8;
+  if(ids.length>1 && (!PS.timer || PS.sec!==sec)){ clearInterval(PS.timer); PS.sec=sec; PS.timer=setInterval(nextSlide,sec*1000); }
+  if(ids.length<=1 && PS.timer){ clearInterval(PS.timer); PS.timer=null; }
+}
+function nextSlide(){
+  const imgs=$("pSlides").children, dots=$("pDots").children, n=imgs.length; if(n<2) return;
+  imgs[PS.i].classList.remove("on"); if(dots[PS.i]) dots[PS.i].classList.remove("on");
+  PS.i=(PS.i+1)%n; imgs[PS.i].classList.add("on"); if(dots[PS.i]) dots[PS.i].classList.add("on");
+  $("pBg").style.backgroundImage=`url("${imgs[PS.i].src}")`;
+}
+
 // ---------- QR (성도님 주소) ----------
 try{
   const url=location.origin+location.pathname.replace(/[^/]*$/,"");
   const q=qrcode(0,"M"); q.addData(url); q.make();
-  $("qr").innerHTML=`<img src="${q.createDataURL(8,0)}" alt="" style="width:100%;height:100%;image-rendering:pixelated">`;
+  QR_IMG=q.createDataURL(8,0);
+  $("qr").innerHTML=`<img src="${QR_IMG}" alt="" style="width:100%;height:100%;image-rendering:pixelated">`;
 }catch(_){ $("qr").classList.add("hide"); }
 
 // ---------- 시작 ----------
 (async()=>{
+  RT=computeRT(); document.body.classList.toggle("one",RT.length===1); drawLegend();
   applyTheme(); loadWx(); setInterval(loadWx, 30*60e3);
   await initMap(); drawTvPaths();
   ["yatap","park"].forEach(r=>onValue(ref(db,"waitc/"+r), s=>{ WAITC[r]=s.val()||{}; drawBoards(); }, ()=>{}));
-  onValue(ref(db,"live"), s=>{ const v=s.val()||{}; LIVE={yatap:v.yatap||{},park:v.park||{}}; drawMap(); drawBoards(); });
+  onValue(ref(db,"live"), s=>{ const v=s.val()||{}; LIVE={yatap:v.yatap||{},park:v.park||{}}; applyRT(); drawMap(); drawBoards(); });
   onValue(ref(db,"config"), s=>{ const c=s.val()||{}; applyBrand(c); WAIT_CFG=c.waitCfg||{};
+    TV_ROUTES=["auto","both","yatap","park"].includes(c.tvRoutes)?c.tvRoutes:"auto";
+    const tr=c.tvRest||{}; REST_CFG={afterEnd: tr.afterEnd!==false, dates: tr.dates||{}};
+    const pc=c.tvPosters||{}; POSTER_CFG={when:["rest","always","off"].includes(pc.when)?pc.when:"rest", sec:pc.sec||8}; POSTER_META=c.tvPosterList||{};
+    applyRT();
     if(applyStops(c.stops)) drawStopMarks();
     NEWS_CFG=c.news||null; drawTicker();
     THEME_CFG=c.tvTheme||{}; watchPhoto(); applyTheme();
@@ -879,8 +1080,8 @@ try{
     PARK_TIMES=parseTimes(c.parkTimes); TIMES=c.times||{};
     const n=c.notice, show=n&&n.on&&n.text; $("notice").classList.toggle("hide",!show);
     if(show) $("notice").innerHTML=`<span aria-hidden="true">📢</span><span>${esc(n.text)}</span>`;
-    $("boards")._h=null; drawBoards(); });
-  setInterval(()=>{ drawMap(); drawBoards(); },4000);
+    $("boards")._h=null; drawBoards(); try{ applyMode(); }catch(_){} });
+  setInterval(()=>{ applyRT(); drawMap(); drawBoards(); },4000);
   setInterval(drawTicker,60e3); // 날짜가 바뀌면 지난 소식 내리기
   tickClock(); setInterval(tickClock,1000);
   keepAwake();
