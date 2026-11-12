@@ -203,8 +203,11 @@
       <div id="tabs">
         <button data-tab="now" class="on">운행 현황<span class="lv"><i></i>실시간</span></button>
         <button data-tab="drivers">기사님 관리</button>
+        <button data-tab="notice">공지 · 교회 소식</button>
+        <button data-tab="times">시간표</button>
+        <button data-tab="stops">정류장 · 노선</button>
+        <button data-tab="tv">TV 화면</button>
         <button data-tab="stats">통계</button>
-        <button data-tab="notice">공지 · 시간표</button>
         <button data-tab="admins">관리자</button>
       </div>
       <div class="who" id="who"></div>
@@ -290,7 +293,7 @@
       </div>
     </section>
 
-    <!-- 공지 · 시간표 -->
+    <!-- 공지 · 교회 소식 -->
     <section id="tab-notice" class="hide">
       <div class="card">
         <h2>성도님 화면 공지 <small>성도님 화면 아래 패널 맨 위에 보입니다</small></h2>
@@ -312,24 +315,6 @@
         </div>
       </div>
       <div class="card">
-        <h2>TV 화면 꾸미기 <small>색 테마 · 절기 장식 · 사진. 저장하면 TV에 바로 바뀝니다</small></h2>
-        <div class="thgrid" id="thAuto"></div>
-        <div id="thList"></div>
-        <div class="row" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line)">
-          <label style="display:flex;align-items:center;gap:6px;margin:0;font-size:14px;color:var(--ink)"><input type="checkbox" id="thDeco" style="width:auto;margin:0"> 기본 장식 보이기 <span class="muted">(절기·계절 테마에 촛불·별·백합 같은 그림)</span></label>
-        </div>
-        <div class="row" style="margin-top:8px">
-          <label style="display:flex;align-items:center;gap:6px;margin:0;font-size:14px;color:var(--ink)"><input type="checkbox" id="thPhoto" style="width:auto;margin:0"> 사진 보이기 <span class="muted">(TV 맨 위 제목 띠에 은은하게 깔립니다)</span></label>
-        </div>
-        <div class="phbox">
-          <div class="phprev" id="phPrev">사진 없음</div>
-          <label class="btn ghost" style="margin:0">사진 고르기<input type="file" id="phFile" accept="image/*" hidden></label>
-          <button class="btn ghost" id="phDel">사진 지우기</button>
-        </div>
-        <p class="muted" style="margin:8px 0 0">가로로 긴 사진(예: 교회 외관, 절기 현수막, 행사 사진)이 잘 어울립니다. 글씨가 잘 보이도록 사진 양 끝은 자동으로 흐리게 처리됩니다. 올리면 TV용 크기로 줄여서 저장합니다.
-          · 미리보기: <a href="tv.html" target="_blank" rel="noopener" id="thOpen">TV 화면 새 창으로 열기</a></p>
-      </div>
-      <div class="card">
         <h2>교회 소식 자막 <small>TV 현황판 아래에 뉴스 자막처럼 흐르고, 성도님 화면에도 ‘교회 소식’으로 작게 보입니다</small></h2>
         <div class="nwchips" id="nwChips"></div>
         <div class="row">
@@ -340,6 +325,29 @@
         <p class="muted" style="margin:8px 0 12px">‘언제까지’를 정하면 그날이 지나면 저절로 내려갑니다. 비워 두면 직접 끌 때까지 계속 나옵니다. 한 줄에 한 가지 소식만 짧게 적어 주세요.</p>
         <div id="nwList"></div>
       </div>
+    </section>
+
+    <!-- 시간표 -->
+    <section id="tab-times" class="hide">
+      <div class="card">
+        <h2>야탑역 셔틀 시간표 <small>고치지 않으면 교회 홈페이지 시간표를 씁니다</small></h2>
+        <div class="row">
+          <select id="tKey" style="max-width:260px;margin:0"></select>
+          <span class="muted" id="tState"></span>
+        </div>
+        <textarea id="tTimes" style="margin-top:10px;min-height:110px"></textarea>
+        <div class="row" style="margin-top:10px"><button class="btn" id="tSave">저장</button><button class="btn ghost" id="tReset">기본 시간표로 되돌리기</button></div>
+      </div>
+    
+      <div class="card">
+        <h2>파킹엔젤스 시간표 <small>테크노파크 C동 출발 시각 · 주일</small></h2>
+        <textarea id="pTimes" placeholder="예: 8:00, 8:10, 8:20, 9:20 …"></textarea>
+        <div class="row" style="margin-top:10px"><button class="btn" id="pSave">저장</button><span class="muted">쉼표나 띄어쓰기로 구분합니다.</span></div>
+      </div>
+    </section>
+
+    <!-- 정류장 · 노선 -->
+    <section id="tab-stops" class="hide">
       <div class="card">
         <h2>정류장 위치 · 도착 반경 <small>버스가 이 원 안에 들어오면 ‘도착’으로 보고 알림을 보냅니다</small></h2>
         <div id="stopEdit"></div>
@@ -367,19 +375,37 @@
         </div>
         <p class="muted" style="margin:8px 0 0">카카오 디벨로퍼스 앱의 <b>JavaScript 키</b>를 넣어 주세요. 그 키의 <b>JavaScript SDK 도메인</b>에 <code>https://shepherdsdesk.github.io</code>를 등록하고, <b>카카오맵 사용 설정</b>을 켜야 지도가 열립니다. 키가 맞지 않으면 자동으로 OpenStreetMap으로 보입니다. 저장 뒤 각 화면을 새로고침하면 바뀝니다.</p>
       </div>
+    </section>
+
+    <!-- TV 화면 -->
+    <section id="tab-tv" class="hide">
       <div class="card">
-        <h2>파킹엔젤스 시간표 <small>테크노파크 C동 출발 시각 · 주일</small></h2>
-        <textarea id="pTimes" placeholder="예: 8:00, 8:10, 8:20, 9:20 …"></textarea>
-        <div class="row" style="margin-top:10px"><button class="btn" id="pSave">저장</button><span class="muted">쉼표나 띄어쓰기로 구분합니다.</span></div>
+        <h2>TV 화면 열기 <small>TV 브라우저나 TV에 연결한 PC에서 아래 주소를 여세요</small></h2>
+        <div class="row" style="flex-wrap:wrap;gap:8px">
+          <a class="btn" href="tv.html" target="_blank" rel="noopener">두 노선 모두</a>
+          <a class="btn ghost" href="tv.html?route=yatap" target="_blank" rel="noopener">야탑역 셔틀만</a>
+          <a class="btn ghost" href="tv.html?route=park" target="_blank" rel="noopener">파킹엔젤스만</a>
+          <a class="btn ghost" href="tv.html?layout=port-r" target="_blank" rel="noopener">세로로 세운 TV (↻)</a>
+        </div>
+        <p class="muted" style="margin:8px 0 0">TV에서 리모컨이나 마우스를 움직이면 아래에 ‘전체 화면’과 화면 방향 버튼이 나옵니다. 고른 방향은 그 TV에 저장됩니다.</p>
       </div>
       <div class="card">
-        <h2>야탑역 셔틀 시간표 <small>고치지 않으면 교회 홈페이지 시간표를 씁니다</small></h2>
-        <div class="row">
-          <select id="tKey" style="max-width:260px;margin:0"></select>
-          <span class="muted" id="tState"></span>
+        <h2>TV 화면 꾸미기 <small>색 테마 · 절기 장식 · 사진. 저장하면 TV에 바로 바뀝니다</small></h2>
+        <div class="thgrid" id="thAuto"></div>
+        <div id="thList"></div>
+        <div class="row" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line)">
+          <label style="display:flex;align-items:center;gap:6px;margin:0;font-size:14px;color:var(--ink)"><input type="checkbox" id="thDeco" style="width:auto;margin:0"> 기본 장식 보이기 <span class="muted">(절기·계절 테마에 촛불·별·백합 같은 그림)</span></label>
         </div>
-        <textarea id="tTimes" style="margin-top:10px;min-height:110px"></textarea>
-        <div class="row" style="margin-top:10px"><button class="btn" id="tSave">저장</button><button class="btn ghost" id="tReset">기본 시간표로 되돌리기</button></div>
+        <div class="row" style="margin-top:8px">
+          <label style="display:flex;align-items:center;gap:6px;margin:0;font-size:14px;color:var(--ink)"><input type="checkbox" id="thPhoto" style="width:auto;margin:0"> 사진 보이기 <span class="muted">(TV 맨 위 제목 띠에 은은하게 깔립니다)</span></label>
+        </div>
+        <div class="phbox">
+          <div class="phprev" id="phPrev">사진 없음</div>
+          <label class="btn ghost" style="margin:0">사진 고르기<input type="file" id="phFile" accept="image/*" hidden></label>
+          <button class="btn ghost" id="phDel">사진 지우기</button>
+        </div>
+        <p class="muted" style="margin:8px 0 0">가로로 긴 사진(예: 교회 외관, 절기 현수막, 행사 사진)이 잘 어울립니다. 글씨가 잘 보이도록 사진 양 끝은 자동으로 흐리게 처리됩니다. 올리면 TV용 크기로 줄여서 저장합니다.
+          · 미리보기: <a href="tv.html" target="_blank" rel="noopener" id="thOpen">TV 화면 새 창으로 열기</a></p>
       </div>
     </section>
 
@@ -613,17 +639,17 @@ onAuthStateChanged(auth, async u=>{
 });
 
 // ---------- 탭 ----------
-const TITLES={now:"운행 현황",drivers:"기사님 관리",stats:"통계",notice:"공지 · 시간표",admins:"관리자"};
+const TITLES={now:"운행 현황",drivers:"기사님 관리",notice:"공지 · 교회 소식",times:"시간표",stops:"정류장 · 노선",tv:"TV 화면",stats:"통계",admins:"관리자"};
 function nowSub(){ const d=new Date(now()+9*3600e3); return `${d.getUTCMonth()+1}월 ${d.getUTCDate()}일 ${["주일","월요일","화요일","수요일","목요일","금요일","토요일"][d.getUTCDay()]} · ${d.getUTCHours()}:${String(d.getUTCMinutes()).padStart(2,"0")} 기준`; }
 let curTab="now";
 $("tabs").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return;
   curTab=b.dataset.tab;
   document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("on",x===b));
-  ["now","drivers","stats","notice","admins"].forEach(t=>$("tab-"+t).classList.toggle("hide",t!==curTab));
+  ["now","drivers","notice","times","stops","tv","stats","admins"].forEach(t=>$("tab-"+t).classList.toggle("hide",t!==curTab));
   $("pageTitle").textContent=TITLES[curTab]; $("pageSub").textContent= curTab==="now"? nowSub() : "";
   $("rf").classList.toggle("hide", !(curTab==="now"||curTab==="stats"));
   if(curTab==="now" && map) setTimeout(()=>{ map.resize(); fitRF(); },50);
-  if(curTab==="notice") setTimeout(()=>{ openStopEdit(); openPathMap(); },50);
+  if(curTab==="stops") setTimeout(()=>{ openStopEdit(); openPathMap(); },50);
 });
 // 노선 고르기: 전체 / 야탑역 셔틀 / 파킹엔젤스
 $("rf").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return;
