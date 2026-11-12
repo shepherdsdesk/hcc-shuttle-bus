@@ -480,6 +480,7 @@
           <label class="wcauto">넘김 <select id="pstSec"><option value="5">5초</option><option value="8">8초</option><option value="10">10초</option><option value="15">15초</option></select></label>
         </div>
         <div class="pst-row"><label class="wcauto"><input type="checkbox" id="pstEnd"> 그날 <b>운행이 모두 끝나면</b> 포스터 화면으로 바꾸기 <small class="muted">(마지막 출발 30분 뒤)</small></label></div>
+        <div class="pst-row"><label class="wcauto"><input type="checkbox" id="pstEarly"> <b>첫차 1시간 전까지</b>는 포스터 화면으로 두기 <small class="muted">(새벽·이른 아침)</small></label></div>
         <div class="pst-row" style="align-items:flex-start"><b style="padding-top:8px">쉬는 날 정하기</b>
           <div style="flex:1;min-width:280px">
             <div class="row" style="gap:8px;flex-wrap:wrap;margin:0">
@@ -489,6 +490,16 @@
               <button class="btn ghost" id="rdToday">오늘 운행 쉼</button>
             </div>
             <div id="rdList" class="rdlist"></div>
+          </div>
+        </div>
+        <div class="pst-row" style="align-items:flex-start"><b style="padding-top:8px">안내 칸에 함께</b>
+          <div style="flex:1;min-width:280px;display:grid;gap:8px">
+            <label class="muted" style="font-size:13px">📖 이번 주 말씀 <small>(적었을 때만 TV에 보입니다)</small>
+              <textarea id="rvText" rows="2" maxlength="160" placeholder="예: 여호와께 감사하라 그는 선하시며 그 인자하심이 영원함이로다" style="width:100%;margin:4px 0 0"></textarea></label>
+            <input type="text" id="rvRef" maxlength="30" placeholder="말씀 출처 (예: 시편 136:1)" style="margin:0;max-width:260px">
+            <label class="muted" style="font-size:13px">⛪ 주일 예배 안내 <small>(한 줄에 하나씩 · 가운뎃점으로 나눔)</small>
+              <textarea id="rvWor" rows="5" maxlength="400" placeholder="1부 · 오전 7:00 · 본당&#10;2부 · 오전 9:00 · 본당&#10;3부 · 오전 11:00 · 본당&#10;4부 · 오후 1:30 · 본당&#10;청년부 · 오후 2:00 · 비전홀" style="width:100%;margin:4px 0 0"></textarea></label>
+            <div><button class="btn" id="rvSave">안내 저장</button> <span class="muted" style="font-size:13px">이번 주 셔틀 운행표는 시간표에서 자동으로 만들어집니다.</span></div>
           </div>
         </div>
         <div class="pst-row" style="margin-top:6px"><b>포스터</b>
@@ -1248,13 +1259,14 @@ document.addEventListener("change",e=>{ const c=e.target.closest("[data-wa]"); i
 // ---------- 행사 포스터 · 쉬는 날 (TV) ----------
 const PST_MAX=12;
 const pstCfg=()=>{ const c=A.config.tvPosters||{}; return {when:["rest","always","off"].includes(c.when)?c.when:"rest", sec:[5,8,10,15].includes(+c.sec)?+c.sec:8}; };
-const restCfg=()=>{ const c=A.config.tvRest||{}; return {afterEnd:c.afterEnd!==false, dates:c.dates||{}}; };
+const restCfg=()=>{ const c=A.config.tvRest||{}; return {afterEnd:c.afterEnd!==false, beforeFirst:c.beforeFirst!==false, dates:c.dates||{}}; };
 let PST_THUMB={}, pstThumbUnsub=null;
 function drawPosterAdmin(){
   if(!$("pstCard")) return;
   const pc=pstCfg(), rc=restCfg();
   document.querySelectorAll("[data-pw]").forEach(b=>b.classList.toggle("on",b.dataset.pw===pc.when));
-  $("pstSec").value=String(pc.sec); $("pstEnd").checked=rc.afterEnd;
+  $("pstSec").value=String(pc.sec); $("pstEnd").checked=rc.afterEnd; $("pstEarly").checked=rc.beforeFirst;
+  const tr=A.config.tvRest||{}; [["rvText","verse"],["rvRef","verseRef"],["rvWor","worship"]].forEach(([el,k])=>{ if(document.activeElement!==$(el) && !$(el).dataset.dirty) $(el).value=tr[k]||""; });
   const today=kstDate(now());
   const ds=Object.keys(rc.dates).filter(d=>d>=today).sort();
   $("rdList").innerHTML = ds.length ? ds.map(d=>`<span class="rdchip">${d===today?'<b>오늘</b> ':''}${d}${rc.dates[d]?` · ${esc(rc.dates[d])}`:""}<button type="button" data-rddel="${d}" aria-label="${d} 쉬는 날 지우기">×</button></span>`).join("") : `<span class="muted">정한 쉬는 날이 없습니다. 시간표에 운행이 없는 날(예: 월요일)은 따로 정하지 않아도 자동으로 포스터 화면이 됩니다.</span>`;
@@ -1287,11 +1299,15 @@ document.addEventListener("click",async e=>{
 document.addEventListener("change",async e=>{
   const t=e.target;
   if(t.id==="pstSec") return pstSave("config/tvPosters/sec",+t.value,"넘김 시간을 바꿨습니다");
+  if(t.id==="pstEarly") return pstSave("config/tvRest/beforeFirst",t.checked,t.checked?"첫차 1시간 전까지는 포스터 화면입니다":"이른 시간에도 셔틀 화면을 보여 줍니다");
   if(t.id==="pstEnd") return pstSave("config/tvRest/afterEnd",t.checked,t.checked?"운행이 끝나면 포스터 화면으로 바뀝니다":"운행이 끝나도 셔틀 화면을 그대로 둡니다");
   if(t.dataset.pon) return pstSave(`config/tvPosterList/${t.dataset.pon}/on`,t.checked,t.checked?"TV에 보입니다":"TV에서 숨겼습니다");
   if(t.dataset.pfrom) return pstSave(`config/tvPosterList/${t.dataset.pfrom}/from`,t.value||null,"기간을 저장했습니다");
   if(t.dataset.puntil) return pstSave(`config/tvPosterList/${t.dataset.puntil}/until`,t.value||null,"기간을 저장했습니다");
 });
+["rvText","rvRef","rvWor"].forEach(id=>$(id).addEventListener("input",()=>{ $(id).dataset.dirty="1"; }));
+$("rvSave").onclick=async()=>{ try{ await update(ref(db,"config/tvRest"),{verse:$("rvText").value.trim()||null, verseRef:$("rvRef").value.trim()||null, worship:$("rvWor").value.trim()||null});
+  ["rvText","rvRef","rvWor"].forEach(id=>delete $(id).dataset.dirty); toast("저장했습니다. 운행 없는 날 TV 안내 칸에 보입니다"); }catch(_){ toast("저장하지 못했습니다"); } };
 $("rdAdd").onclick=async()=>{ const d=$("rdDate").value; if(!d){ toast("날짜를 골라 주세요"); return; }
   await pstSave("config/tvRest/dates/"+d,$("rdMemo").value.trim(),`${d}을 쉬는 날로 정했습니다. 그날 TV는 포스터 화면이 됩니다`); $("rdDate").value=""; $("rdMemo").value=""; };
 $("rdToday").onclick=async()=>{ const d=kstDate(now()); if(!confirm("오늘을 운행 쉬는 날로 정할까요?\nTV가 바로 포스터 화면으로 바뀝니다. (버스가 실제로 운행하면 셔틀 화면으로 돌아갑니다)")) return;
