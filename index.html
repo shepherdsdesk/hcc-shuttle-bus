@@ -277,7 +277,8 @@ body.drun #stopBtn{margin-top:0;flex:none}
 /* 가로 화면(태블릿 가로, 휴대폰 가로): 왼쪽 정보 + 오른쪽 큰 지도 */
 @media (orientation:landscape) and (min-width:640px){
   body.drun #drvLive{display:grid!important;grid-template-columns:minmax(300px,40%) 1fr;
-    grid-template-rows:auto auto auto auto 1fr;grid-template-areas:"box map" "tiles map" "meta map" "hint map" "stop map";column-gap:16px}
+    grid-template-rows:auto auto auto auto auto auto 1fr;grid-template-areas:"box map" "tiles map" "wrow map" "note map" "meta map" "hint map" "stop map";column-gap:16px;row-gap:10px}
+  body.drun .dwrow{grid-area:wrow} body.drun .dmoving-note{grid-area:note}
   body.drun #liveBox{grid-area:box} body.drun .dtiles{grid-area:tiles} body.drun .dmeta{grid-area:meta}
   body.drun .dhint{grid-area:hint} body.drun #drvMap{grid-area:map;height:100%;min-height:0}
   body.drun #stopBtn{grid-area:stop;align-self:end}
@@ -327,6 +328,20 @@ body.drun #stopBtn{margin-top:0;flex:none}
 @media (orientation:landscape) and (min-width:1200px){
   body:not(.drv) #vMain:not(.hide){grid-template-columns:minmax(0,1fr) 480px}
 }
+.wcnt{display:block;margin-top:3px;font-size:13px;color:#92400E;font-weight:700}
+.wcnt b{font-size:15px}
+#autoBtn.on{background:#FFF7E6;border-color:#FCD34D;color:#92400E}
+.wbadge{display:inline-block;margin-left:4px;background:#F59E0B;color:#fff;border-radius:999px;padding:0 6px;font-size:12px}
+.dwrow{display:flex;flex-wrap:wrap;gap:6px 14px;background:#2A1C08;border:1px solid #5B3A0E;border-radius:14px;padding:10px 14px;color:#FCD34D;font-size:16px}
+.dwrow b{color:#fff}
+#liveWaitBox.off{opacity:.55}
+#liveWaitBox.off b small{font-size:15px}
+.dmoving-note{display:none;font-size:13px;color:#94A3B8;padding:0 4px}
+body.dmoving .dmoving-note{display:block}
+body.dmoving .dwrow{display:none!important}
+body.dmoving #liveWaitBox b{font-size:20px!important}
+body.dmoving #liveWaitBox{padding:8px 14px}
+body.dmoving .wbadge{display:none}
 </style>
 </head>
 <body>
@@ -355,7 +370,7 @@ body.drun #stopBtn{margin-top:0;flex:none}
       <div class="grab"></div>
       <div class="notice hide" id="notice"></div>
       <div id="stops" style="display:flex;flex-direction:column;gap:10px"></div>
-      <div class="hint" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="flex:1;min-width:200px">정류장을 누르면 맨 위 도착 시간이 그 정류장으로 바뀌어요</span><button type="button" id="voiceBtn" class="voicebtn" aria-pressed="true">🔊 소리 알림 켜짐</button><button type="button" id="voiceTry" class="voicebtn">🔔 소리 점검</button></div>
+      <div class="hint" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="flex:1;min-width:200px">정류장을 누르면 맨 위 도착 시간이 그 정류장으로 바뀌어요</span><button type="button" id="voiceBtn" class="voicebtn" aria-pressed="true">🔊 소리 알림 켜짐</button><button type="button" id="voiceTry" class="voicebtn">🔔 소리 점검</button><button type="button" id="autoBtn" class="voicebtn hide">📍 인원 함께 세기</button></div>
       <div id="ride" style="display:flex;flex-direction:column;gap:10px"></div>
       <div class="card">
         <h2>다가오는 출발 시간 <small id="upNow"></small></h2>
@@ -437,8 +452,10 @@ body.drun #stopBtn{margin-top:0;flex:none}
         </div>
         <div class="dtiles">
           <div class="dtile"><span>이번 회차 탑승</span><b id="liveRide">0<small> 명</small></b></div>
-          <div class="dtile amb"><span>길에서 기다리는 분</span><b id="liveWait">0<small> 명</small></b></div>
+          <div class="dtile amb" id="liveWaitBox"><span>기다리는 분</span><b id="liveWait">0<small> 명</small></b></div>
         </div>
+        <div class="dwrow hide" id="liveWaitRow"></div>
+        <div class="dmoving-note">🚌 달리는 중에는 작게 보여요 · 정차하면 크게 보여 드려요</div>
         <div id="drvMap"></div>
         <div class="dmeta"><span id="liveSent">-</span><span>GPS <b id="liveAcc">-</b></span><span>화면 <b id="liveWake">-</b></span><span>전송 <b id="liveCount">0회</b></span></div>
         <div class="dhint" style="font-size:12.5px;color:#94A3B8;padding:0 4px">주황 점 = 길에서 기다리는 성도님 · 정차한 뒤 확인해 주세요</div>
@@ -451,6 +468,13 @@ body.drun #stopBtn{margin-top:0;flex:none}
 <div class="toast" id="toast"><div style="font-size:22px">🚌</div><div><b id="toastT"></b><span id="toastS"></span></div><button id="toastX" aria-label="닫기">×</button></div>
 <div class="modal" id="modal"><div class="box"><p>운행을 종료할까요?<br><span style="font-weight:500;font-size:13.5px;color:#94A3B8">성도님 화면에서 이 버스가 사라집니다.</span></p><div class="row2"><button class="btn ghost" id="mNo">계속 운행</button><button class="btn" id="mYes" style="background:#DC2626;color:#fff">종료</button></div></div></div>
 <div class="modal" id="busModal"><div class="box"><p>몇 호차에 타셨나요?</p><div class="cnt pick" id="busBtns"></div><div class="row2"><button class="btn ghost" id="busNo">취소</button></div></div></div>
+<div class="modal" id="awModal"><div class="box"><p style="font-size:19px">📍 정류장에서 기다리는 인원을<br>함께 세어 드릴까요?</p>
+  <ul style="text-align:left;margin:4px 0 14px;padding-left:20px;line-height:1.7;font-size:15px;color:#334155;word-break:keep-all">
+    <li>정류장에서 이 화면을 열어 두시면 <b>"기다리는 분 ○명"</b>에 1명으로 더해집니다.</li>
+    <li><b>이름이나 위치는 저장하지 않고</b> 숫자만 셉니다.</li>
+    <li>버스를 타거나 정류장을 떠나면 자동으로 빠집니다.</li>
+    <li>언제든 아래 <b>📍 인원 함께 세기</b> 버튼으로 끌 수 있어요.</li></ul>
+  <div class="row2"><button class="btn ghost" id="awNo">괜찮아요</button><button class="btn navy" id="awYes">좋아요</button></div></div></div>
 <div class="modal" id="cntModal"><div class="box"><p id="cntTitle">몇 분이 함께 타셨나요?</p><div class="cnt" id="cntBtns"><button data-n="1">1</button><button data-n="2">2</button><button data-n="3">3</button><button data-n="4">4</button><button data-n="5">5</button></div><div class="row2"><button class="btn ghost" id="cntNo">취소</button></div></div></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -477,6 +501,18 @@ const NEAR_M = 700;              // 알림 거리(약 2~3분)
 const BUS_SPEED_M_PER_MIN = 330; // 시내 평균 약 20km/h
 const ROAD_FACTOR = 1.35;        // 직선거리 → 도로거리 보정
 const WAIT_MS = 15 * 60 * 1000;   // '여기서 기다려요' 자동 해제 시간
+// ---------- 기다리는 분 집계 (정류장별 인원, 이름·좌표 없이 숫자만: waitc/노선/익명id = {s:정류장, n:인원, ts, a:자동}) ----------
+const WAIT_AUTO_MS = 10 * 60 * 1000;  // 자동 집계: 마지막으로 정류장에서 확인된 뒤 10분까지
+const WAIT_DEF = {yatap:{mode:"any",auto:true}, park:{mode:"stop",auto:true}};  // 관리자가 안 정했을 때 기본값
+let WAIT_CFG = {};
+function waitCfgOf(r){ const o=(WAIT_CFG&&WAIT_CFG[r])||{}, d=WAIT_DEF[r]||{mode:"stop",auto:true};
+  return {mode:["off","stop","any"].includes(o.mode)?o.mode:d.mode, auto: typeof o.auto==="boolean"?o.auto:d.auto}; }
+function waitCounts(v,now){ const out={_road:0,_all:0};
+  Object.values(v||{}).forEach(e=>{ if(!e||typeof e.ts!=="number") return; if(now-e.ts > (e.a?WAIT_AUTO_MS:WAIT_MS)) return;
+    const n=Math.max(1,Math.min(9,+e.n||1)), k=e.s&&e.s!=="road"?e.s:"_road"; out[k]=(out[k]||0)+n; out._all+=n; });
+  return out; }
+const waitR = st => Math.max(st.r||60, 80);   // 이 거리 안이면 '정류장에서 기다림'
+
 
 // ================= 노선 · 정류장 =================
 const ROUTES = {
@@ -680,7 +716,7 @@ const isDriverPage = /driver\.html$/.test(location.pathname);
 // =====================================================================
 const jget = k => { try{ return JSON.parse(storage.get(k)||"null"); }catch(_){ return null; } };
 const S = { route: storage.get("route")||"yatap", live:{yatap:{},park:{}}, alerts:jget("alerts")||{}, prev:{}, notified:{},
-            myBoard: jget("myBoard"), myWait: jget("myWait"), pickBus:null, heroStop:{}, ttDay:null, ttDir:"a", ttOpen:{} };
+            myBoard: jget("myBoard"), myWait: jget("myWait"), pickBus:null, waitc:{yatap:{},park:{}}, cntMode:"board", autoStop:null, depSeen:{}, heroStop:{}, ttDay:null, ttDir:"a", ttOpen:{} };
 if(!ROUTES[S.route]) S.route="yatap";
 let map, stopLayer, busLayer, meLayer, busMarkers={}, userMoved=false;
 const hhmm = m => Math.floor(m/60)+":"+String(Math.floor(m)%60).padStart(2,"0");
@@ -883,6 +919,7 @@ function drawHero(){
 const bellSvg=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>`;
 function drawStopList(){
   const r=ROUTES[S.route], sel=heroStop();
+  const wc = waitCfgOf(S.route).mode==="off" ? {} : waitCounts(S.waitc[S.route],serverNow());
   setH($("stops"), r.stops.map(s=>{
     const key=S.route+":"+s.id, on=!!S.alerts[key];
     const le=liveEta(S.route,s), ns=nextScheduled(S.route,s.id);
@@ -892,7 +929,7 @@ function drawStopList(){
     else if(ns){ eta=`<div class="eta sch"><b>${hhmm(ns.t)}</b></div>`; mt+=` · 시간표 ${inTxt(ns.inMin)}`; }
     else { eta=`<div class="eta none"><b>운행 없음</b></div>`; }
     return `<div class="stopcard${s.id===sel.id?' sel':''}${S.route==='park'?' park':''}" data-stop="${s.id}" role="button" tabindex="0">
-      <div class="info"><span class="nm">${esc(s.name)}</span><span class="mt">${esc(mt)}</span></div>${eta}
+      <div class="info"><span class="nm">${esc(s.name)}</span><span class="mt">${esc(mt)}</span>${wc[s.id]?`<span class="wcnt">🙋 기다리는 분 <b>${wc[s.id]}명</b> 이상</span>`:""}</div>${eta}
       <button class="bell ${on?'on':''}" data-key="${key}" aria-label="${esc(s.name)} 도착 알림 ${on?'끄기':'켜기'}">${bellSvg}</button></div>`;
   }).join(""));
 }
@@ -1063,22 +1100,26 @@ function drawRide(){
   if(boarded){
     h=`<div class="state ok">✓ ${mb.bus}호차에 타셨어요 · ${mb.n}명<button data-act="unboard">취소</button></div>`;
   } else {
-    const w=waitingNow();
-    if(w && w.route===r){
-      h=`<button class="btn ${cls}" data-act="board">버스 탑승했어요</button><div class="state wt">🙋 기다리는 중 · 기사님께 알렸어요<button data-act="unwait">취소</button></div>`;
+    const w=waitingNow(), mode=waitCfgOf(r).mode;
+    if(w && w.route===r && mode!=="off"){
+      const st=w.s&&w.s!=="road"?ROUTES[r].stops.find(x=>x.id===w.s):null;
+      h=`<button class="btn ${cls}" data-act="board">버스 탑승했어요</button><div class="state wt">🙋 ${st?esc(st.name)+"에서 기다리는 중":"기다리는 중 · 기사님께 알렸어요"}${w.n>1?` · ${w.n}명`:""}<button data-act="unwait">취소</button></div>`;
+    } else if(mode==="off"){
+      h=`<button class="btn ${cls}" data-act="board">버스 탑승했어요</button>`;
     } else {
-      h=`<div class="ridebtns"><button class="btn ${cls}" data-act="board">버스 탑승했어요</button><button class="btn wait" data-act="wait">여기서 기다려요</button></div>`;
+      const lab = (S.autoStop || mode==="stop") ? "정류장에서 기다려요" : "여기서 기다려요";
+      h=`<div class="ridebtns"><button class="btn ${cls}" data-act="board">버스 탑승했어요</button><button class="btn wait" data-act="wait">${lab}</button></div>`;
     }
   }
   setH($("ride"),h);
   const w=waitingNow(); if(meLayer){ meLayer.clear();
-  if(w && w.route===r && !boarded) meLayer.add(w.lat,w.lng,'<div class="memk"></div>',{z:5}); }
+  if(w && w.route===r && !boarded && typeof w.lat==="number") meLayer.add(w.lat,w.lng,'<div class="memk"></div>',{z:5}); }
   if(S.myWait && !w){ clearWait(); }
 }
-function openCount(bus){ S.pickBus=bus; $("cntTitle").textContent=`${bus}호차 · 몇 분이 함께 타셨나요?`; $("cntModal").classList.add("show"); }
+function openCount(bus){ S.cntMode="board"; S.pickBus=bus; $("cntTitle").textContent=`${bus}호차 · 몇 분이 함께 타셨나요?`; $("cntModal").classList.add("show"); }
 async function clearWait(){
   const w=S.myWait; S.myWait=null; storage.set("myWait","null");
-  if(w){ try{ await authReady; await remove(ref(db,`wait/${w.route}/${uid}`)); }catch(_){} }
+  if(w){ try{ await authReady; await remove(ref(db,`wait/${w.route}/${uid}`)); }catch(_){} try{ await remove(ref(db,`waitc/${w.route}/${uid}`)); }catch(_){} }
 }
 $("ride").addEventListener("click", async e=>{
   const b=e.target.closest("[data-act]"); if(!b) return;
@@ -1097,25 +1138,95 @@ $("ride").addEventListener("click", async e=>{
   }
   if(act==="wait"){
     if(!("geolocation" in navigator)){ toast("위치를 쓸 수 없어요","이 휴대폰에서는 위치 기능을 쓸 수 없습니다."); return; }
+    const mode=waitCfgOf(S.route).mode; if(mode==="off") return;
     b.disabled=true; b.firstChild.textContent="위치 확인 중…";
-    navigator.geolocation.getCurrentPosition(async p=>{
-      const lat=+p.coords.latitude.toFixed(6), lng=+p.coords.longitude.toFixed(6);
-      try{ await authReady; await set(ref(db,`wait/${S.route}/${uid}`),{lat,lng,ts:serverTimestamp()});
-        S.myWait={route:S.route,lat,lng,ts:serverNow()}; storage.set("myWait",JSON.stringify(S.myWait));
-        toast("기사님께 알렸어요","버스가 오면 손을 들어 주세요. 15분 뒤 자동으로 해제됩니다.");
-      }catch(_){ toast("전송하지 못했어요","잠시 후 다시 눌러 주세요."); }
+    navigator.geolocation.getCurrentPosition(p=>{
+      const lat=+p.coords.latitude.toFixed(6), lng=+p.coords.longitude.toFixed(6), me={lat,lng};
+      const st=ROUTES[S.route].stops.filter(x=>dist(me,x)<=waitR(x)).sort((a,c)=>dist(me,a)-dist(me,c))[0]||null;
       $("ride")._h=null; drawRide();
+      if(!st && mode==="stop"){ toast("정류장 근처에서만 누를 수 있어요","안전을 위해 이 노선은 정류장에서만 기다려 주세요."); return; }
+      S.pendWait={route:S.route,lat,lng,s:st?st.id:"road"};
+      S.cntMode="wait"; $("cntTitle").textContent=`${st?st.name+"에서":"이곳에서"} · 몇 분이 함께 기다리세요?`; $("cntModal").classList.add("show");
     }, err=>{ toast("위치를 확인하지 못했어요", err.code===1?"위치 사용을 허용해 주세요.":"잠시 후 다시 눌러 주세요."); $("ride")._h=null; drawRide(); },
     {enableHighAccuracy:true, timeout:15000, maximumAge:30000});
   }
   if(act==="unwait"){ await clearWait(); $("ride")._h=null; drawRide(); }
 });
-$("cntNo").onclick=()=>$("cntModal").classList.remove("show");
+$("cntNo").onclick=()=>{ $("cntModal").classList.remove("show"); S.cntMode="board"; };
+// 기다림 저장: 숫자(waitc)는 모두 저장, 길 위치(wait)는 '어디서나' 노선에서 정류장 밖일 때만 (기사님 지도 주황 점)
+async function saveWait(n){
+  const pw=S.pendWait; if(!pw) return; S.pendWait=null;
+  try{ await authReady;
+    await autoRemove(true);
+    await set(ref(db,`waitc/${pw.route}/${uid}`),{s:pw.s, n, ts:serverTimestamp()});
+    if(pw.s==="road" && waitCfgOf(pw.route).mode==="any") await set(ref(db,`wait/${pw.route}/${uid}`),{lat:pw.lat,lng:pw.lng,ts:serverTimestamp()});
+    S.myWait={route:pw.route,s:pw.s,n,ts:serverNow(),...(pw.s==="road"?{lat:pw.lat,lng:pw.lng}:{})}; storage.set("myWait",JSON.stringify(S.myWait));
+    toast("기사님께 알렸어요", pw.s==="road"?"버스가 오면 손을 들어 주세요. 15분 뒤 자동으로 해제됩니다.":"기다리는 인원에 더했어요. 15분 뒤 자동으로 해제됩니다.");
+  }catch(_){ toast("전송하지 못했어요","잠시 후 다시 눌러 주세요."); }
+  $("ride")._h=null; drawRide();
+}
+// ---------- 자동 집계: 앱을 연 채 정류장에 1분 이상 계시면 1명으로 (동의한 분만, 좌표는 저장 안 함) ----------
+const AW={watch:null, at:null, since:0, lastWrite:0, away:0, cool:0, written:false, route:null, pos:null, tick:null};
+const autoOn = () => storage.get("autoWait")==="1";
+function anyAutoRoute(){ return Object.keys(ROUTES).some(r=>{ const c=waitCfgOf(r); return c.auto && c.mode!=="off"; }); }
+async function autoRemove(keepDb){ if(!AW.written) return; const r=AW.route; AW.written=false; AW.lastWrite=0;
+  if(keepDb) return;
+  try{ await authReady; const w=waitingNow(); if(!(w&&w.route===r)) await remove(ref(db,`waitc/${r}/${uid}`)); }catch(_){} }
+function autoStart(){
+  if(isDriverPage || !autoOn() || !anyAutoRoute() || document.hidden || !("geolocation" in navigator)) { autoStop(); return; }
+  if(AW.watch!==null) return;
+  try{ AW.watch=navigator.geolocation.watchPosition(p=>{ AW.pos=p; autoEval(); }, ()=>{}, {enableHighAccuracy:true, maximumAge:15000, timeout:30000}); }catch(_){}
+  if(!AW.tick) AW.tick=setInterval(autoEval,30000);
+}
+function autoStop(){ if(AW.watch!==null){ try{ navigator.geolocation.clearWatch(AW.watch); }catch(_){} AW.watch=null; } if(AW.tick){ clearInterval(AW.tick); AW.tick=null; } }
+function autoEval(){
+  const p=AW.pos; if(!p) return;
+  const r=S.route, c=waitCfgOf(r), now=serverNow();
+  if(AW.written && AW.route!==r) autoRemove();
+  if(!c.auto || c.mode==="off" || !autoOn()){ autoRemove(); setAutoStop(null); return; }
+  const me={lat:p.coords.latitude,lng:p.coords.longitude}, sp=p.coords.speed;
+  if(typeof sp==="number" && sp>4){ AW.at=null; autoRemove(); setAutoStop(null); return; }   // 버스·차를 타고 움직이는 중
+  const st=ROUTES[r].stops.filter(x=>dist(me,x)<=waitR(x)+(AW.at===x.id?40:0)).sort((a,b)=>dist(me,a)-dist(me,b))[0];
+  if(!st){ if(++AW.away>=2){ AW.at=null; autoRemove(); setAutoStop(null); } return; }
+  AW.away=0; if(AW.at!==st.id){ if(AW.written) autoRemove(); AW.at=st.id; AW.since=now; } setAutoStop(st.id);
+  if(now<AW.cool) return;
+  const mb=S.myBoard; if(mb && mb.route===r && S.live[r]?.[mb.bus]?.trip===mb.trip) return;   // 이미 탑승
+  if(waitingNow()) return;                                                                   // 버튼으로 이미 알림
+  const ns=nextScheduled(r,st.id), running=liveBuses(r).some(b=>!b.old) || (ns && ns.inMin<=40);
+  if(!running) return;
+  if(now-AW.since>=60000 && now-AW.lastWrite>=60000){
+    AW.lastWrite=now; AW.route=r;
+    authReady.then(()=>set(ref(db,`waitc/${r}/${uid}`),{s:st.id, n:1, ts:serverTimestamp(), a:true})).then(()=>{ AW.written=true; }).catch(()=>{});
+  }
+}
+function setAutoStop(id){ if(S.autoStop!==id){ S.autoStop=id; $("ride")._h=null; drawRide(); } }
+// 버스가 내 정류장에 왔다가 떠나면 기다림을 자동으로 정리 (탔거나 놓쳤거나)
+function checkDepart(){
+  const w=waitingNow(), atStop=w&&w.s&&w.s!=="road";
+  const r=atStop?w.route:(AW.written?AW.route:null); if(!r) return;
+  const sid=atStop?w.s:AW.at, stop=ROUTES[r].stops.find(x=>x.id===sid); if(!stop) return;
+  const here=liveBuses(r).some(b=>!b.old && dist(b,stop)<=stopR(stop)+20);
+  const k=r+":"+sid;
+  if(here){ S.depSeen[k]=1; return; }
+  if(S.depSeen[k]){ delete S.depSeen[k]; AW.cool=serverNow()+3*60000; autoRemove(); if(atStop){ clearWait(); $("ride")._h=null; drawRide(); } }
+}
+// 처음 한 번 동의 묻기
+function askAutoConsent(){
+  if(storage.get("autoWait")!==null || !anyAutoRoute() || $("awModal").classList.contains("show")) return;
+  $("awModal").classList.add("show");
+}
+$("awYes").onclick=()=>{ storage.set("autoWait","1"); $("awModal").classList.remove("show"); drawAutoBtn(); autoStart(); toast("고맙습니다","정류장에서 이 화면을 열어 두시면 기다리는 인원에 함께 세어 드려요."); };
+$("awNo").onclick=()=>{ storage.set("autoWait","0"); $("awModal").classList.remove("show"); drawAutoBtn(); };
+function drawAutoBtn(){ const b=$("autoBtn"); if(!b) return; b.classList.toggle("hide",!anyAutoRoute()); b.classList.toggle("on",autoOn()); b.textContent=autoOn()?"📍 인원 함께 세기 켜짐":"📍 인원 함께 세기 꺼짐"; }
+$("autoBtn").onclick=()=>{ if(autoOn()){ storage.set("autoWait","0"); autoRemove(); autoStop(); setAutoStop(null); } else { storage.set("autoWait","1"); autoStart(); } drawAutoBtn(); };
+document.addEventListener("visibilitychange",()=>{ if(isDriverPage) return; if(document.hidden) autoStop(); else autoStart(); });
+
 $("busNo").onclick=()=>$("busModal").classList.remove("show");
 $("busBtns").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; $("busModal").classList.remove("show"); openCount(+b.dataset.bus); });
 $("cntBtns").addEventListener("click", async e=>{
   const b=e.target.closest("button"); if(!b) return;
   const n=+b.dataset.n, r=S.route, bus=S.pickBus; $("cntModal").classList.remove("show");
+  if(S.cntMode==="wait"){ S.cntMode="board"; await saveWait(n); return; }
   const trip=S.live[r]?.[bus]?.trip; if(!trip){ toast("탑승을 기록하지 못했어요","버스 운행이 막 바뀌었어요. 다시 눌러 주세요."); return; }
   const date=kstDate(serverNow());
   try{ await authReady; await set(ref(db,`board/${date}/${r}/${bus}/${trip}/${uid}`),{n, ts:serverTimestamp()});
@@ -1212,7 +1323,7 @@ function selectRoute(r){
   drawStopsOnMap(); refreshSaint();
 }
 $("routes").addEventListener("click",e=>{ const b=e.target.closest("button"); if(b) selectRoute(b.dataset.route); });
-function refreshSaint(){ if(!map) return; drawPaths(); drawBusesOnMap(); drawHero(); drawStopList(); checkAlerts(); drawRide(); drawUpcoming(); if(location.hash==="#times") drawTimes(); }
+function refreshSaint(){ if(!map) return; drawPaths(); drawBusesOnMap(); drawHero(); drawStopList(); checkAlerts(); try{ checkDepart(); }catch(_){} drawRide(); drawUpcoming(); if(location.hash==="#times") drawTimes(); }
 
 // 홈 화면 설치 안내
 let deferredPrompt=null;
@@ -1274,7 +1385,10 @@ async function startSaint(){
   await initMap(); selectRoute(S.route); setupInstall(); showView();
   S.cameFromMain = location.hash!=="#times";
   onValue(ref(db,"live"), s=>{ const v=s.val()||{}; S.live={yatap:v.yatap||{}, park:v.park||{}}; refreshSaint(); });
+  ["yatap","park"].forEach(r=>onValue(ref(db,"waitc/"+r), s=>{ S.waitc[r]=s.val()||{}; $("stops")._h=null; drawStopList(); }, ()=>{}));
   onValue(ref(db,"config"), s=>{ const c=s.val()||{}; applyBrand(c);
+    WAIT_CFG=c.waitCfg||{}; drawAutoBtn(); if(anyAutoRoute()){ autoStart(); setTimeout(askAutoConsent,2500); } else { autoStop(); autoRemove(); }
+    if(waitCfgOf(S.route).mode==="off" && waitingNow()) clearWait();
     PARK_TIMES = parseTimes(c.parkTimes); TIMES = c.times||{};
     if(applyStops(c.stops) && stopLayer){ drawStopsOnMap(); }
     if(applyPaths(c.paths) && map) drawPaths();
@@ -1364,14 +1478,33 @@ async function initDrvMap(){
   }
   D.stopL.clear(); D.meL.clear(); D.me=null;
   const r=ROUTES[D.route];
-  r.stops.forEach(s=>D.stopL.add(s.lat,s.lng,stopHtml(s,r.color),{z:2}));
+  drvDrawStops();
   setTimeout(()=>{ D.map.resize(); D.map.fit(r.stops.map(s=>[s.lat,s.lng]),{top:40,left:30,right:30,bottom:30}); },50);
-  if(D.unWait) D.unWait();
-  D.unWait = onValue(ref(db,`wait/${D.route}`), s=>{
-    D.waitL.clear(); let n=0; const now=serverNow();
-    s.forEach(c=>{ const v=c.val(); if(v && typeof v.lat==="number" && now-(v.ts||0)<WAIT_MS){ n++; D.waitL.add(v.lat,v.lng,'<div class="waitmk"></div>',{z:5}); } });
-    $("liveWait").innerHTML=n+"<small> 명</small>";
-  }, ()=>{ $("liveWait").textContent="-"; });
+  if(D.unWait) D.unWait(); if(D.unWaitC) D.unWaitC();
+  D.waitDots={}; D.waitC={};
+  D.unWait = onValue(ref(db,`wait/${D.route}`), s=>{ D.waitDots=s.val()||{}; drvWaitDraw(); }, ()=>{});
+  D.unWaitC = onValue(ref(db,`waitc/${D.route}`), s=>{ D.waitC=s.val()||{}; drvWaitDraw(); }, ()=>{});
+}
+// 기다리는 분: 정류장별 인원(지도 정류장 옆 숫자 + 아래 줄) + 길 위 주황 점(‘어디서나’ 노선만)
+function drvStopHtml(s,c,n){ return `<div class="stopmk" style="border-color:${c}"><span class="stoplab">${esc(s.name)}${n?` <b class="wbadge">🙋${n}</b>`:""}</span></div>`; }
+function drvDrawStops(){
+  if(!D.map||!D.stopL) return; const r=ROUTES[D.route||"yatap"], cfg=waitCfgOf(D.route||"yatap");
+  const wc = cfg.mode==="off" ? {} : waitCounts(D.waitC,serverNow());
+  D.stopL.clear(); r.stops.forEach(s=>D.stopL.add(s.lat,s.lng,drvStopHtml(s,r.color,wc[s.id]||0),{z:2}));
+}
+function drvWaitDraw(){
+  if(!D.waitL) return;
+  const cfg=waitCfgOf(D.route||"yatap"), now=serverNow(), r=ROUTES[D.route||"yatap"];
+  D.waitL.clear();
+  if(cfg.mode==="any") Object.values(D.waitDots||{}).forEach(v=>{ if(v && typeof v.lat==="number" && now-(v.ts||0)<WAIT_MS) D.waitL.add(v.lat,v.lng,'<div class="waitmk"></div>',{z:5}); });
+  const wc = cfg.mode==="off" ? {_all:0,_road:0} : waitCounts(D.waitC,now);
+  drvDrawStops();
+  $("liveWaitBox").classList.toggle("off",cfg.mode==="off");
+  $("liveWait").innerHTML = cfg.mode==="off" ? '<small>사용 안 함</small>' : wc._all+"<small> 명</small>";
+  const parts=r.stops.filter(s=>wc[s.id]).map(s=>`<span><b>${esc(s.name)}</b> ${wc[s.id]}명</span>`);
+  if(wc._road) parts.push(`<span><b>길에서</b> ${wc._road}명</span>`);
+  $("liveWaitRow").innerHTML=parts.join("");
+  $("liveWaitRow").classList.toggle("hide",!parts.length);
 }
 function moveMe(lat,lng){
   if(!D.map) return;
@@ -1445,6 +1578,12 @@ setInterval(()=>{ if(D.on && document.visibilityState==="visible"){ if(!(D.wake&
 function liveState(text,bad){ $("liveState").textContent=text; $("dst").classList.remove("hide"); $("dst").classList.toggle("bad",!!bad); $("liveBox").classList.toggle("bad",!!bad); }
 
 // 휴대폰이 속도·방향을 안 알려 주면 직전 위치와 비교해 계산
+// 달리는 중(시속 10km 넘음)에는 기다리는 분 표시를 작게 — 운전 중 화면을 들여다보지 않도록. 정차 8초 뒤 다시 크게
+function drvMoving(spd){
+  const now=Date.now();
+  if(spd!=null && spd>10){ D.movAt=now; document.body.classList.add("dmoving"); }
+  else if(document.body.classList.contains("dmoving") && now-(D.movAt||0)>8000) document.body.classList.remove("dmoving");
+}
 function motion(p){
   const c=p.coords, now=p.timestamp||Date.now(), cur={lat:c.latitude,lng:c.longitude,t:now};
   let spd = c.speed==null||isNaN(c.speed) ? null : c.speed*3.6, hd = c.heading==null||isNaN(c.heading) ? null : c.heading;
@@ -1461,6 +1600,7 @@ function motion(p){
 }
 async function sendPos(p){
   D.last=p; const mv=motion(p); try{ pathAdd(p.coords); }catch(_){}
+  drvMoving(mv.spd);
   try{ legCheck(p.coords.latitude,p.coords.longitude,mv.spd); moveMe(p.coords.latitude,p.coords.longitude); }catch(_){}
   if($("dst").classList.contains("bad")) liveState("전송 중",false);
   const now=Date.now(); if(now-D.lastSent < SEND_EVERY_MS - 300) return;
@@ -1517,6 +1657,7 @@ $("startBtn").onclick=async()=>{
   $("startBtn").disabled=false;
 };
 async function stopDriving(){
+  document.body.classList.remove("dmoving");
   D.on=false;
   if(D.watch!=null) navigator.geolocation.clearWatch(D.watch); D.watch=null;
   clearInterval(D.tick);
@@ -1552,7 +1693,8 @@ async function startDriver(){
   if(storage.get("drvName")!==null && storage.get("greetDay")!==greetToday()){ vr.then(()=>{ if(!D.name) D.name=storage.get("drvName")||""; sayGreet(); }); }
   await authReady;
   onValue(ref(db,"config/brand"), s=>applyBrand({brand:s.val()}), ()=>{});
-  onValue(ref(db,"config/stops"), s=>{ if(applyStops(s.val()) && D.map && D.stopL){ D.stopL.clear(); ROUTES[D.route||"yatap"].stops.forEach(x=>D.stopL.add(x.lat,x.lng,stopHtml(x,ROUTES[D.route||"yatap"].color),{z:2})); } }, ()=>{});
+  onValue(ref(db,"config/stops"), s=>{ if(applyStops(s.val()) && D.map && D.stopL){ drvDrawStops(); } }, ()=>{});
+  onValue(ref(db,"config/waitCfg"), s=>{ WAIT_CFG=s.val()||{}; if(D.waitL) drvWaitDraw(); }, ()=>{});
   onValue(ref(db,"config/buses"), s=>{ CFG_BUSES=s.val(); if(!$("drvSetup").classList.contains("hide")) drawDrvSetup(); }, ()=>{});
   const code=codeFromLink();
   try{

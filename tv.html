@@ -191,6 +191,7 @@
   body.one .main{grid-template-columns:1.2fr 1fr .8fr}
   body.one.portrait .main{grid-template-columns:1fr}
   body.one .rt{flex:1}
+.stop .nm .wc{font-style:normal;display:inline-block;margin-left:.6vmin;padding:.1vmin .9vmin;border-radius:99vmin;background:#F59E0B;color:#fff;font-weight:800;font-size:1.5vmin;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -251,6 +252,13 @@ const NEAR_M = 700;              // 알림 거리(약 2~3분)
 const BUS_SPEED_M_PER_MIN = 330; // 시내 평균 약 20km/h
 const ROAD_FACTOR = 1.35;        // 직선거리 → 도로거리 보정
 const WAIT_MS = 15 * 60 * 1000;   // '여기서 기다려요' 자동 해제 시간
+// 기다리는 분: 정류장별 인원 (이름·위치 없이 숫자만)
+const WAIT_AUTO_MS = 10 * 60 * 1000, WAIT_DEF = {yatap:{mode:"any"}, park:{mode:"stop"}};
+let WAITC={yatap:{},park:{}}, WAIT_CFG={};
+function waitMode(r){ const o=(WAIT_CFG&&WAIT_CFG[r])||{}; return ["off","stop","any"].includes(o.mode)?o.mode:WAIT_DEF[r].mode; }
+function waitCounts(v,now){ const out={_road:0,_all:0};
+  Object.values(v||{}).forEach(e=>{ if(!e||typeof e.ts!=="number") return; if(now-e.ts>(e.a?WAIT_AUTO_MS:WAIT_MS)) return;
+    const n=Math.max(1,Math.min(9,+e.n||1)), k=e.s&&e.s!=="road"?e.s:"_road"; out[k]=(out[k]||0)+n; out._all+=n; }); return out; }
 
 // ================= 노선 · 정류장 =================
 const ROUTES = {
@@ -818,6 +826,7 @@ function drawBoards(){
   let h="";
   RT.forEach(r=>{
     const R=ROUTES[r], buses=liveBuses(r).filter(b=>!b.old);
+    const wc = waitMode(r)==="off" ? {} : waitCounts(WAITC[r], Date.now()+(typeof offset==="number"?offset:0));
     h+=`<section class="rt ${r}"><h2><i class="sw" style="background:${R.color}"></i>${R.name}<small>${buses.length? buses.length+"대 운행 중" : (r==="park"&&day!==0 ? "주일에만 운행" : "운행 중인 버스 없음")}</small></h2>`;
     R.stops.forEach(s=>{
       const le=liveEta(r,s), ns=nextList(r,s.id,1)[0];
@@ -826,7 +835,7 @@ function drawBoards(){
       else if(le) eta=`<div class="eta${le.eta<3?' soon':''}"><b>${le.eta<1?'곧 도착':`${Math.ceil(le.eta)}<small>분</small>`}</b><span>${le.bus}호차 · ${km(le.d)}</span></div>`;
       else if(ns!=null) eta=`<div class="eta sch"><b>${hhmm(ns)}</b><span>시간표 · ${inTxt(ns-min)}</span></div>`;
       else eta=`<div class="eta none"><b>운행 없음</b></div>`;
-      h+=`<div class="stop"><div class="nm"><b>${esc(s.name)}</b><span>${rideDir(r,s.id)}</span></div>${eta}</div>`;
+      h+=`<div class="stop"><div class="nm"><b>${esc(s.name)}</b><span>${rideDir(r,s.id)}${wc[s.id]?` <em class="wc">🙋 기다리는 분 ${wc[s.id]}명 이상</em>`:""}</span></div>${eta}</div>`;
     });
     h+=`</section>`;
   });
@@ -860,8 +869,9 @@ try{
 (async()=>{
   applyTheme(); loadWx(); setInterval(loadWx, 30*60e3);
   await initMap(); drawTvPaths();
+  ["yatap","park"].forEach(r=>onValue(ref(db,"waitc/"+r), s=>{ WAITC[r]=s.val()||{}; drawBoards(); }, ()=>{}));
   onValue(ref(db,"live"), s=>{ const v=s.val()||{}; LIVE={yatap:v.yatap||{},park:v.park||{}}; drawMap(); drawBoards(); });
-  onValue(ref(db,"config"), s=>{ const c=s.val()||{}; applyBrand(c);
+  onValue(ref(db,"config"), s=>{ const c=s.val()||{}; applyBrand(c); WAIT_CFG=c.waitCfg||{};
     if(applyStops(c.stops)) drawStopMarks();
     NEWS_CFG=c.news||null; drawTicker();
     THEME_CFG=c.tvTheme||{}; watchPhoto(); applyTheme();

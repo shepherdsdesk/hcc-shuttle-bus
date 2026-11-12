@@ -180,6 +180,19 @@
   .vchip button:hover{background:#FEE2E2;color:var(--red)}
   .hide{display:none!important}
   @media (max-width:700px){.side{max-width:none;flex-basis:100%;padding:14px}#tabs{flex-direction:row;flex-wrap:wrap}.who{display:none}.content{padding:18px 14px 40px}.rf{margin-left:0}}
+  .wline{display:flex;flex-wrap:wrap;gap:4px 14px;background:#FFF7E6;border:1px solid #FDE68A;color:#92400E;border-radius:12px;padding:8px 12px;margin:0 0 8px;font-size:14px}
+  .wline b{color:#78350F}
+  .wline.off{background:#F1F5F9;border-color:#E2E8F0;color:#64748B}
+  .wcrow{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding:10px 0;border-top:1px solid #EEF1F6}
+  .wcrow:first-child{border-top:0}
+  .wcrow>b{min-width:120px;display:flex;align-items:center;gap:8px}
+  .wcrow>b i{width:12px;height:12px;border-radius:4px;display:inline-block}
+  .seg3{display:inline-flex;background:#EEF1F6;border-radius:12px;padding:3px}
+  .seg3 button{border:0;background:transparent;padding:8px 14px;border-radius:10px;font:inherit;font-weight:700;color:#475569;cursor:pointer}
+  .seg3 button.on{background:#1B2B5C;color:#fff}
+  .wcauto{display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer}
+  .wcauto input{width:20px!important;height:20px;margin:0!important;flex:none;accent-color:#1B2B5C}
+  .wcauto{white-space:nowrap}
 </style>
 </head>
 <body>
@@ -238,7 +251,7 @@
       <div class="grid">
         <div class="stat"><b id="sBus">0</b><span>운행 중인 버스</span></div>
         <div class="stat"><b id="sToday">0</b><span>오늘 탑승 (앱)</span></div>
-        <div class="stat amb"><b id="sWait">0</b><span>길에서 기다리는 분</span></div>
+        <div class="stat amb"><b id="sWait">0</b><span>기다리는 분</span></div>
         <div class="stat"><b id="sDrivers">0</b><span>등록된 기사님</span></div>
       </div>
       <div class="row2">
@@ -375,6 +388,16 @@
 
     <!-- 정류장 · 노선 -->
     <section id="tab-stops" class="hide">
+      <div class="card">
+        <h2>🙋 기다려요 기능 <small>노선마다 정합니다 · 운전 안전을 위해 필요하면 줄이거나 끄세요</small></h2>
+        <div id="wcfg"></div>
+        <ul class="muted" style="margin:10px 0 0;padding-left:20px;line-height:1.8">
+          <li><b>끄기</b>: 성도님 화면에서 ‘기다려요’ 버튼이 사라지고 인원도 세지 않습니다.</li>
+          <li><b>정류장에서만</b>: 정류장 근처에서만 누를 수 있습니다. 기사님 화면에는 정류장별 인원만 나옵니다 (길 중간 정차 없음).</li>
+          <li><b>어디서나</b>: 길에서도 누를 수 있고, 기사님 지도에 주황 점으로 위치가 나옵니다.</li>
+          <li><b>자동으로 세기</b>: 동의한 성도님이 앱을 연 채 정류장에 1분 이상 계시면 1명으로 셉니다. 이름·위치는 저장하지 않고 숫자만 셉니다.</li>
+        </ul>
+      </div>
       <div class="card">
         <h2>정류장 위치 · 도착 반경 <small>버스가 이 원 안에 들어오면 ‘도착’으로 보고 알림을 보냅니다</small></h2>
         <div id="stopEdit"></div>
@@ -1073,9 +1096,10 @@ async function startAdmin(){
   onValue(ref(db,"pins"),s=>{A.pins=s.val()||{}; drawNow(); drawDrivers();});
   onValue(ref(db,"drivers"),s=>{A.drivers=s.val()||{}; drawNow(); drawDrivers();});
   onValue(ref(db,"wait"),s=>{A.wait=s.val()||{}; drawNow();});
+  onValue(ref(db,"waitc"),s=>{A.waitc=s.val()||{}; drawNow();},()=>{});
   onValue(ref(db,"board/"+kstDate(now())),s=>{A.boardToday=s.val()||{}; drawNow();});
   onValue(ref(db,"admins"),s=>{A.admins=s.val()||{}; drawAdmins();});
-  onValue(ref(db,"config"),s=>{A.config=s.val()||{}; fillConfig();});
+  onValue(ref(db,"config"),s=>{A.config=s.val()||{}; fillConfig(); drawWaitCfg(); drawNow();});
   setInterval(drawNow,10000);
   initStats(); initTimes();
 }
@@ -1099,9 +1123,10 @@ function drawNow(){
       : `<div class="pill" style="background:${c};${old}">${ROUTES[r].short}${bus}${v.to?' → 교회':''}</div>`;
     busLayer.add(v.lat,v.lng,html,{z:10});
   }));
-  let waitN=0;
-  RF().forEach(r=>Object.values(A.wait[r]||{}).forEach(w=>{ if(w&&typeof w.lat==="number"&&t-(w.ts||0)<WAIT_MS){ waitN++;
-    waitLayer.add(w.lat,w.lng,'<div class="waitmk"></div>',{z:5}); } }));
+  let waitN=0; const WC={};
+  RF().forEach(r=>{ const cfg=waitCfgOf(r); if(cfg.mode==="off"){ WC[r]=null; return; }
+    WC[r]=waitCounts((A.waitc||{})[r],t); waitN+=WC[r]._all;
+    if(cfg.mode==="any") Object.values(A.wait[r]||{}).forEach(w=>{ if(w&&typeof w.lat==="number"&&t-(w.ts||0)<WAIT_MS) waitLayer.add(w.lat,w.lng,'<div class="waitmk"></div>',{z:5}); }); });
   $("sBus").innerHTML=rows.length+'<span style="font-size:16px;color:#5B6478"> 대</span>'; $("sWait").innerHTML=waitN+'<span style="font-size:16px"> 명</span>';
   $("sToday").innerHTML=RF().reduce((n,r)=>n+sumAll(A.boardToday[r]),0)+'<span style="font-size:16px;color:#5B6478"> 명</span>';
   $("sDrivers").innerHTML=Object.keys(A.pins).length+'<span style="font-size:16px;color:#5B6478"> 명</span>';
@@ -1112,6 +1137,9 @@ function drawNow(){
   RF().forEach(r=>{
     const rs=rows.filter(x=>x.r===r).sort((a,b)=>a.bus-b.bus);
     h+=`<div class="rhead"><i style="background:${ROUTES[r].color}"></i>${ROUTES[r].name}<span class="muted" style="font-weight:500">· ${rs.length}대 운행 · 오늘 탑승 ${sumAll(A.boardToday[r])}명</span></div>`;
+    const wc=WC[r];
+    h+= wc===null ? `<div class="wline off">🙋 기다려요 기능 꺼짐</div>`
+      : `<div class="wline">🙋 기다리는 분 ${ROUTES[r].stops.map(st=>`<span>${esc(st.name)} <b>${wc[st.id]||0}명</b></span>`).join("")}${wc._road?`<span>길에서 <b>${wc._road}명</b></span>`:""}</div>`;
     h+= rs.length ? rs.map(row).join("") : `<div class="empty" style="padding:0 2px 6px">운행 중인 버스가 없습니다.</div>`;
   });
   h+=`<p class="muted" style="margin:10px 2px 0">신호가 끊긴 버스는 ‘지도에서 내리기’로 성도님 화면에서 지울 수 있습니다.</p>`;
@@ -1120,6 +1148,39 @@ function drawNow(){
 $("nowTbl").addEventListener("click",async e=>{ const b=e.target.closest("[data-kill]"); if(!b) return;
   if(!confirm("이 버스를 성도님 화면에서 내릴까요? (기사님이 아직 운행 중이면 다시 나타납니다)")) return;
   try{ await remove(ref(db,"live/"+b.dataset.kill)); toast("내렸습니다"); }catch(_){ toast("권한이 없습니다"); } });
+
+// ---------- 기다리는 분 (정류장별 인원 · 기능 설정) ----------
+const WAIT_AUTO_MS=10*60e3, WAIT_DEF={yatap:{mode:"any",auto:true}, park:{mode:"stop",auto:true}};
+function waitCfgOf(r){ const o=(A.config.waitCfg&&A.config.waitCfg[r])||{}, d=WAIT_DEF[r];
+  return {mode:["off","stop","any"].includes(o.mode)?o.mode:d.mode, auto: typeof o.auto==="boolean"?o.auto:d.auto}; }
+function waitCounts(v,now){ const out={_road:0,_all:0};
+  Object.values(v||{}).forEach(e=>{ if(!e||typeof e.ts!=="number") return; if(now-e.ts>(e.a?WAIT_AUTO_MS:WAIT_MS)) return;
+    const n=Math.max(1,Math.min(9,+e.n||1)), k=e.s&&e.s!=="road"?e.s:"_road"; out[k]=(out[k]||0)+n; out._all+=n; }); return out; }
+const WMODE={off:"끄기",stop:"정류장에서만",any:"어디서나"};
+function drawWaitCfg(){
+  const el=$("wcfg"); if(!el) return;
+  el.innerHTML=["yatap","park"].map(r=>{ const c=waitCfgOf(r);
+    return `<div class="wcrow"><b><i style="background:${ROUTES[r].color}"></i>${ROUTES[r].name}</b>
+      <div class="seg3">${Object.entries(WMODE).map(([k,l])=>`<button type="button" data-wr="${r}" data-wm="${k}" class="${c.mode===k?'on':''}">${l}</button>`).join("")}</div>
+      <label class="wcauto"><input type="checkbox" data-wa="${r}" ${c.auto?'checked':''} ${c.mode==='off'?'disabled':''}> 앱을 연 성도님 자동으로 세기</label></div>`; }).join("");
+}
+async function saveWaitCfg(r,patch){
+  const cur=waitCfgOf(r), next={...cur,...patch};
+  const down = (next.mode==="off") || (cur.mode==="any" && next.mode==="stop") || (cur.auto && !next.auto);
+  if(next.mode==="off" && !confirm(`${ROUTES[r].name}의 ‘기다려요’ 기능을 끌까요?\n지금 기다린다고 알린 분들의 표시도 함께 지워집니다.`)){ drawWaitCfg(); return; }
+  try{
+    await set(ref(db,"config/waitCfg/"+r),next);
+    if(down){
+      const cs=(await get(ref(db,"waitc/"+r))).val()||{}, upd={};
+      if(next.mode!=="any") upd["wait/"+r]=null;
+      Object.entries(cs).forEach(([u,e])=>{ if(next.mode==="off" || (next.mode==="stop" && (!e||e.s==="road")) || (!next.auto && e&&e.a)) upd[`waitc/${r}/${u}`]=null; });
+      if(Object.keys(upd).length) await update(ref(db),upd);
+    }
+    toast(`${ROUTES[r].name} · ${WMODE[next.mode]}${next.mode!=="off"?(next.auto?" · 자동 세기 켬":" · 자동 세기 끔"):""} — 모든 화면에 바로 반영됩니다`);
+  }catch(_){ toast("저장하지 못했습니다"); }
+}
+document.addEventListener("click",e=>{ const b=e.target.closest("[data-wm]"); if(!b) return; saveWaitCfg(b.dataset.wr,{mode:b.dataset.wm}); });
+document.addEventListener("change",e=>{ const c=e.target.closest("[data-wa]"); if(!c) return; saveWaitCfg(c.dataset.wa,{auto:c.checked}); });
 
 // ---------- 차량 (호차) ----------
 function busesFor(route){
