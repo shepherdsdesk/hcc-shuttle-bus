@@ -70,16 +70,20 @@
   /* ---------- 아래 패널 ---------- */
   .sheet{position:relative;z-index:600;margin-top:-26px;background:var(--bg);border-radius:24px 24px 0 0;box-shadow:0 -6px 24px rgba(15,23,42,.12);padding:10px 16px calc(28px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px}
   .grab{width:40px;height:5px;border-radius:3px;background:#D5DAE3;align-self:center}
-  .news{background:#fff;border:1.5px solid var(--line);border-radius:14px;overflow:hidden}
-  .news>button{all:unset;box-sizing:border-box;width:100%;display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;font-size:13.5px;color:var(--ink)}
-  .news>button .tg{flex:none;background:var(--navy);color:#fff;font-size:11.5px;font-weight:800;border-radius:7px;padding:2px 7px}
-  .news>button .tx{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
-  .news>button .ct{flex:none;color:var(--sub);font-size:12px;font-weight:700}
-  .news>button .ar{flex:none;color:var(--sub);transition:transform .2s}
-  .news.open>button .ar{transform:rotate(180deg)}
-  .news ul{display:none;margin:0;padding:0 14px 12px 30px;font-size:14px;line-height:1.6;color:var(--ink)}
+  .news{background:#fff;border-radius:14px;box-shadow:0 2px 10px rgba(15,23,42,.10);overflow:hidden}
+  .news>button{all:unset;box-sizing:border-box;width:100%;display:flex;align-items:center;gap:8px;padding:7px 10px 7px 8px;cursor:pointer}
+  .news .tg{flex:none;background:var(--navy);color:#fff;font-size:11.5px;font-weight:800;border-radius:8px;padding:3px 8px}
+  .news .vw{position:relative;flex:1;min-width:0;height:20px;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent);mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent)}
+  .news .tr{position:absolute;left:0;top:0;display:flex;white-space:nowrap;will-change:transform;animation:ntk linear infinite}
+  .news .tr span{font-size:13.5px;font-weight:700;color:var(--ink);line-height:20px;padding-right:40px}
+  .news .tr span::before{content:"•";color:var(--amber);margin-right:8px}
+  @keyframes ntk{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  .news .ar{flex:none;color:var(--sub);transition:transform .2s}
+  .news.open .ar{transform:rotate(180deg)}
+  .news ul{display:none;margin:0;padding:2px 14px 10px 28px;font-size:14px;line-height:1.6;color:var(--ink);border-top:1px solid var(--line)}
   .news.open ul{display:block}
-  .news li{margin-top:4px}
+  .news li{margin-top:5px}
+  @media (prefers-reduced-motion:reduce){ .news .tr{animation:none!important} .news .tr span:not(:first-child){display:none} .news .tr span{overflow:hidden;text-overflow:ellipsis} }
   .notice{background:#FFF8EB;border:1.5px solid #FCD9A0;color:var(--amber-ink);border-radius:14px;padding:11px 14px;font-size:14.5px;font-weight:700;line-height:1.55;display:flex;gap:8px}
   .stopcard{display:flex;align-items:center;gap:12px;padding:14px 14px 14px 16px;border-radius:16px;background:#fff;border:2px solid transparent;cursor:pointer;text-align:left;width:100%}
   .stopcard.sel{border-color:var(--navy)}
@@ -234,6 +238,7 @@
           <div><h1>HCC 셔틀버스</h1><small>할렐루야교회 셔틀 실시간 안내</small></div>
           <span class="live" id="conn"><i></i><span>연결 중</span></span>
         </div>
+        <div class="news hide" id="news"></div>
         <div class="hero" id="hero" aria-live="polite"></div>
         <div class="seg" id="routes">
           <button class="on" data-route="yatap">야탑역 셔틀</button>
@@ -245,7 +250,6 @@
     <div class="sheet">
       <div class="grab"></div>
       <div class="notice hide" id="notice"></div>
-      <div class="news hide" id="news"></div>
       <div id="stops" style="display:flex;flex-direction:column;gap:10px"></div>
       <div class="hint">정류장을 누르면 맨 위 도착 시간이 그 정류장으로 바뀌어요</div>
       <div id="ride" style="display:flex;flex-direction:column;gap:10px"></div>
@@ -918,13 +922,23 @@ function setupInstall(){
 const todayKST = () => new Date((typeof serverNow==="function"?serverNow():Date.now())+9*3600e3).toISOString().slice(0,10);
 function activeNews(cfg){ const t=todayKST();
   return Object.entries(cfg||{}).map(([id,v])=>Object.assign({id},v)).filter(n=>n && n.text && n.on!==false && (!n.from||n.from<=t) && (!n.until||n.until>=t)).sort((a,b)=>(a.ts||0)-(b.ts||0)); }
-let newsOpen=false;
+let newsOpen=false, newsSig="", newsCfg=null;
 function drawNews(cfg){
-  const list=activeNews(cfg), el=$("news"); el.classList.toggle("hide",!list.length); if(!list.length) return;
+  newsCfg=cfg;
+  const list=activeNews(cfg), el=$("news"); el.classList.toggle("hide",!list.length);
+  if(!list.length){ newsSig=""; if(typeof fitMap==="function" && map) setTimeout(fitMap,50); return; }
+  const sig=list.map(n=>n.text).join("\u0001")+"|"+newsOpen; if(sig===newsSig) return; const first=!newsSig; newsSig=sig;
   el.classList.toggle("open",newsOpen);
-  el.innerHTML=`<button type="button" aria-expanded="${newsOpen}"><span class="tg">교회 소식</span><span class="tx">${esc(list[0].text)}</span>${list.length>1?`<span class="ct">${list.length}개</span>`:""}<svg class="ar" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button><ul>${list.map(n=>`<li>${esc(n.text)}</li>`).join("")}</ul>`;
+  const one=list.map(n=>`<span>${esc(n.text)}</span>`).join("");
+  el.innerHTML=`<button type="button" aria-expanded="${newsOpen}" aria-label="교회 소식 ${list.length}개 펼치기"><span class="tg">교회 소식</span><span class="vw"><span class="tr">${one}</span></span><svg class="ar" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button><ul>${list.map(n=>`<li>${esc(n.text)}</li>`).join("")}</ul>`;
+  // 한 바퀴를 두 벌 이어 붙여 끊김 없이 흐르게 (초당 약 45px)
+  const tr=el.querySelector(".tr"), vw=el.querySelector(".vw"); let reps=1; const w=tr.scrollWidth||1;
+  while(w*reps<vw.clientWidth && reps<8) reps++;
+  tr.innerHTML=one.repeat(reps*2); tr.style.animationDuration=Math.max(8,(tr.scrollWidth/2)/45).toFixed(1)+"s";
   el.firstElementChild.onclick=()=>{ newsOpen=!newsOpen; drawNews(cfg); };
+  if(first && typeof fitMap==="function" && map) setTimeout(fitMap,50);
 }
+window.addEventListener("resize",()=>{ if(!newsCfg) return; newsSig=""; drawNews(newsCfg); });
 async function startSaint(){
   await initMap(); selectRoute(S.route); setupInstall(); showView();
   S.cameFromMain = location.hash!=="#times";
