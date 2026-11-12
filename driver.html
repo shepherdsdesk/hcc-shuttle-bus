@@ -1495,6 +1495,13 @@ function drvDrawStops(){
   const wc = cfg.mode==="off" ? {} : waitCounts(D.waitC,serverNow());
   D.stopL.clear(); r.stops.forEach(s=>D.stopL.add(s.lat,s.lng,drvStopHtml(s,r.color,wc[s.id]||0),{z:2}));
 }
+// 정류장별 하루 최대 대기 인원 기록 (관리자 통계용)
+function drvPeak(wc){
+  if(!D.route) return; const date=kstDate(serverNow()), key=date+"/"+D.route;
+  if(D.peakKey!==key){ D.peakKey=key; D.peak=null; get(ref(db,`waitpeak/${key}`)).then(s=>{ D.peak=s.val()||{}; drvPeak(wc); }).catch(()=>{ D.peak={}; }); return; }
+  if(!D.peak) return;
+  ROUTES[D.route].stops.forEach(st=>{ const n=wc[st.id]||0; if(n>(D.peak[st.id]||0)){ D.peak[st.id]=n; set(ref(db,`waitpeak/${key}/${st.id}`),n).catch(()=>{}); } });
+}
 function drvWaitDraw(){
   if(!D.waitL) return;
   const cfg=waitCfgOf(D.route||"yatap"), now=serverNow(), r=ROUTES[D.route||"yatap"];
@@ -1504,6 +1511,7 @@ function drvWaitDraw(){
   drvDrawStops();
   $("liveWaitBox").classList.toggle("off",cfg.mode==="off");
   $("liveWait").innerHTML = cfg.mode==="off" ? '<small>사용 안 함</small>' : wc._all+"<small> 명</small>";
+  drvPeak(wc);
   const parts=r.stops.filter(s=>wc[s.id]).map(s=>`<span><b>${esc(s.name)}</b> ${wc[s.id]}명</span>`);
   if(wc._road) parts.push(`<span><b>길에서</b> ${wc._road}명</span>`);
   $("liveWaitRow").innerHTML=parts.join("");

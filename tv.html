@@ -211,22 +211,6 @@ body.light .nx em{color:#B45309}
 .pdots:empty{display:none}
 .pdots i{width:1.3vmin;height:1.3vmin;border-radius:50%;background:rgba(255,255,255,.45)}
 .pdots i.on{background:#fff;transform:scale(1.25)}
-.restbox{grid-area:rest;background:var(--cardA,var(--card));border:.2vmin solid var(--line);border-radius:2vmin;padding:2.4vmin 2.6vmin;display:flex;flex-direction:column;gap:2.2vmin;min-height:0;overflow:hidden}
-.rb-top{display:flex;align-items:center;gap:1.8vmin}
-.rb-ic{font-size:7vmin;line-height:1}
-.restbox h2{margin:0;font-size:4.2vmin;font-weight:900;line-height:1.25}
-.rb-list{display:flex;flex-direction:column;gap:1.4vmin}
-.rb-next{background:var(--chip);border-radius:1.6vmin;padding:1.6vmin 2vmin;display:flex;flex-direction:column;gap:.4vmin}
-.rb-r{display:flex;align-items:center;gap:1vmin;font-size:2.1vmin;color:var(--sub);font-weight:800}
-.rb-r i{width:1.6vmin;height:1.6vmin;border-radius:.4vmin}
-.rb-next b{font-size:4.6vmin;font-weight:900;line-height:1.1}
-.rb-next em{font-style:normal;font-size:3.4vmin;font-weight:900;color:#FCD34D}
-body.light .rb-next em{color:#B45309}
-.rb-next small{font-size:1.9vmin;color:var(--sub);font-weight:700}
-.rb-qr{margin-top:auto;display:flex;align-items:center;gap:1.8vmin}
-.rb-qr img{width:14vmin;height:14vmin;background:#fff;border-radius:1.2vmin;padding:.8vmin;image-rendering:pixelated}
-.rb-qr span{font-size:2vmin;color:var(--sub);font-weight:700;line-height:1.5}
-.rb-qr b{display:block;font-size:2.8vmin;color:var(--ink)}
 /* 한 노선 (가로) */
 body.one:not(.rest) .main{grid-template-columns:1.15fr 1fr .8fr;grid-template-rows:auto minmax(0,1fr);grid-template-areas:"map boards times" "map next times"}
 body.one.pal:not(.rest) .main{grid-template-columns:1.1fr 1fr .78fr;grid-template-rows:auto minmax(0,1fr);grid-template-areas:"map boards poster" "map next poster"}
@@ -248,24 +232,11 @@ body.one .chips b{font-size:2.6vmin}
 body.rest .main{grid-template-columns:1.55fr 1fr;grid-template-rows:minmax(0,1fr);grid-template-areas:"poster rest"}
 body.rest .mapbox, body.rest .boards, body.rest .times, body.rest .nextbox{display:none!important}
 body.rest.noposter .main{grid-template-columns:minmax(0,1fr);grid-template-areas:"rest"}
-body.rest.noposter .restbox{align-items:center;justify-content:center;text-align:center}
-body.rest.noposter .restbox h2{font-size:6vmin}
-body.rest.noposter .rb-list{flex-direction:row;flex-wrap:wrap;justify-content:center}
-body.rest.noposter .rb-next{min-width:40vmin;align-items:center}
-body.rest.noposter .rb-qr{margin-top:2vmin}
 /* 세로 */
 body.portrait.one:not(.rest) .main{grid-template-columns:1fr;grid-template-rows:34% auto auto minmax(0,1fr);grid-template-areas:"map" "boards" "next" "times"}
 body.portrait.one.pal:not(.rest) .main{grid-template-columns:1fr 1fr;grid-template-rows:28% auto auto minmax(0,1fr);grid-template-areas:"map map" "boards boards" "next next" "times poster"}
 body.portrait.rest .main{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;grid-template-areas:"poster" "rest"}
 body.portrait.rest.noposter .main{grid-template-rows:minmax(0,1fr);grid-template-areas:"rest"}
-body.portrait.rest:not(.noposter) .restbox{flex-direction:row;flex-wrap:wrap;align-items:center;gap:1.6vmin 2.4vmin;padding:1.8vmin 2.2vmin}
-body.portrait.rest:not(.noposter) .restbox h2{font-size:3.4vmin}
-body.portrait.rest:not(.noposter) .rb-ic{font-size:5vmin}
-body.portrait.rest:not(.noposter) .rb-list{flex-direction:row;flex:1;flex-wrap:wrap}
-body.portrait.rest:not(.noposter) .rb-qr{margin:0}
-body.portrait.rest:not(.noposter) .rb-qr img{width:11vmin;height:11vmin}
-.rb-memo{margin:.6vmin 0 0;font-size:2.4vmin;font-weight:800;color:#FCD34D}
-body.light .rb-memo{color:#B45309}
 body.one:not(.portrait) .nextbox .nxs{flex:1;align-content:center;grid-template-columns:1fr}
 body.one:not(.portrait) .nx{grid-template-columns:auto auto 1fr;grid-template-areas:"lab lab lab" "t in sm"}
 body.one:not(.portrait) .nx small{justify-self:end}
@@ -278,64 +249,114 @@ body.light .poster .pslides img{box-shadow:0 1.4vmin 3.2vmin rgba(60,40,10,.22),
 .pdots{background:rgba(0,0,0,.18)!important;bottom:1.3vmin!important}
 body.light .pdots i{background:rgba(0,0,0,.25)} body.light .pdots i.on{background:rgba(0,0,0,.65)}
 /* 안내 칸 */
+/* ===== 운행 없는 날 안내 칸 (타일 디자인) ===== */
+.restbox{grid-area:rest;background:var(--cardA,var(--card));border:.2vmin solid var(--line);border-radius:2vmin;padding:2vmin 2.2vmin;display:flex;flex-direction:column;gap:1.4vmin;min-height:0;overflow:hidden}
+.rb-head{grid-area:head;display:flex;flex-direction:column;gap:1.2vmin;justify-content:center;min-width:0}
+.rb-top{display:flex;align-items:center;gap:1.6vmin}
+.rb-ic{font-size:5.6vmin;line-height:1}
+.restbox h2{margin:0;font-size:3.6vmin;font-weight:900;line-height:1.25;word-break:keep-all}
+.rb-memo{margin:.5vmin 0 0;font-size:2.2vmin;font-weight:800;color:#FCD34D}
+body.light .rb-memo{color:#B45309}
+.rb-list{display:flex;flex-direction:column;gap:1vmin}
+.rb-next{background:var(--chip);border-radius:1.6vmin;padding:1.2vmin 1.8vmin;display:flex;flex-direction:column;gap:.3vmin}
+.rb-r{display:flex;align-items:center;gap:1vmin;font-size:1.9vmin;color:var(--sub);font-weight:800}
+.rb-r i{width:1.4vmin;height:1.4vmin;border-radius:.4vmin}
+.rb-next b{font-size:3.4vmin;font-weight:900;line-height:1.15}
 .rb-next b em{font-style:normal;color:#FCD34D;margin-left:.6vmin}
 body.light .rb-next b em{color:#B45309}
-.restbox{gap:1.6vmin!important;padding:2vmin 2.2vmin!important}
-.restbox h2{font-size:3.6vmin!important}
-.rb-ic{font-size:6vmin!important}
-.rb-next{padding:1.2vmin 1.8vmin!important}
-.rb-next b{font-size:3.6vmin!important}
-.rb-more{display:flex;flex-direction:column;gap:1.4vmin;min-height:0}
-.rb-sec{background:var(--chip);border-radius:1.4vmin;padding:1.1vmin 1.6vmin}
-.rb-sec h3{margin:0 0 .6vmin;font-size:2vmin;font-weight:900;color:var(--sub)}
-.rb-verse p{margin:0;font-size:2.5vmin;font-weight:800;line-height:1.45}
-.rb-verse cite{display:block;margin-top:.4vmin;font-style:normal;font-size:1.8vmin;color:var(--sub);font-weight:700;text-align:right}
-.rb-wor .wr{display:flex;gap:1.4vmin;align-items:baseline;font-size:2.1vmin;padding:.25vmin 0}
-.rb-wor .wr b{min-width:7vmin;font-weight:900}
-.rb-wor .wr span{color:var(--sub);font-weight:700}
-.rb-week table{width:100%;border-collapse:collapse;table-layout:fixed}
-.rb-week th{font-size:1.7vmin;color:var(--sub);font-weight:800;padding:.2vmin 0}
-.rb-week td{text-align:center;padding:.4vmin 0;font-size:1.6vmin;line-height:1.2}
-.rb-week td b{display:block;font-size:1.85vmin;font-weight:900;font-variant-numeric:tabular-nums}
-.rb-week td small{color:var(--sub);font-weight:700}
-.rb-week td .off{color:#64748B;font-weight:800}
-.rb-week td.rn{text-align:left;font-weight:800;font-size:1.6vmin;width:15vmin;white-space:nowrap}
-.rb-week td.rn i{display:inline-block;width:1.2vmin;height:1.2vmin;border-radius:.3vmin;margin-right:.5vmin}
-.rb-week .today{background:rgba(245,158,11,.18);border-radius:.6vmin}
-.rb-week th.today{color:#F59E0B}
-body.rest.noposter .rb-more{width:min(100%,110vmin)}
-body.rest.noposter .rb-top{justify-content:center}
-body.portrait.rest:not(.noposter) .rb-more{flex-direction:row;flex-wrap:wrap;width:100%}
-body.portrait.rest:not(.noposter) .rb-more .rb-sec{flex:1 1 40vmin}
-body.rest:not(.noposter) .rb-more .rb-sec{display:none;animation:rbin .6s ease}
-body.rest:not(.noposter) .rb-more .rb-sec.on{display:block}
+.rb-next small{font-size:1.7vmin;color:var(--sub);font-weight:700}
+.rb-more{flex:1;display:flex;flex-direction:column;gap:1.2vmin;min-height:0}
+.rb-sec{background:var(--chip);border-radius:1.6vmin;padding:1.4vmin 1.8vmin;display:flex;flex-direction:column;gap:1vmin;min-height:0;min-width:0}
+.rb-sec h3{margin:0;font-size:2.1vmin;font-weight:900;color:var(--sub)}
+.rb-verse{grid-area:verse}.rb-wor{grid-area:wor}.rb-week{grid-area:week}
+.rb-verse p{margin:0;flex:1;display:flex;align-items:center;font-size:3vmin;font-weight:800;line-height:1.55;word-break:keep-all}
+.rb-verse cite{align-self:flex-end;font-style:normal;font-size:1.9vmin;color:var(--sub);font-weight:800}
+.wtiles{flex:1;display:grid;grid-template-columns:repeat(auto-fit,minmax(15vmin,1fr));gap:1vmin;align-content:center}
+.wt{background:var(--cardA,var(--card));border:.2vmin solid var(--line);border-radius:1.2vmin;padding:1.1vmin .6vmin;text-align:center;display:flex;flex-direction:column;justify-content:center;gap:.15vmin;min-width:0}
+.wt .n{font-size:2vmin;font-weight:900;color:var(--deco)}
+.wt .ap{font-size:1.5vmin;color:var(--sub);font-weight:800}
+.wt .t{font-size:3.6vmin;font-weight:900;line-height:1.05;font-variant-numeric:tabular-nums}
+.wt .pl{font-size:1.6vmin;color:var(--sub);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wk{flex:1;display:grid;grid-template-columns:auto repeat(7,minmax(0,1fr));gap:.7vmin;align-content:center;align-items:stretch}
+.wk .dh{text-align:center;font-size:1.8vmin;font-weight:900;color:var(--sub)}
+.wk .dh.today{color:var(--deco)}
+.wk .rn{display:flex;align-items:center;gap:.6vmin;font-size:1.7vmin;font-weight:900;white-space:nowrap;padding-right:.4vmin}
+.wk .rn i{width:1.2vmin;height:1.2vmin;border-radius:.3vmin;flex:none}
+.wk .c{background:var(--cardA,var(--card));border:.2vmin solid var(--line);border-radius:1vmin;text-align:center;padding:.8vmin .1vmin;display:flex;flex-direction:column;justify-content:center;min-width:0}
+.wk .c b{font-size:2.2vmin;font-weight:900;font-variant-numeric:tabular-nums;line-height:1.1}
+.wk .c small{font-size:1.3vmin;color:var(--sub);font-weight:700}
+.wk .c.off b{font-size:1.9vmin;color:var(--sub)}
+.wk .c.today{border-color:var(--deco);box-shadow:inset 0 0 0 .2vmin var(--deco)}
+/* 포스터와 함께: 말씀 · 예배 · 이번 주 운행을 10초마다 하나씩 */
+body.rest:not(.noposter) .rb-more .rb-sec{display:none;flex:1;animation:rbin .6s ease}
+body.rest:not(.noposter) .rb-more .rb-sec.on{display:flex}
 @keyframes rbin{from{opacity:0;transform:translateY(.8vmin)}to{opacity:1;transform:none}}
 .rb-dots{display:flex;gap:.8vmin;justify-content:center}
 .rb-dots i{width:1vmin;height:1vmin;border-radius:50%;background:var(--line)}
 .rb-dots i.on{background:var(--deco)}
 body.rest.noposter .rb-dots{display:none}
-body.rest:not(.noposter) .rb-more{flex:1;justify-content:flex-start}
-body.rest:not(.noposter):not(.portrait) .rb-verse p{font-size:3vmin}
-body.rest:not(.noposter):not(.portrait) .rb-wor .wr{font-size:2.5vmin;padding:.45vmin 0}
-body.rest:not(.noposter):not(.portrait) .rb-week td b{font-size:2.2vmin}
-body.rest:not(.noposter):not(.portrait) .rb-week td.rn{font-size:1.8vmin;width:auto}
-body.rest:not(.noposter):not(.portrait) .rb-week table tr td.rn{display:block;text-align:left;padding-top:1vmin}
-body.portrait.rest:not(.noposter) .rb-more .rb-sec{flex:1 1 100%}
-body.rest.noposter .rb-more{display:grid!important;grid-template-columns:1fr 1fr;gap:1.4vmin}
-body.rest.noposter .rb-week{grid-column:1/-1}
-body.rest.noposter .restbox h2{font-size:4.6vmin!important}
-body.rest.noposter .restbox{gap:1.3vmin!important;justify-content:flex-start!important;padding-top:2.4vmin!important}
-body.rest.noposter .rb-wor .wr{padding:.1vmin 0}
-body.rest.noposter .rb-sec{padding:.8vmin 1.4vmin}
-body.rest.noposter .rb-verse p{font-size:2.3vmin}
-body.rest.noposter .rb-wor .wr{font-size:1.9vmin}
-body.rest.noposter .rb-next b{font-size:3.2vmin!important}
-body.portrait.rest:not(.noposter) .restbox{display:grid!important;grid-template-columns:auto 1fr;grid-template-areas:"top list" "more more";align-items:center}
-body.portrait.rest:not(.noposter) .rb-top{grid-area:top}
-body.portrait.rest:not(.noposter) .rb-list{grid-area:list;flex-direction:column!important}
-body.portrait.rest:not(.noposter) .rb-more{grid-area:more;flex-direction:column!important}
-body.portrait.rest:not(.noposter) .rb-verse p{font-size:2.6vmin}
-body.portrait.rest:not(.noposter) .rb-wor .wr{font-size:2.2vmin}
+/* 포스터 없는 날 (가로): 위 [안내 | 말씀] · 가운데 예배 · 아래 이번 주 운행, 화면 높이를 나눠 씀 */
+body.rest.noposter .restbox{display:grid;gap:1.4vmin;padding:2vmin;grid-template-columns:1fr 1fr;grid-template-rows:1.05fr 1fr 1.1fr;grid-template-areas:"head verse" "wor wor" "week week"}
+body.rest.noposter .restbox.nv{grid-template-areas:"head head" "wor wor" "week week"}
+body.rest.noposter .restbox.nw{grid-template-rows:1fr 1.1fr;grid-template-areas:"head verse" "week week"}
+body.rest.noposter .restbox.nv.nw{grid-template-rows:auto 1fr;grid-template-areas:"head" "week";grid-template-columns:1fr}
+body.rest.noposter .rb-more{display:contents}
+body.rest.noposter .rb-head{padding:0 1vmin}
+body.rest.noposter .restbox h2{font-size:4.4vmin}
+body.rest.noposter .rb-ic{font-size:7vmin}
+body.rest.noposter .rb-next b{font-size:4vmin}
+body.rest.noposter .rb-verse p{font-size:3.6vmin}
+body.rest.noposter .wtiles{grid-template-columns:repeat(auto-fit,minmax(18vmin,1fr))}
+body.rest.noposter .wt .t{font-size:4.8vmin}
+body.rest.noposter .wt .n{font-size:2.4vmin}
+body.rest.noposter .wt .pl,body.rest.noposter .wt .ap{font-size:1.9vmin}
+body.rest.noposter .wk .c b{font-size:3vmin}
+body.rest.noposter .wk .c small{font-size:1.7vmin}
+body.rest.noposter .wk .dh{font-size:2.2vmin}
+body.rest.noposter .wk .rn{font-size:2.1vmin}
+/* 포스터 없는 날 (세로): 한 줄씩 위에서 아래로 */
+body.portrait.rest.noposter .restbox{grid-template-columns:1fr;grid-template-rows:auto .85fr 1.3fr 1.25fr;grid-template-areas:"head" "verse" "wor" "week"}
+body.portrait.rest.noposter .restbox.nv{grid-template-rows:auto 1.3fr 1.25fr;grid-template-areas:"head" "wor" "week"}
+body.portrait.rest.noposter .restbox.nw{grid-template-rows:auto 1fr 1.25fr;grid-template-areas:"head" "verse" "week"}
+body.portrait.rest.noposter .restbox.nv.nw{grid-template-rows:auto 1fr;grid-template-areas:"head" "week"}
+body.portrait.rest .rb-head{flex-direction:row;align-items:center;gap:2vmin}
+body.portrait.rest .rb-top{flex:1.1}
+body.portrait.rest .rb-list{flex:1}
+body.portrait.rest.noposter .wtiles{grid-template-columns:repeat(3,1fr)}
+/* 포스터와 함께 (세로): 포스터 아래 [안내 | 바뀌는 칸] */
+body.portrait.rest:not(.noposter) .restbox{display:grid;grid-template-columns:1fr;grid-template-rows:auto auto;grid-template-areas:"head" "more";padding:1.6vmin 2vmin}
+body.portrait.rest:not(.noposter) .rb-more{grid-area:more;min-height:24vmin}
+body.portrait.rest:not(.noposter) .restbox h2{font-size:3.2vmin}
+body.portrait.rest:not(.noposter) .wtiles{grid-template-columns:repeat(auto-fit,minmax(17vmin,1fr))}
+/* 세로 TV 머리글: 시계가 잘리지 않게 날씨는 기온만 */
+body.portrait .wx .wd{display:none}
+body.portrait .hdeco{display:none}
+body.portrait header h1{font-size:3.4vmin!important}
+body.portrait header small{font-size:1.7vmin}
+body.portrait .clock b{font-size:4.4vmin}
+body.portrait .hright{gap:1.6vmin}
+body.portrait .live{margin-left:1vmin}
+.rb-next b em{white-space:nowrap}
+body.portrait.rest .rb-next b em{display:block;margin:0}
+body.rest.noposter:not(.portrait) .restbox{grid-template-rows:minmax(0,1fr) auto auto}
+body.rest.noposter:not(.portrait) .restbox.nw{grid-template-rows:minmax(0,1fr) auto}
+body.rest.noposter:not(.portrait) .restbox h2{font-size:4vmin}
+body.rest.noposter:not(.portrait) .rb-ic{font-size:6vmin}
+body.rest.noposter:not(.portrait) .rb-next b{font-size:3.4vmin}
+body.rest.noposter:not(.portrait) .rb-verse p{font-size:3.1vmin}
+body.rest.noposter:not(.portrait) .wt{padding:.8vmin .6vmin}
+body.rest.noposter:not(.portrait) .wt .t{font-size:3.8vmin}
+body.rest.noposter:not(.portrait) .wt .n{font-size:2.1vmin}
+body.rest.noposter:not(.portrait) .wt .pl,body.rest.noposter:not(.portrait) .wt .ap{font-size:1.6vmin}
+body.rest.noposter:not(.portrait) .wk{gap:.6vmin}
+body.rest.noposter:not(.portrait) .wk .c{padding:.6vmin .1vmin}
+body.rest.noposter:not(.portrait) .wk .c b{font-size:2.5vmin}
+body.rest.noposter:not(.portrait) .wk .c small{font-size:1.4vmin}
+body.rest.noposter:not(.portrait) .wk .dh{font-size:1.9vmin}
+body.rest.noposter:not(.portrait) .rb-sec{padding:1.1vmin 1.6vmin;gap:.7vmin}
+body.rest.noposter:not(.portrait) .restbox:not(.nv) h2 br{display:none}
+body.rest.noposter:not(.portrait) .restbox:not(.nv) h2{font-size:3.4vmin}
+body.rest.noposter:not(.portrait) .restbox{grid-template-rows:auto auto auto;align-content:space-between}
 </style>
 </head>
 <body>
@@ -1093,31 +1114,39 @@ function todayFirst(r){ const {day}=nowKST(); let best=null;
 function weekRoutes(){ if(ROUTES[ONLY]) return [ONLY]; if(TV_ROUTES==="yatap"||TV_ROUTES==="park") return [TV_ROUTES]; return ["yatap","park"]; }
 function weekHtml(){
   const {day}=nowKST(), order=[1,2,3,4,5,6,0], short={0:"주일",1:"월",2:"화",3:"수",4:"목",5:"금",6:"토"};
-  let h=`<div class="rb-sec rb-week"><h3>🗓 이번 주 셔틀 운행</h3><table><tr><th></th>${order.map(d=>`<th class="${d===day?'today':''}">${short[d]}</th>`).join("")}</tr>`;
+  let h=`<div class="rb-sec rb-week"><h3>🗓 이번 주 셔틀 운행</h3><div class="wk"><span></span>${order.map(d=>`<span class="dh${d===day?' today':''}">${short[d]}${d===day?' · 오늘':''}</span>`).join("")}`;
   weekRoutes().forEach(r=>{ const R=ROUTES[r];
-    h+=`<tr><td class="rn"><i style="background:${R.color}"></i>${R.name}</td>`+order.map(d=>{ const all=[]; (DEP_ROWS[r]||[]).forEach(([id])=>scheduleFor(r,id,d).forEach(x=>all.push(toM(x))));
-      return `<td class="${d===day?'today':''}">${all.length?`<b>${hhmm(Math.min(...all))}</b><small>~${hhmm(Math.max(...all))}</small>`:'<span class="off">쉼</span>'}</td>`; }).join("")+`</tr>`; });
-  return h+`</table></div>`;
+    h+=`<span class="rn"><i style="background:${R.color}"></i>${R.name}</span>`+order.map(d=>{ const all=[]; (DEP_ROWS[r]||[]).forEach(([id])=>scheduleFor(r,id,d).forEach(x=>all.push(toM(x))));
+      return all.length ? `<span class="c${d===day?' today':''}"><b>${hhmm(Math.min(...all))}</b><small>~${hhmm(Math.max(...all))}</small></span>` : `<span class="c off${d===day?' today':''}"><b>쉼</b></span>`; }).join(""); });
+  return h+`</div></div>`;
+}
+function worshipHtml(lines){
+  return `<div class="rb-sec rb-wor"><h3>⛪ 주일 예배 안내</h3><div class="wtiles">`+lines.map(line=>{
+    const p=line.split(/\s*[·|]\s*/), name=p[0]||"", rest=p.slice(1);
+    let ti=rest.findIndex(x=>/\d{1,2}:\d{2}/.test(x)), ap="", t="", place=[];
+    if(ti>=0){ const m=rest[ti].match(/(오전|오후)?\s*(\d{1,2}:\d{2})/); ap=m[1]||""; t=m[2]; place=rest.filter((_,k)=>k!==ti); } else place=rest;
+    return `<div class="wt"><span class="n">${esc(name)}</span>${ap?`<span class="ap">${ap}</span>`:""}${t?`<span class="t">${t}</span>`:""}${place.length?`<span class="pl">${esc(place.join(" · "))}</span>`:""}</div>`; }).join("")+`</div></div>`;
 }
 function drawRest(){
   const memo = REST_WHY==="manual" ? String(REST_CFG.dates[todayStr()]||"").trim() : "";
   const early = REST_WHY==="early";
   const firsts = early ? RT.map(r=>todayFirst(r)).filter(Boolean).sort((a,b)=>a.m-b.m) : [];
-  const title = REST_WHY==="end" ? "오늘 셔틀 운행이<br>모두 끝났습니다"
-              : early ? `오늘 셔틀은<br>${firsts.length?ampm(firsts[0].m):""}에 시작합니다` : "오늘은 셔틀이<br>운행하지 않습니다";
+  const title = REST_WHY==="end" ? "오늘 셔틀 운행이 <br>모두 끝났습니다"
+              : early ? `오늘 셔틀은 <br>${firsts.length?ampm(firsts[0].m):""}에 시작합니다` : "오늘은 셔틀이 <br>운행하지 않습니다";
   const sub = memo || (REST_WHY==="end" ? "함께해 주셔서 감사합니다" : early ? "첫차 1시간 전부터 실시간 안내가 나옵니다" : "");
-  let h=`<div class="rb-top"><span class="rb-ic" aria-hidden="true">${REST_WHY==="end"?"🙏":early?"🌅":"🚌"}</span><div><h2>${title}</h2>${sub?`<p class="rb-memo">${esc(sub)}</p>`:""}</div></div><div class="rb-list">`;
+  let h=`<div class="rb-head"><div class="rb-top"><span class="rb-ic" aria-hidden="true">${REST_WHY==="end"?"🙏":early?"🌅":"🚌"}</span><div><h2>${title}</h2>${sub?`<p class="rb-memo">${esc(sub)}</p>`:""}</div></div><div class="rb-list">`;
   RT.forEach(r=>{ const R=ROUTES[r];
     if(early){ const f=todayFirst(r); h+=`<div class="rb-next"><span class="rb-r"><i style="background:${R.color}"></i>${R.name} 오늘 첫차</span>${f?`<b>${ampm(f.m)}</b><small>${f.lab}</small>`:`<b>오늘은 쉼</b>`}</div>`; return; }
     const n=nextService(r);
     h+=`<div class="rb-next"><span class="rb-r"><i style="background:${R.color}"></i>${R.name} 다음 운행</span>${n?`<b>${n.k===1?"내일 ":""}${n.k>6?n.ds.slice(5).replace("-","/")+" ":""}${DAYNAME[n.d]} <em>${ampm(n.m)} 첫차</em></b><small>${n.lab}</small>`:`<b>시간표 확인</b>`}</div>`; });
-  h+=`</div><div class="rb-more">`;
+  h+=`</div></div><div class="rb-more">`;
   const v=String(REST_CFG.verse||"").trim();
   if(v) h+=`<div class="rb-sec rb-verse"><h3>📖 이번 주 말씀</h3><p>${esc(v).replace(/\n/g,"<br>")}</p>${REST_CFG.verseRef?`<cite>${esc(REST_CFG.verseRef)}</cite>`:""}</div>`;
   const w=String(REST_CFG.worship||"").split(/\n/).map(x=>x.trim()).filter(Boolean);
-  if(w.length) h+=`<div class="rb-sec rb-wor"><h3>⛪ 주일 예배 안내</h3>${w.map(line=>{ const p=line.split(/\s*[·|]\s*/); return `<div class="wr"><b>${esc(p[0])}</b>${p.slice(1).map(x=>`<span>${esc(x)}</span>`).join("")}</div>`; }).join("")}</div>`;
+  if(w.length) h+=worshipHtml(w);
   h+=weekHtml()+`</div>`;
-  setH($("restBox"),h); rbShow();
+  const box=$("restBox"); box.classList.toggle("nv",!v); box.classList.toggle("nw",!w.length);
+  setH(box,h); rbShow();
 }
 // 안내 칸이 좁을 때(포스터와 함께)는 말씀 · 예배 안내 · 이번 주 운행을 10초마다 하나씩 보여 줌
 const RB={i:0,t:0};
