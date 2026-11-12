@@ -253,7 +253,7 @@
       <div class="grab"></div>
       <div class="notice hide" id="notice"></div>
       <div id="stops" style="display:flex;flex-direction:column;gap:10px"></div>
-      <div class="hint" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="flex:1;min-width:200px">정류장을 누르면 맨 위 도착 시간이 그 정류장으로 바뀌어요</span><button type="button" id="voiceBtn" class="voicebtn" aria-pressed="true">🔊 소리 알림 켜짐</button></div>
+      <div class="hint" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="flex:1;min-width:200px">정류장을 누르면 맨 위 도착 시간이 그 정류장으로 바뀌어요</span><button type="button" id="voiceBtn" class="voicebtn" aria-pressed="true">🔊 소리 알림 켜짐</button><button type="button" id="voiceTry" class="voicebtn">▶ 들어보기</button></div>
       <div id="ride" style="display:flex;flex-direction:column;gap:10px"></div>
       <div class="card">
         <h2>다가오는 출발 시간 <small id="upNow"></small></h2>
@@ -812,7 +812,7 @@ function speak(text,force){
   if((!VOICE && !force) || !("speechSynthesis" in window)) return;
   try{ const u=new SpeechSynthesisUtterance(text); u.lang="ko-KR"; u.rate=0.95; u.pitch=1; const v=koVoice(); if(v) u.voice=v; speechSynthesis.speak(u); }catch(_){}
 }
-function drawVoiceBtn(){ const b=$("voiceBtn"); if(!b) return; b.classList.toggle("on",VOICE); b.setAttribute("aria-pressed",String(VOICE)); b.textContent= VOICE?"🔊 소리 알림 켜짐":"🔇 소리 알림 꺼짐"; if(!("speechSynthesis" in window)) b.style.display="none"; }
+function drawVoiceBtn(){ const b=$("voiceBtn"); if(!b) return; b.classList.toggle("on",VOICE); b.setAttribute("aria-pressed",String(VOICE)); b.textContent= VOICE?"🔊 소리 알림 켜짐":"🔇 소리 알림 꺼짐"; if(!("speechSynthesis" in window)){ b.style.display="none"; const t=$("voiceTry"); if(t) t.style.display="none"; } }
 async function notify(title,body,say){
   toast(title,body); if(say) speak(say);
   try{ navigator.vibrate && navigator.vibrate([250,120,250]); }catch(_){}
@@ -1056,6 +1056,7 @@ function applyBrand(c){
 }
 async function startSaint(){
   drawVoiceBtn();
+  $("voiceTry").onclick=()=>speak("셔틀버스 곧 도착합니다",true);
   $("voiceBtn").onclick=()=>{ VOICE=!VOICE; storage.set("voice",VOICE?"1":"0"); drawVoiceBtn(); if(VOICE) speak("소리 알림을 켰어요",true); else { try{ speechSynthesis.cancel(); }catch(_){} } };
   try{ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged=()=>{}; }catch(_){}
   await initMap(); selectRoute(S.route); setupInstall(); showView();
