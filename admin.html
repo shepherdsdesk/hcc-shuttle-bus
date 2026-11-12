@@ -489,7 +489,19 @@ async function getKakaoKey(db, ref, get){
   let cached=null; try{ cached=localStorage.getItem("kakaoKey"); }catch(_){}
   const fresh = get(ref(db,"config/kakaoKey")).then(s=>{ const v=(s.val()||"").trim(); try{ localStorage.setItem("kakaoKey",v); }catch(_){} return v; }).catch(()=>cached||"");
   if(cached){ fresh.then(v=>{ if(v!==cached) console.info("지도 키가 바뀌었습니다. 다음에 열 때 반영됩니다."); }); return cached; }
-  return await Promise.race([fresh, new Promise(r=>setTimeout(()=>r(""),3000))]);
+  return await Promise.race([fresh, new Promise(r=>setTimeout(()=>r(""),7000))]);
+}
+// 관리자가 지도 키를 넣거나 바꾸면, 열려 있는 화면도 한 번 새로고침해서 바로 바뀌게 함
+// (canReload가 false를 돌려주면 — 예: 드라이버 운행 중 — 새로고침하지 않고 다음에 열 때 반영)
+function watchKakaoKey(db, ref, onValue, used, canReload){
+  onValue(ref(db,"config/kakaoKey"), s=>{
+    const v=(s.val()||"").trim(); try{ localStorage.setItem("kakaoKey",v); }catch(_){}
+    if(v===(used||"")) return;
+    const tag="kkReload:"+v; let done=null; try{ done=sessionStorage.getItem(tag); }catch(_){}
+    if(done || (canReload && !canReload())) return;
+    try{ sessionStorage.setItem(tag,"1"); }catch(_){}
+    location.reload();
+  }, ()=>{});
 }
 // ==== MAPKIT END ====
 

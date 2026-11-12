@@ -524,7 +524,19 @@ async function getKakaoKey(db, ref, get){
   let cached=null; try{ cached=localStorage.getItem("kakaoKey"); }catch(_){}
   const fresh = get(ref(db,"config/kakaoKey")).then(s=>{ const v=(s.val()||"").trim(); try{ localStorage.setItem("kakaoKey",v); }catch(_){} return v; }).catch(()=>cached||"");
   if(cached){ fresh.then(v=>{ if(v!==cached) console.info("지도 키가 바뀌었습니다. 다음에 열 때 반영됩니다."); }); return cached; }
-  return await Promise.race([fresh, new Promise(r=>setTimeout(()=>r(""),3000))]);
+  return await Promise.race([fresh, new Promise(r=>setTimeout(()=>r(""),7000))]);
+}
+// 관리자가 지도 키를 넣거나 바꾸면, 열려 있는 화면도 한 번 새로고침해서 바로 바뀌게 함
+// (canReload가 false를 돌려주면 — 예: 드라이버 운행 중 — 새로고침하지 않고 다음에 열 때 반영)
+function watchKakaoKey(db, ref, onValue, used, canReload){
+  onValue(ref(db,"config/kakaoKey"), s=>{
+    const v=(s.val()||"").trim(); try{ localStorage.setItem("kakaoKey",v); }catch(_){}
+    if(v===(used||"")) return;
+    const tag="kkReload:"+v; let done=null; try{ done=sessionStorage.getItem(tag); }catch(_){}
+    if(done || (canReload && !canReload())) return;
+    try{ sessionStorage.setItem(tag,"1"); }catch(_){}
+    location.reload();
+  }, ()=>{});
 }
 // ==== MAPKIT END ====
 
@@ -546,7 +558,9 @@ const DAYNAME = {0:"주일",1:"월요일",2:"화요일",3:"수요일",4:"목요�
 // ---------- 지도 ----------
 const stopHtml=(s,c)=>`<div class="stopmk" style="border-color:${c}"><span class="stoplab">${esc(s.name)}</span></div>`;
 async function initMap(){
-  map = await MapKit.create("map",{kakaoKey: await getKakaoKey(db,ref,get)});
+  const kk=await getKakaoKey(db,ref,get);
+  map = await MapKit.create("map",{kakaoKey: kk});
+  watchKakaoKey(db,ref,onValue,kk);
   stopLayer=map.layer(); busLayer=map.layer(); meLayer=map.layer();
   map.onDrag(()=>{ userMoved=true; });
   if("ResizeObserver" in window) new ResizeObserver(()=>{ map.resize(); if(!userMoved) fitMap(); }).observe($("map"));
@@ -860,7 +874,7 @@ $("ttGroups").addEventListener("click",e=>{ const b=e.target.closest("button[dat
 function showView(){
   const t = location.hash==="#times";
   $("vMain").classList.toggle("hide",t); $("vTimes").classList.toggle("hide",!t);
-  if(t){ S.ttDay=null; drawTimes(); window.scrollTo(0,0); } else if(map){ setTimeout(()=>{ map.invalidateSize(); if(!userMoved) fitMap(); },30); }
+  if(t){ S.ttDay=null; drawTimes(); window.scrollTo(0,0); } else if(map){ setTimeout(()=>{ map.resize(); if(!userMoved) fitMap(); },30); }
 }
 $("toTimes").onclick=()=>{ location.hash="times"; };
 $("ttBack").onclick=()=>{ if(history.length>1 && S.cameFromMain) history.back(); else location.hash=""; };
@@ -951,7 +965,9 @@ function legCheck(lat,lng){
 }
 async function initDrvMap(){
   if(!D.map){
-    D.map=await MapKit.create("drvMap",{kakaoKey: await getKakaoKey(db,ref,get)});
+    const kk=await getKakaoKey(db,ref,get);
+    D.map=await MapKit.create("drvMap",{kakaoKey: kk});
+    watchKakaoKey(db,ref,onValue,kk,()=>!D.on);
     D.stopL=D.map.layer(); D.waitL=D.map.layer(); D.meL=D.map.layer();
     D.map.onDrag(()=>{ D.userMoved=true; setTimeout(()=>{ D.userMoved=false; },20000); });
   }
