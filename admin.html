@@ -58,6 +58,12 @@
   .row2{display:flex;flex-wrap:wrap;gap:14px}
   .row2>.card{flex:1 1 400px;min-width:0}
   #map{height:420px;border-radius:14px;overflow:hidden;z-index:0}
+  #stopMap{height:380px;border-radius:14px;overflow:hidden;z-index:0;margin-top:10px}
+  .serow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 10px;border-radius:12px;border:1px solid var(--line);margin-bottom:6px}
+  .serow.on{border-color:#D97706;background:#FFFBEB}
+  .serow b{min-width:150px}
+  .serow select{width:auto;margin:0 0 0 4px;padding:6px 8px}
+  .serow .btn{padding:7px 11px;font-size:13px}
   table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
   th{font-size:12px;color:var(--sub);font-weight:700;text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
   td{padding:9px 6px;border-bottom:1px solid #EEF1F6;vertical-align:top}
@@ -275,6 +281,12 @@
         </div>
       </div>
       <div class="card">
+        <h2>정류장 위치 · 도착 반경 <small>버스가 이 원 안에 들어오면 ‘도착’으로 보고 알림을 보냅니다</small></h2>
+        <div id="stopEdit"></div>
+        <div id="stopMap"></div>
+        <p class="muted" style="margin:8px 0 0">‘지도에서 위치 고르기’를 누른 뒤 지도에서 버스가 실제로 서는 곳(예: 교회 입구 도로)을 누르세요. 교회처럼 넓은 곳은 반경을 120~150m로 두면 입구에만 와도 도착 알림이 갑니다. 저장하면 성도님·드라이버·TV 화면에 바로 반영됩니다.</p>
+      </div>
+      <div class="card">
         <h2>지도 설정 <small>카카오 지도 키를 넣으면 성도님·드라이버·관리자·TV 화면 지도가 카카오맵으로 바뀝니다</small></h2>
         <div class="row">
           <input id="kKey" placeholder="카카오 JavaScript 키 (예: 1a2b3c…)" style="max-width:380px;margin:0" autocomplete="off">
@@ -342,10 +354,15 @@ const firebaseConfig = {
 const STALE_MS=90e3, GONE_MS=10*60e3, WAIT_MS=15*60e3;
 const ROUTES = {
   yatap:{ name:"야탑역 셔틀", short:"야탑", color:"#1B2B5C",
-    stops:[{name:"야탑역 BYC 앞",lat:37.41093,lng:127.12925},{name:"할렐루야교회",lat:37.41037,lng:127.15612}] },
+    stops:[{id:"byc",name:"야탑역 BYC 앞",lat:37.41093,lng:127.12925,r:60},{id:"church",name:"할렐루야교회",lat:37.40990,lng:127.15590,r:120}] },
   park:{ name:"파킹엔젤스", short:"P", color:"#0F766E",
-    stops:[{name:"테크노파크 C동",lat:37.40500,lng:127.15521},{name:"차량등록사업소 주차장",lat:37.40691,lng:127.15397},{name:"할렐루야교회",lat:37.41037,lng:127.15612}] }
+    stops:[{id:"cdong",name:"테크노파크 C동",lat:37.40500,lng:127.15521,r:60},{id:"dmv",name:"차량등록사업소 주차장",lat:37.40691,lng:127.15397,r:80},{id:"church",name:"할렐루야교회",lat:37.40990,lng:127.15590,r:120}] }
 };
+Object.values(ROUTES).forEach(R=>R.stops.forEach(s=>{ s._def={lat:s.lat,lng:s.lng,r:s.r}; }));
+function applyStops(cfg){ let changed=false; Object.values(ROUTES).forEach(R=>R.stops.forEach(s=>{ const o=(cfg&&cfg[s.id])||{}, d=s._def; const lat=typeof o.lat==="number"?o.lat:d.lat, lng=typeof o.lng==="number"?o.lng:d.lng, r=typeof o.r==="number"?o.r:d.r; if(lat!==s.lat||lng!==s.lng||r!==s.r){ s.lat=lat; s.lng=lng; s.r=r; changed=true; } })); return changed; }
+const stopR = s => s.r||60;
+// 정류장 편집용 목록 (교회는 두 노선이 함께 씀)
+const STOP_EDIT=[["byc","yatap"],["church","yatap"],["cdong","park"],["dmv","park"]].map(([id,r])=>({id,route:r,stop:ROUTES[r].stops.find(x=>x.id===id)}));
 const busColor=r=>ROUTES[r].color;
 // 교회행 = 노선색으로 꽉 찬 표시, 반대 방향 = 흰 바탕 테두리
 const chipHtml=(r,bus,to)=> to && to!=="교회" ? `<span class="chip out" style="color:${busColor(r)};border-color:${busColor(r)}">${bus}호차</span>` : `<span class="chip" style="background:${busColor(r)}">${bus}호차</span>`;
@@ -419,7 +436,10 @@ const MapKit = (()=>{
       },
       center(lat,lng,keep){ map.setCenter(new K.LatLng(lat,lng)); if(!keep && map.getLevel()>4) map.setLevel(4); },
       resize(){ map.relayout(); },
-      onDrag(cb){ K.event.addListener(map,"dragstart",cb); }
+      onDrag(cb){ K.event.addListener(map,"dragstart",cb); },
+      circle(lat,lng,r,color){ const c=new K.Circle({center:new K.LatLng(lat,lng),radius:r,strokeWeight:2,strokeColor:color,strokeOpacity:.9,strokeStyle:"dash",fillColor:color,fillOpacity:.12}); c.setMap(map);
+        return { set(a,b,rr){ c.setPosition(new K.LatLng(a,b)); c.setRadius(rr); }, remove(){ c.setMap(null); } }; },
+      onClick(cb){ K.event.addListener(map,"click",e=>cb(e.latLng.getLat(),e.latLng.getLng())); }
     };
   }
   // ---------- OpenStreetMap (Leaflet) ----------
@@ -446,7 +466,10 @@ const MapKit = (()=>{
       },
       center(lat,lng,keep){ map.setView([lat,lng], keep? map.getZoom() : Math.max(map.getZoom()||15,15), {animate:false}); },
       resize(){ map.invalidateSize(); },
-      onDrag(cb){ map.on("dragstart",cb); }
+      onDrag(cb){ map.on("dragstart",cb); },
+      circle(lat,lng,r,color){ const c=L.circle([lat,lng],{radius:r,color,weight:2,dashArray:"6 5",fillColor:color,fillOpacity:.12,interactive:false}).addTo(map);
+        return { set(a,b,rr){ c.setLatLng([a,b]); c.setRadius(rr); }, remove(){ map.removeLayer(c); } }; },
+      onClick(cb){ map.on("click",e=>cb(e.latlng.lat,e.latlng.lng)); }
     };
   }
   async function create(el,opt={}){
@@ -507,7 +530,8 @@ $("tabs").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!
   ["now","drivers","stats","notice","admins"].forEach(t=>$("tab-"+t).classList.toggle("hide",t!==curTab));
   $("pageTitle").textContent=TITLES[curTab]; $("pageSub").textContent= curTab==="now"? nowSub() : "";
   $("rf").classList.toggle("hide", !(curTab==="now"||curTab==="stats"));
-  if(curTab==="now" && map) setTimeout(()=>{ map.invalidateSize(); fitRF(); },50);
+  if(curTab==="now" && map) setTimeout(()=>{ map.resize(); fitRF(); },50);
+  if(curTab==="notice") setTimeout(openStopEdit,50);
 });
 // 노선 고르기: 전체 / 야탑역 셔틀 / 파킹엔젤스
 $("rf").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return;
@@ -515,13 +539,67 @@ $("rf").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b)
   drawNow(); fitRF(); if(lastDay) loadDay(lastDay); if(weeksLoaded) loadWeeks(); });
 function fitRF(){ if(!map) return; const st=RF().flatMap(r=>ROUTES[r].stops); map.resize(); map.fit(st.map(s=>[s.lat,s.lng]),{top:50,left:40,right:40,bottom:40}); }
 
+// ---------- 정류장 그리기 (운행 현황 지도) ----------
+let mainStopL, mainCircles=[];
+function drawMainStops(){
+  if(!map||!mainStopL) return; mainStopL.clear(); mainCircles.forEach(c=>c.remove()); mainCircles=[];
+  STOP_EDIT.forEach(({stop:s,route})=>{ const c=ROUTES[route].color;
+    if(map.circle) mainCircles.push(map.circle(s.lat,s.lng,stopR(s),c));
+    mainStopL.add(s.lat,s.lng,`<div class="stopmk" style="border-color:${c}"><span class="stoplab">${esc(s.name)}</span></div>`,{z:2}); });
+}
+// ---------- 정류장 위치 · 도착 반경 편집 ----------
+const SE={map:null, layer:null, circ:{}, mk:{}, pick:null, pend:{}};
+const R_OPTS=[50,80,120,150,200,300];
+function seVal(id){ const e=STOP_EDIT.find(x=>x.id===id).stop; return Object.assign({lat:e.lat,lng:e.lng,r:stopR(e)}, SE.pend[id]||{}); }
+function drawStopEdit(){
+  const box=$("stopEdit"); if(!box) return;
+  box.innerHTML=STOP_EDIT.map(({id,route,stop:s})=>{ const v=seVal(id), pend=!!SE.pend[id], cfg=(A.config.stops||{})[id];
+    return `<div class="serow${SE.pick===id?' on':''}" data-se="${id}">
+      <span class="chip" style="background:${ROUTES[route].color}">${id==="church"?"공통":ROUTES[route].short}</span>
+      <b>${esc(s.name)}</b>
+      <label class="muted">도착 반경 <select data-ser="${id}">${R_OPTS.concat(R_OPTS.includes(v.r)?[]:[v.r]).sort((a,b)=>a-b).map(o=>`<option value="${o}" ${o===v.r?"selected":""}>${o}m</option>`).join("")}</select></label>
+      <button class="btn ghost" data-sepick="${id}">${SE.pick===id?"지도를 눌러 주세요…":"지도에서 위치 고르기"}</button>
+      ${pend?`<button class="btn" data-sesave="${id}">저장</button><button class="btn ghost" data-secancel="${id}">취소</button>`:""}
+      ${cfg&&!pend?`<button class="btn ghost" data-sereset="${id}">처음 위치로</button>`:""}
+      <span class="muted">${pend?"저장 전":cfg?"직접 고친 위치":"기본 위치"}</span></div>`; }).join("");
+  drawStopEditMap();
+}
+function drawStopEditMap(){
+  if(!SE.map) return; SE.layer.clear(); Object.values(SE.circ).forEach(c=>c.remove()); SE.circ={};
+  STOP_EDIT.forEach(({id,route,stop:s})=>{ const v=seVal(id), c=SE.pend[id]?"#D97706":ROUTES[route].color;
+    SE.circ[id]=SE.map.circle(v.lat,v.lng,v.r,c);
+    SE.layer.add(v.lat,v.lng,`<div class="stopmk" style="border-color:${c}"><span class="stoplab">${esc(s.name)} · ${v.r}m</span></div>`,{z:2}); });
+}
+async function openStopEdit(){
+  drawStopEdit();
+  if(SE.map){ SE.map.resize(); return; }
+  if(SE.loading) return; SE.loading=true;
+  SE.map=await MapKit.create("stopMap",{zoomControl:true, kakaoKey: await getKakaoKey(db,ref,get)});
+  SE.layer=SE.map.layer();
+  SE.map.onClick((lat,lng)=>{ if(!SE.pick) return; const id=SE.pick;
+    SE.pend[id]=Object.assign({}, seVal(id), {lat:+lat.toFixed(6), lng:+lng.toFixed(6)}); SE.pick=null; drawStopEdit(); toast("위치를 옮겼습니다. ‘저장’을 눌러야 반영됩니다"); });
+  SE.map.resize(); SE.map.fit(STOP_EDIT.map(x=>[x.stop.lat,x.stop.lng]),{top:40,left:30,right:30,bottom:30});
+  drawStopEditMap();
+}
+document.addEventListener("change",e=>{ const sel=e.target.closest("[data-ser]"); if(!sel) return; const id=sel.dataset.ser;
+  SE.pend[id]=Object.assign({}, seVal(id), {r:+sel.value}); drawStopEdit(); });
+document.addEventListener("click",async e=>{
+  const t=e.target.closest("[data-sepick],[data-sesave],[data-secancel],[data-sereset]"); if(!t) return;
+  if(t.dataset.sepick){ const id=t.dataset.sepick; SE.pick = SE.pick===id?null:id; drawStopEdit();
+    if(SE.pick && SE.map){ const v=seVal(id); SE.map.center(v.lat,v.lng); } return; }
+  if(t.dataset.secancel){ delete SE.pend[t.dataset.secancel]; drawStopEdit(); return; }
+  if(t.dataset.sesave){ const id=t.dataset.sesave, v=seVal(id);
+    try{ await set(ref(db,"config/stops/"+id),{lat:v.lat,lng:v.lng,r:v.r}); delete SE.pend[id]; toast("저장했습니다. 성도님·드라이버·TV 화면에 바로 반영됩니다"); }catch(_){ toast("저장하지 못했습니다"); } drawStopEdit(); return; }
+  if(t.dataset.sereset){ const id=t.dataset.sereset; if(!confirm("처음 기본 위치와 반경으로 되돌릴까요?")) return;
+    try{ await remove(ref(db,"config/stops/"+id)); toast("기본값으로 되돌렸습니다"); }catch(_){ toast("되돌리지 못했습니다"); } }
+});
+
 // ---------- 시작 ----------
 let started=false, map, busLayer, waitLayer;
 async function startAdmin(){
   if(started) return; started=true;
   map=await MapKit.create("map",{zoomControl:true, kakaoKey: await getKakaoKey(db,ref,get)});
-  const stopL=map.layer();
-  Object.values(ROUTES).forEach(r=>{ const seen=new Set(); r.stops.forEach(s=>{ if(r===ROUTES.park && s.id==="church") return; stopL.add(s.lat,s.lng,`<div class="stopmk" style="border-color:${r.color}"><span class="stoplab">${esc(s.name)}</span></div>`,{z:2}); }); });
+  mainStopL=map.layer(); drawMainStops();
   busLayer=map.layer(); waitLayer=map.layer();
   fitRF(); $("pageSub").textContent=nowSub();
   $("mapKind").textContent = map.kind==="kakao" ? "카카오맵" : "OpenStreetMap";
@@ -811,6 +889,8 @@ let configFilled=false;
 function fillConfig(){
   const c=A.config;
   drawTpls(); drawVehicles();
+  if(applyStops(c.stops)){ drawMainStops(); }
+  drawStopEdit();
   if(!configFilled){ $("kKey").value=c.kakaoKey||""; $("nText").value=c.notice?.text||""; $("nOn").checked=!!c.notice?.on; $("pTimes").value=c.parkTimes||""; configFilled=true; loadTimeKey(); previewNotice(); }
   else loadTimeKey(true);
 }

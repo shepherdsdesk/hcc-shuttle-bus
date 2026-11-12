@@ -355,15 +355,27 @@ const WAIT_MS = 15 * 60 * 1000;   // '여기서 기다려요' 자동 해제 시�
 // ================= 노선 · 정류장 =================
 const ROUTES = {
   yatap:{ name:"야탑역 셔틀", color:"#1B2B5C", buses:4,
-    stops:[ {id:"byc", name:"야탑역 BYC 앞", sub:"2번 출구 신한은행 앞 대로변", lat:37.41093, lng:127.12925},
-            {id:"church", name:"할렐루야교회", sub:"교회 앞", lat:37.41037, lng:127.15612} ],
+    stops:[ {id:"byc", name:"야탑역 BYC 앞", sub:"2번 출구 신한은행 앞 대로변", lat:37.41093, lng:127.12925, r:60},
+            {id:"church", name:"할렐루야교회", sub:"교회 입구", lat:37.40990, lng:127.15590, r:120} ],
     tip:"중간 구간은 손을 들면 세워 드려요. 지도에서 버스 위치를 보고 미리 나와 계세요." },
   park:{ name:"파킹엔젤스", color:"#0F766E", buses:4,
-    stops:[ {id:"cdong", name:"테크노파크 C동", sub:"주차 후 탑승", lat:37.40500, lng:127.15521},
-            {id:"dmv", name:"차량등록사업소 주차장", sub:"경유 · 주차장에서 탑승", lat:37.40691, lng:127.15397},
-            {id:"church", name:"할렐루야교회", sub:"교회 앞", lat:37.41037, lng:127.15612} ],
+    stops:[ {id:"cdong", name:"테크노파크 C동", sub:"주차 후 탑승", lat:37.40500, lng:127.15521, r:60},
+            {id:"dmv", name:"차량등록사업소 주차장", sub:"경유 · 주차장에서 탑승", lat:37.40691, lng:127.15397, r:80},
+            {id:"church", name:"할렐루야교회", sub:"교회 입구", lat:37.40990, lng:127.15590, r:120} ],
     tip:"주일에만 운행합니다. 테크노파크 C동 → 차량등록사업소 → 교회 순서로 돕니다." }
 };
+// 정류장 위치·도착 반경: 관리자가 지도에서 고친 값(config/stops/정류장id)이 있으면 그걸 씀
+Object.values(ROUTES).forEach(R=>R.stops.forEach(s=>{ s._def={lat:s.lat,lng:s.lng,r:s.r}; }));
+function applyStops(cfg){
+  let changed=false;
+  Object.values(ROUTES).forEach(R=>R.stops.forEach(s=>{
+    const o=(cfg&&cfg[s.id])||{}, d=s._def;
+    const lat=typeof o.lat==="number"?o.lat:d.lat, lng=typeof o.lng==="number"?o.lng:d.lng, r=typeof o.r==="number"?o.r:d.r;
+    if(lat!==s.lat||lng!==s.lng||r!==s.r){ s.lat=lat; s.lng=lng; s.r=r; changed=true; }
+  }));
+  return changed;
+}
+const stopR = s => s.r||60;
 const busColor = (route) => ROUTES[route].color;  // 노선 색 (방향은 채움/테두리와 화살표로 구분)
 
 // ================= 시간표 (교회 홈페이지 셔틀버스 안내) =================
@@ -458,7 +470,10 @@ const MapKit = (()=>{
       },
       center(lat,lng,keep){ map.setCenter(new K.LatLng(lat,lng)); if(!keep && map.getLevel()>4) map.setLevel(4); },
       resize(){ map.relayout(); },
-      onDrag(cb){ K.event.addListener(map,"dragstart",cb); }
+      onDrag(cb){ K.event.addListener(map,"dragstart",cb); },
+      circle(lat,lng,r,color){ const c=new K.Circle({center:new K.LatLng(lat,lng),radius:r,strokeWeight:2,strokeColor:color,strokeOpacity:.9,strokeStyle:"dash",fillColor:color,fillOpacity:.12}); c.setMap(map);
+        return { set(a,b,rr){ c.setPosition(new K.LatLng(a,b)); c.setRadius(rr); }, remove(){ c.setMap(null); } }; },
+      onClick(cb){ K.event.addListener(map,"click",e=>cb(e.latLng.getLat(),e.latLng.getLng())); }
     };
   }
   // ---------- OpenStreetMap (Leaflet) ----------
@@ -485,7 +500,10 @@ const MapKit = (()=>{
       },
       center(lat,lng,keep){ map.setView([lat,lng], keep? map.getZoom() : Math.max(map.getZoom()||15,15), {animate:false}); },
       resize(){ map.invalidateSize(); },
-      onDrag(cb){ map.on("dragstart",cb); }
+      onDrag(cb){ map.on("dragstart",cb); },
+      circle(lat,lng,r,color){ const c=L.circle([lat,lng],{radius:r,color,weight:2,dashArray:"6 5",fillColor:color,fillOpacity:.12,interactive:false}).addTo(map);
+        return { set(a,b,rr){ c.setLatLng([a,b]); c.setRadius(rr); }, remove(){ map.removeLayer(c); } }; },
+      onClick(cb){ map.on("click",e=>cb(e.latlng.lat,e.latlng.lng)); }
     };
   }
   async function create(el,opt={}){
@@ -594,14 +612,14 @@ function liveEta(route,stop){
   let best=null;
   liveBuses(route).forEach(b=>{
     if(b.old) return;
-    const d=dist(b,stop);
-    if(b.to && stopDest(route,stop.id) && stopDest(route,stop.id)!==b.to && d>250) return;
+    const d=dist(b,stop), r=stopR(stop), arrived=d<=r, de=Math.max(0,d-r);
+    if(!arrived && b.to && stopDest(route,stop.id) && stopDest(route,stop.id)!==b.to && de>150) return;
     const key=route+b.bus+stop.id; const p=S.prev[key];
-    const approaching = d<250 || p==null || d < p.d - 15 || (p.approaching && d <= p.d + 15);
+    const approaching = arrived || de<150 || p==null || d < p.d - 15 || (p.approaching && d <= p.d + 15);
     if(p==null || Math.abs(d-p.d)>15) S.prev[key]={d,approaching};
     if(!approaching) return;
-    const eta = d*ROAD_FACTOR/BUS_SPEED_M_PER_MIN;
-    if(!best || eta<best.eta) best={bus:b.bus,d,eta,to:b.to};
+    const eta = arrived ? 0 : de*ROAD_FACTOR/BUS_SPEED_M_PER_MIN;
+    if(!best || eta<best.eta) best={bus:b.bus,d:de,eta,to:b.to,arrived};
   });
   return best;
 }
@@ -617,8 +635,8 @@ function drawHero(){
     // 종점에 도착하는 버스는 도착 뒤 반대 방향으로 출발하므로, 타실 방향을 같이 보여 드림
     const terminal = TERMINALS[S.route].includes(st.id);
     const after = terminal ? rideDir(S.route,st.id).replace(" 가는 버스","행") : (le.to? le.to+"행" : "");
-    h=`<div class="l"><div class="cap">${esc(st.name)} 도착까지</div><div class="big">${m<1?'<b>곧</b><span>도착</span>':`<b>${Math.ceil(m)}</b><span>분 후 도착</span>`}</div></div>
-       <div class="r"><span class="chip">${le.bus}호차${after?' · '+esc(after):''}</span><small>${km(le.d)} 전${terminal?' · 도착 후 출발':''}</small></div>`;
+    h=`<div class="l"><div class="cap">${esc(st.name)} 도착까지</div><div class="big">${le.arrived?'<b>도착</b><span>했어요</span>':m<1?'<b>곧</b><span>도착</span>':`<b>${Math.ceil(m)}</b><span>분 후 도착</span>`}</div></div>
+       <div class="r"><span class="chip">${le.bus}호차${after?' · '+esc(after):''}</span><small>${le.arrived?'정류장에 있어요':km(le.d)+' 전'}${terminal?' · 도착 후 출발':''}</small></div>`;
   } else if(ns){
     h=`<div class="l"><div class="cap">${esc(st.name)} · 다음 출발 (시간표)</div><div class="big"><b class="t">${hhmm(ns.t)}</b><span>출발</span></div></div>
        <div class="r"><span class="chip">${inTxt(ns.inMin)}</span><small>버스 위치 신호 없음</small></div>`;
@@ -637,7 +655,8 @@ function drawStopList(){
     const key=S.route+":"+s.id, on=!!S.alerts[key];
     const le=liveEta(S.route,s), ns=nextScheduled(S.route,s.id);
     let eta, mt=rideDir(S.route,s.id);
-    if(le){ eta=`<div class="eta${le.eta<3?' soon':''}" style="${le.eta<3?'':'color:'+r.color}">${le.eta<1?'<b style="font-size:22px">곧 도착</b>':`<b>${Math.ceil(le.eta)}</b><span>분</span>`}</div>`; mt+=` · ${le.bus}호차 · ${km(le.d)}`; }
+    if(le && le.arrived){ eta=`<div class="eta" style="color:#15803D"><b style="font-size:22px">도착</b></div>`; mt+=` · ${le.bus}호차가 와 있어요`; }
+    else if(le){ eta=`<div class="eta${le.eta<3?' soon':''}" style="${le.eta<3?'':'color:'+r.color}">${le.eta<1?'<b style="font-size:22px">곧 도착</b>':`<b>${Math.ceil(le.eta)}</b><span>분</span>`}</div>`; mt+=` · ${le.bus}호차 · ${km(le.d)}`; }
     else if(ns){ eta=`<div class="eta sch"><b>${hhmm(ns.t)}</b></div>`; mt+=` · 시간표 ${inTxt(ns.inMin)}`; }
     else { eta=`<div class="eta none"><b>운행 없음</b></div>`; }
     return `<div class="stopcard${s.id===sel.id?' sel':''}${S.route==='park'?' park':''}" data-stop="${s.id}" role="button" tabindex="0">
@@ -678,15 +697,17 @@ function checkAlerts(){
     liveBuses(route).forEach(b=>{
       if(b.old) return;
       if(b.to && stopDest(route,stopId) && stopDest(route,stopId)!==b.to) return;
-      const d=dist(b,stop); const nk=key+":"+b.bus;
-      if(d<=NEAR_M && !S.notified[nk]){
+      const d=dist(b,stop), r=stopR(stop), de=Math.max(0,d-r); const nk=key+":"+b.bus;
+      if(d<=r){
+        if(!S.notified[nk+":arr"]){ S.notified[nk+":arr"]=1; S.notified[nk]=1; notify(`${b.bus}호차가 도착했어요`, `${stop.name}에 버스가 와 있어요 · ${ROUTES[route].name}`); }
+      } else if(de<=NEAR_M && !S.notified[nk]){
         const p=S.prev[route+b.bus+stopId];
-        if(p && p.approaching===false && d>250) return;
+        if(p && p.approaching===false && de>150) return;
         S.notified[nk]=1;
-        const m=Math.max(1,Math.ceil(d*ROAD_FACTOR/BUS_SPEED_M_PER_MIN));
-        notify(`${b.bus}호차가 곧 도착해요`, `${stop.name}까지 약 ${m}분 (${km(d)}) · ${ROUTES[route].name}`);
+        const m=Math.max(1,Math.ceil(de*ROAD_FACTOR/BUS_SPEED_M_PER_MIN));
+        notify(`${b.bus}호차가 곧 도착해요`, `${stop.name}까지 약 ${m}분 (${km(de)}) · ${ROUTES[route].name}`);
       }
-      if(d>NEAR_M*1.8) delete S.notified[nk];
+      if(de>NEAR_M*1.8){ delete S.notified[nk]; delete S.notified[nk+":arr"]; }
     });
   });
 }
@@ -872,6 +893,7 @@ async function startSaint(){
   onValue(ref(db,"live"), s=>{ const v=s.val()||{}; S.live={yatap:v.yatap||{}, park:v.park||{}}; refreshSaint(); });
   onValue(ref(db,"config"), s=>{ const c=s.val()||{};
     PARK_TIMES = parseTimes(c.parkTimes); TIMES = c.times||{};
+    if(applyStops(c.stops) && stopLayer){ drawStopsOnMap(); }
     const n=c.notice; const show = n && n.on && n.text;
     $("notice").classList.toggle("hide",!show); if(show) $("notice").innerHTML=`<span aria-hidden="true">📢</span><span>${esc(n.text)}</span>`;
     $("upcoming")._h=null; $("ttGroups")._h=null; refreshSaint(); });
@@ -910,8 +932,8 @@ function legCheck(lat,lng){
   let near=null; stops.forEach(s=>{ const d=dist({lat,lng},s); if(!near||d<near.d) near={s,d}; });
   if(!near) return;
   if(D.legFrom===null){
-    D.legFrom = near.d<150 ? near.s.id : "mid";
-    if(near.d<150){ D.to=DEST[D.route][near.s.id]||""; update(ref(db,logPath("legs",1)),{from:near.s.name, to:D.to}).catch(()=>{}); showLeg(near.s.name+" 출발"); D.atT=near.s.id; }
+    D.legFrom = near.d<Math.max(150,stopR(near.s)+50) ? near.s.id : "mid";
+    if(D.legFrom!=="mid"){ D.to=DEST[D.route][near.s.id]||""; update(ref(db,logPath("legs",1)),{from:near.s.name, to:D.to}).catch(()=>{}); showLeg(near.s.name+" 출발"); D.atT=near.s.id; }
     else D.guess={lat,lng};
     return;
   }
@@ -921,9 +943,10 @@ function legCheck(lat,lng){
     if(best && best.gain>50){ const name=best.s.id==="church"?"교회":(D.route==="yatap"?"야탑역":"C동"); D.to=name; showLeg(name+" 방향"); update(ref(db,logPath("legs",1)),{to:name}).catch(()=>{}); }
     else D.guess={lat,lng};
   }
-  if(near.d<80){ if(D.legFrom!==near.s.id) newLeg(near.s); D.atT=near.s.id; }
+  const IN=s=>Math.max(80,stopR(s));
+  if(near.d<IN(near.s)){ if(D.legFrom!==near.s.id) newLeg(near.s); D.atT=near.s.id; }
   else if(D.atT){ const t=ROUTES[D.route].stops.find(s=>s.id===D.atT);
-    if(dist({lat,lng},t)>150){ update(ref(db,logPath("legs",D.leg)),{dep:serverTimestamp()}).catch(()=>{}); D.atT=null; } }
+    if(dist({lat,lng},t)>IN(t)+70){ update(ref(db,logPath("legs",D.leg)),{dep:serverTimestamp()}).catch(()=>{}); D.atT=null; } }
 }
 async function initDrvMap(){
   if(!D.map){
@@ -1065,6 +1088,7 @@ async function startDriver(){
   document.querySelector('meta[name="theme-color"]').content="#0B1220";
   $("appleIcon").href="apple-touch-icon-driver.png"; document.querySelector('link[rel="icon"]').href="icon-driver-192.png";
   await authReady;
+  onValue(ref(db,"config/stops"), s=>{ if(applyStops(s.val()) && D.map && D.stopL){ D.stopL.clear(); ROUTES[D.route||"yatap"].stops.forEach(x=>D.stopL.add(x.lat,x.lng,stopHtml(x,ROUTES[D.route||"yatap"].color),{z:2})); } }, ()=>{});
   onValue(ref(db,"config/buses"), s=>{ CFG_BUSES=s.val(); if(!$("drvSetup").classList.contains("hide")) drawDrvSetup(); }, ()=>{});
   const code=codeFromLink();
   try{

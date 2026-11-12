@@ -140,15 +140,27 @@ const WAIT_MS = 15 * 60 * 1000;   // '여기서 기다려요' 자동 해제 시�
 // ================= 노선 · 정류장 =================
 const ROUTES = {
   yatap:{ name:"야탑역 셔틀", color:"#1B2B5C", buses:4,
-    stops:[ {id:"byc", name:"야탑역 BYC 앞", sub:"2번 출구 신한은행 앞 대로변", lat:37.41093, lng:127.12925},
-            {id:"church", name:"할렐루야교회", sub:"교회 앞", lat:37.41037, lng:127.15612} ],
+    stops:[ {id:"byc", name:"야탑역 BYC 앞", sub:"2번 출구 신한은행 앞 대로변", lat:37.41093, lng:127.12925, r:60},
+            {id:"church", name:"할렐루야교회", sub:"교회 입구", lat:37.40990, lng:127.15590, r:120} ],
     tip:"중간 구간은 손을 들면 세워 드려요. 지도에서 버스 위치를 보고 미리 나와 계세요." },
   park:{ name:"파킹엔젤스", color:"#0F766E", buses:4,
-    stops:[ {id:"cdong", name:"테크노파크 C동", sub:"주차 후 탑승", lat:37.40500, lng:127.15521},
-            {id:"dmv", name:"차량등록사업소 주차장", sub:"경유 · 주차장에서 탑승", lat:37.40691, lng:127.15397},
-            {id:"church", name:"할렐루야교회", sub:"교회 앞", lat:37.41037, lng:127.15612} ],
+    stops:[ {id:"cdong", name:"테크노파크 C동", sub:"주차 후 탑승", lat:37.40500, lng:127.15521, r:60},
+            {id:"dmv", name:"차량등록사업소 주차장", sub:"경유 · 주차장에서 탑승", lat:37.40691, lng:127.15397, r:80},
+            {id:"church", name:"할렐루야교회", sub:"교회 입구", lat:37.40990, lng:127.15590, r:120} ],
     tip:"주일에만 운행합니다. 테크노파크 C동 → 차량등록사업소 → 교회 순서로 돕니다." }
 };
+// 정류장 위치·도착 반경: 관리자가 지도에서 고친 값(config/stops/정류장id)이 있으면 그걸 씀
+Object.values(ROUTES).forEach(R=>R.stops.forEach(s=>{ s._def={lat:s.lat,lng:s.lng,r:s.r}; }));
+function applyStops(cfg){
+  let changed=false;
+  Object.values(ROUTES).forEach(R=>R.stops.forEach(s=>{
+    const o=(cfg&&cfg[s.id])||{}, d=s._def;
+    const lat=typeof o.lat==="number"?o.lat:d.lat, lng=typeof o.lng==="number"?o.lng:d.lng, r=typeof o.r==="number"?o.r:d.r;
+    if(lat!==s.lat||lng!==s.lng||r!==s.r){ s.lat=lat; s.lng=lng; s.r=r; changed=true; }
+  }));
+  return changed;
+}
+const stopR = s => s.r||60;
 const busColor = (route) => ROUTES[route].color;  // 노선 색 (방향은 채움/테두리와 화살표로 구분)
 
 // ================= 시간표 (교회 홈페이지 셔틀버스 안내) =================
@@ -243,7 +255,10 @@ const MapKit = (()=>{
       },
       center(lat,lng,keep){ map.setCenter(new K.LatLng(lat,lng)); if(!keep && map.getLevel()>4) map.setLevel(4); },
       resize(){ map.relayout(); },
-      onDrag(cb){ K.event.addListener(map,"dragstart",cb); }
+      onDrag(cb){ K.event.addListener(map,"dragstart",cb); },
+      circle(lat,lng,r,color){ const c=new K.Circle({center:new K.LatLng(lat,lng),radius:r,strokeWeight:2,strokeColor:color,strokeOpacity:.9,strokeStyle:"dash",fillColor:color,fillOpacity:.12}); c.setMap(map);
+        return { set(a,b,rr){ c.setPosition(new K.LatLng(a,b)); c.setRadius(rr); }, remove(){ c.setMap(null); } }; },
+      onClick(cb){ K.event.addListener(map,"click",e=>cb(e.latLng.getLat(),e.latLng.getLng())); }
     };
   }
   // ---------- OpenStreetMap (Leaflet) ----------
@@ -270,7 +285,10 @@ const MapKit = (()=>{
       },
       center(lat,lng,keep){ map.setView([lat,lng], keep? map.getZoom() : Math.max(map.getZoom()||15,15), {animate:false}); },
       resize(){ map.invalidateSize(); },
-      onDrag(cb){ map.on("dragstart",cb); }
+      onDrag(cb){ map.on("dragstart",cb); },
+      circle(lat,lng,r,color){ const c=L.circle([lat,lng],{radius:r,color,weight:2,dashArray:"6 5",fillColor:color,fillOpacity:.12,interactive:false}).addTo(map);
+        return { set(a,b,rr){ c.setLatLng([a,b]); c.setRadius(rr); }, remove(){ map.removeLayer(c); } }; },
+      onClick(cb){ map.on("click",e=>cb(e.latlng.lat,e.latlng.lng)); }
     };
   }
   async function create(el,opt={}){
@@ -337,14 +355,14 @@ function rideDir(route,id){ return ({yatap:{byc:"교회 가는 버스",church:"�
 function liveEta(route,stop){
   let best=null;
   liveBuses(route).forEach(b=>{
-    if(b.old) return; const d=dist(b,stop);
-    if(b.to && stopDest(route,stop.id) && stopDest(route,stop.id)!==b.to && d>250) return;
+    if(b.old) return; const d=dist(b,stop), r=stopR(stop), arrived=d<=r, de=Math.max(0,d-r);
+    if(!arrived && b.to && stopDest(route,stop.id) && stopDest(route,stop.id)!==b.to && de>150) return;
     const key=route+b.bus+stop.id, p=prev[key];
-    const approaching = d<250 || p==null || d < p.d-15 || (p.approaching && d <= p.d+15);
+    const approaching = arrived || de<150 || p==null || d < p.d-15 || (p.approaching && d <= p.d+15);
     if(p==null || Math.abs(d-p.d)>15) prev[key]={d,approaching};
     if(!approaching) return;
-    const eta=d*ROAD_FACTOR/BUS_SPEED_M_PER_MIN;
-    if(!best || eta<best.eta) best={bus:b.bus,d,eta};
+    const eta=arrived?0:de*ROAD_FACTOR/BUS_SPEED_M_PER_MIN;
+    if(!best || eta<best.eta) best={bus:b.bus,d:de,eta,arrived};
   });
   return best;
 }
@@ -353,16 +371,19 @@ function liveEta(route,stop){
 let map, busL, markers={};
 async function initMap(){
   map=await MapKit.create("map",{kakaoKey: await getKakaoKey(db,ref,get)});
-  const stopL=map.layer(), pts=[];
-  RT.forEach(r=>ROUTES[r].stops.forEach(s=>{
-    if(r==="park" && s.id==="church" && RT.includes("yatap")) return;
-    pts.push([s.lat,s.lng]);
-    stopL.add(s.lat,s.lng,`<div class="stopmk" style="border-color:${r==="park"?"#5EEAD4":"#93C5FD"}"><span class="stoplab">${esc(s.name)}</span></div>`,{z:2});
-  }));
+  stopL=map.layer(); drawStopMarks();
   busL=map.layer();
-  const fit=()=>{ map.resize(); map.fit(pts,{top:60,left:60,right:60,bottom:70}); };
+  const fit=()=>{ const pts=[]; RT.forEach(r=>ROUTES[r].stops.forEach(s=>pts.push([s.lat,s.lng]))); map.resize(); map.fit(pts,{top:60,left:60,right:60,bottom:70}); };
   fit(); window.addEventListener("resize",()=>setTimeout(fit,200));
   if("ResizeObserver" in window) new ResizeObserver(()=>fit()).observe($("map"));
+}
+let stopL;
+function drawStopMarks(){
+  if(!stopL) return; stopL.clear();
+  RT.forEach(r=>ROUTES[r].stops.forEach(s=>{
+    if(r==="park" && s.id==="church" && RT.includes("yatap")) return;
+    stopL.add(s.lat,s.lng,`<div class="stopmk" style="border-color:${r==="park"?"#5EEAD4":"#93C5FD"}"><span class="stoplab">${esc(s.name)}</span></div>`,{z:2});
+  }));
 }
 function drawMap(){
   if(!map) return; const seen={};
@@ -388,7 +409,8 @@ function drawBoards(){
     R.stops.forEach(s=>{
       const le=liveEta(r,s), ns=nextList(r,s.id,1)[0];
       let eta;
-      if(le) eta=`<div class="eta${le.eta<3?' soon':''}"><b>${le.eta<1?'곧 도착':`${Math.ceil(le.eta)}<small>분</small>`}</b><span>${le.bus}호차 · ${km(le.d)}</span></div>`;
+      if(le && le.arrived) eta=`<div class="eta soon"><b>도착</b><span>${le.bus}호차가 와 있어요</span></div>`;
+      else if(le) eta=`<div class="eta${le.eta<3?' soon':''}"><b>${le.eta<1?'곧 도착':`${Math.ceil(le.eta)}<small>분</small>`}</b><span>${le.bus}호차 · ${km(le.d)}</span></div>`;
       else if(ns!=null) eta=`<div class="eta sch"><b>${hhmm(ns)}</b><span>시간표 · ${inTxt(ns-min)}</span></div>`;
       else eta=`<div class="eta none"><b>운행 없음</b></div>`;
       h+=`<div class="stop"><div class="nm"><b>${esc(s.name)}</b><span>${rideDir(r,s.id)}</span></div>${eta}</div>`;
@@ -429,6 +451,7 @@ try{
   await initMap();
   onValue(ref(db,"live"), s=>{ const v=s.val()||{}; LIVE={yatap:v.yatap||{},park:v.park||{}}; drawMap(); drawBoards(); });
   onValue(ref(db,"config"), s=>{ const c=s.val()||{};
+    if(applyStops(c.stops)) drawStopMarks();
     PARK_TIMES=parseTimes(c.parkTimes); TIMES=c.times||{};
     const n=c.notice, show=n&&n.on&&n.text; $("notice").classList.toggle("hide",!show);
     if(show) $("notice").innerHTML=`<span aria-hidden="true">📢</span><span>${esc(n.text)}</span>`;
