@@ -232,6 +232,12 @@
   .dmeta{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:#94A3B8;padding:0 4px;flex-wrap:wrap}
   body.drv .modal .box{background:#131C2E;color:#fff}
   body.drv .modal .box p{color:#fff}
+.dlist{list-style:none;margin:0;padding:6px 16px!important;word-break:keep-all}
+.dlist li{display:flex;align-items:center;gap:14px;padding:11px 0;font-size:17px;line-height:1.45;word-break:keep-all}
+.dlist li+li{border-top:1px solid rgba(255,255,255,.08)}
+.dlist li span{font-size:26px;width:34px;text-align:center;flex:none}
+.dlist b{color:#fff}
+body{word-break:keep-all;overflow-wrap:break-word}
 </style>
 </head>
 <body>
@@ -321,7 +327,12 @@
         <div class="dwarn hide" id="asgNone" style="border-color:#7F1D1D;background:#2A1215;color:#FECACA"><b style="color:#fff">아직 배정된 차량이 없습니다.</b><br>셔틀 담당자에게 배정을 요청해 주세요. 배정되면 이 화면에 바로 나타납니다.</div>
         <button class="dbig go" id="startBtn" style="margin-top:4px">운행 시작</button>
         <div class="derr" id="startErr"></div>
-        <div class="dwarn"><b style="color:#fff">운행 중에는 화면을 켜 둔 채</b> 거치대에 꽂아 주세요. 다른 앱으로 넘어가거나 화면이 꺼지면 위치 보내기가 멈춥니다. 충전기를 꼭 연결해 주세요.<br>처음 시작할 때 ‘위치 사용’을 물으면 <b style="color:#fff">허용</b>을 눌러 주세요.</div>
+        <ul class="dwarn dlist">
+          <li><span aria-hidden="true">📱</span><div><b>화면을 켜 둔 채</b><br>거치대에 꽂아 주세요</div></li>
+          <li><span aria-hidden="true">🔌</span><div><b>충전기</b>를<br>꼭 연결해 주세요</div></li>
+          <li><span aria-hidden="true">🚫</span><div>다른 앱으로 넘어가면<br><b>위치 보내기가 멈춥니다</b></div></li>
+          <li><span aria-hidden="true">📍</span><div>‘위치 사용’을 물으면<br><b>허용</b>을 눌러 주세요</div></li>
+        </ul>
       </div>
 
       <div id="drvLive" class="hide" style="display:flex;flex-direction:column;gap:14px;flex:1">
@@ -815,10 +826,24 @@ $("stops").addEventListener("keydown",ev=>{ if((ev.key==="Enter"||ev.key===" ") 
 // ---------- 알림 ----------
 // ---------- 소리 알림 (휴대폰이 직접 읽어 줌) ----------
 let VOICE = (storage.get("voice")||"1")==="1";
+const GREET={said:false, armed:false};  // 기사님 인사 음성 상태
 function koVoice(){ try{ const v=speechSynthesis.getVoices(); return v.find(x=>/ko(-|_)KR/i.test(x.lang))||v.find(x=>/^ko/i.test(x.lang))||null; }catch(_){ return null; } }
-function speak(text,force){
+function speak(text,force,cb){
   if((!VOICE && !force) || !("speechSynthesis" in window)) return;
-  try{ const u=new SpeechSynthesisUtterance(text); u.lang="ko-KR"; u.rate=0.95; u.pitch=1; const v=koVoice(); if(v) u.voice=v; speechSynthesis.speak(u); }catch(_){}
+  try{ const u=new SpeechSynthesisUtterance(text); u.lang="ko-KR"; u.rate=0.95; u.pitch=1; const v=koVoice(); if(v) u.voice=v;
+    if(cb){ u.onstart=()=>cb(true); u.onerror=()=>cb(false); }
+    speechSynthesis.speak(u); }catch(_){ if(cb) cb(false); }
+}
+// 한국어 목소리 목록을 미리 불러 둠 (처음 말할 때 늦어지지 않게, 최대 1초만 기다림)
+function voicesReady(){
+  return new Promise(res=>{
+    try{ if(!("speechSynthesis" in window)) return res();
+      if(speechSynthesis.getVoices().length) return res();
+      const done=()=>{ speechSynthesis.removeEventListener&&speechSynthesis.removeEventListener("voiceschanged",done); res(); };
+      speechSynthesis.addEventListener ? speechSynthesis.addEventListener("voiceschanged",done) : (speechSynthesis.onvoiceschanged=done);
+      setTimeout(res,1000);
+    }catch(_){ res(); }
+  });
 }
 function drawVoiceBtn(){ const b=$("voiceBtn"); if(!b) return; b.classList.toggle("on",VOICE); b.setAttribute("aria-pressed",String(VOICE)); b.textContent= VOICE?"🔊 소리 알림 켜짐":"🔇 소리 알림 꺼짐"; if(!("speechSynthesis" in window)){ b.style.display="none"; const t=$("voiceTry"); if(t) t.style.display="none"; } }
 async function notify(title,body,say){
@@ -1199,7 +1224,7 @@ $("pinBtn").onclick=async()=>{
   const pin=$("pinInput").value.trim(); $("pinErr").textContent="";
   if(!/^\d{4,8}$/.test(pin)){ $("pinErr").textContent="숫자 4~8자리를 입력해 주세요."; return; }
   $("pinBtn").disabled=true;
-  try{ await authReady; await set(ref(db,"drivers/"+uid),{pin, at:serverTimestamp()}); await loadMe(); drvShow("drvSetup"); drawDrvSetup(); storage.set("greetDay",""); greetDriver(); }
+  try{ await authReady; await set(ref(db,"drivers/"+uid),{pin, at:serverTimestamp()}); await loadMe(); drvShow("drvSetup"); drawDrvSetup(); storage.set("greetDay",""); GREET.said=false; greetDriver(); }
   catch(e){ $("pinErr").textContent="인증번호가 맞지 않습니다. 셔틀 담당자에게 확인해 주세요."; }
   $("pinBtn").disabled=false;
 };
@@ -1321,7 +1346,7 @@ async function stopDriving(){
   drvShow("drvSetup"); drawDrvSetup();
   speak("운행을 마쳤습니다. 오늘도 수고 많으셨습니다.",true);
 }
-$("drvGreetVoice").onclick=()=>speak(greetText(),true);
+$("drvGreetVoice").onclick=()=>{ GREET.said=true; storage.set("greetDay",greetToday()); try{ speechSynthesis.cancel(); }catch(_){} speak(greetText(),true); };
 $("stopBtn").onclick=()=>$("modal").classList.add("show");
 $("mNo").onclick=()=>$("modal").classList.remove("show");
 $("mYes").onclick=()=>{ $("modal").classList.remove("show"); stopDriving(); };
@@ -1336,6 +1361,9 @@ async function startDriver(){
   document.body.classList.add("drv"); document.title="셔틀 드라이버 · HCC 셔틀버스"; $("iosTitle").content="셔틀 드라이버";
   document.querySelector('meta[name="theme-color"]').content="#0B1220";
   $("appleIcon").href="apple-touch-icon-driver.png"; document.querySelector('link[rel="icon"]').href="icon-driver-192.png";
+  // 전에 로그인한 휴대폰이면 서버 확인을 기다리지 않고 바로 인사 (이름은 이 휴대폰에 기억해 둔 것)
+  const vr=voicesReady();
+  if(storage.get("drvName")!==null && storage.get("greetDay")!==greetToday()){ vr.then(()=>{ if(!D.name) D.name=storage.get("drvName")||""; sayGreet(); }); }
   await authReady;
   onValue(ref(db,"config/brand"), s=>applyBrand({brand:s.val()}), ()=>{});
   onValue(ref(db,"config/stops"), s=>{ if(applyStops(s.val()) && D.map && D.stopL){ D.stopL.clear(); ROUTES[D.route||"yatap"].stops.forEach(x=>D.stopL.add(x.lat,x.lng,stopHtml(x,ROUTES[D.route||"yatap"].color),{z:2})); } }, ()=>{});
@@ -1354,8 +1382,25 @@ function greetText(){ return `${D.name?D.name+" ":""}기사님, 반갑습니다.
 function greetDriver(){
   $("drvGreetT").textContent = (D.name?D.name+" ":"")+"기사님, 반갑습니다!";
   $("drvGreet").classList.remove("hide");
-  const day=new Date(Date.now()+9*3600e3).toISOString().slice(0,10);
-  if(storage.get("greetDay")!==day){ storage.set("greetDay",day); speak(greetText(),true); }
+  sayGreet();
+}
+// 하루 한 번 인사 음성. 휴대폰이 아직 소리를 막고 있으면(터치 전) 첫 터치 때 바로 들려 드림
+function greetToday(){ return new Date(Date.now()+9*3600e3).toISOString().slice(0,10); }
+function sayGreet(){
+  const day=greetToday();
+  if(GREET.said || GREET.busy || storage.get("greetDay")===day) return;
+  let started=false; GREET.busy=true;
+  speak(greetText(),true,ok=>{ if(ok){ started=true; GREET.said=true; storage.set("greetDay",day); } });
+  setTimeout(()=>{ GREET.busy=false; if(!started && !GREET.said){ try{ speechSynthesis.cancel(); }catch(_){} armGreetTouch(); } },1200);
+}
+function armGreetTouch(){
+  if(GREET.armed) return; GREET.armed=true;
+  const h=e=>{ document.removeEventListener("pointerdown",h,true); GREET.armed=false;
+    if(GREET.said) return;
+    // 운행 시작·🔊 버튼은 각자 말하므로 겹치지 않게 넘어감
+    const t=e.target&&e.target.closest&&e.target.closest("#startBtn,#drvGreetVoice"); GREET.said=true; storage.set("greetDay",greetToday());
+    if(!t) speak(greetText(),true); };
+  document.addEventListener("pointerdown",h,true);
 }
 async function loadMe(){
   const me=(await get(ref(db,"drivers/"+uid))).val(); if(!me||!me.pin) return false;
@@ -1371,7 +1416,7 @@ async function loadMe(){
 }
 function applyPin(p){
   const o = p && typeof p==="object" ? p : {};
-  D.name=o.name||"";
+  D.name=o.name||""; if(D.name) storage.set("drvName",D.name);
   $("drvHello").textContent = D.name ? `${D.name} 기사님` : "기사님, 안녕하세요";
   if(!D.on){ D.route = ROUTES[o.route] ? o.route : null; D.bus = +o.bus>=1 ? +o.bus : null; }
 }
