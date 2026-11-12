@@ -357,6 +357,9 @@ body.rest.noposter:not(.portrait) .rb-sec{padding:1.1vmin 1.6vmin;gap:.7vmin}
 body.rest.noposter:not(.portrait) .restbox:not(.nv) h2 br{display:none}
 body.rest.noposter:not(.portrait) .restbox:not(.nv) h2{font-size:3.4vmin}
 body.rest.noposter:not(.portrait) .restbox{grid-template-rows:auto auto auto;align-content:space-between}
+.rb-verse .motto{font-size:2vmin;font-weight:800;color:var(--deco);display:flex;align-items:baseline;gap:.8vmin;flex-wrap:wrap}
+.rb-verse .motto b{font-size:2.3vmin;color:var(--ink)}
+.rb-verse .motto small{color:var(--sub);font-weight:700}
 </style>
 </head>
 <body>
@@ -1112,6 +1115,18 @@ function todayFirst(r){ const {day}=nowKST(); let best=null;
   (DEP_ROWS[r]||[]).forEach(([id,lab])=>scheduleFor(r,id,day).map(toM).forEach(m=>{ if(best==null||m<best.m) best={m,lab}; })); return best; }
 // 이번 주 셔틀 운행 (시간표에서 자동): 월~주일, 노선별 첫차~막차 시작 시각
 function weekRoutes(){ if(ROUTES[ONLY]) return [ONLY]; if(TV_ROUTES==="yatap"||TV_ROUTES==="park") return [TV_ROUTES]; return ["yatap","park"]; }
+// 말씀 칸: 말씀 목록 순환(매일/매주) · 직접 입력 · 표어만
+function pickVerse(){
+  const C=REST_CFG, mode=["list","fixed","motto","off"].includes(C.verseMode)?C.verseMode:(C.verse?"fixed":"list");
+  if(mode==="off") return null;
+  const L=String(C.verses||"").split(/\n/).map(x=>x.trim()).filter(Boolean).map(x=>{ const i=x.lastIndexOf("|"); return i>0?{t:x.slice(0,i).trim(),r:x.slice(i+1).trim()}:{t:x,r:""}; });
+  const fixed = C.verse ? {t:C.verse, r:C.verseRef||"", label:"이번 주 말씀", kind:"fixed"} : null;
+  const motto = C.mottoVerse ? {t:C.mottoVerse, r:C.mottoRef||"", label:"교회 표어 말씀", kind:"motto"} : null;
+  if(mode==="list" && L.length){ const day=Math.floor((serverNow()+9*3600e3)/864e5), week=C.verseEvery==="week";
+    const x=L[(week?Math.floor((day+4)/7):day)%L.length]; return {...x, label:week?"이번 주 말씀":"오늘의 말씀", kind:"list"}; }
+  if(mode==="motto") return motto || fixed;
+  return fixed || motto || (C.motto ? {t:C.motto, r:C.mottoRef||"", label:"교회 표어", kind:"motto"} : null);
+}
 function weekHtml(){
   const {day}=nowKST(), order=[1,2,3,4,5,6,0], short={0:"주일",1:"월",2:"화",3:"수",4:"목",5:"금",6:"토"};
   let h=`<div class="rb-sec rb-week"><h3>🗓 이번 주 셔틀 운행</h3><div class="wk"><span></span>${order.map(d=>`<span class="dh${d===day?' today':''}">${short[d]}${d===day?' · 오늘':''}</span>`).join("")}`;
@@ -1140,12 +1155,12 @@ function drawRest(){
     const n=nextService(r);
     h+=`<div class="rb-next"><span class="rb-r"><i style="background:${R.color}"></i>${R.name} 다음 운행</span>${n?`<b>${n.k===1?"내일 ":""}${n.k>6?n.ds.slice(5).replace("-","/")+" ":""}${DAYNAME[n.d]} <em>${ampm(n.m)} 첫차</em></b><small>${n.lab}</small>`:`<b>시간표 확인</b>`}</div>`; });
   h+=`</div></div><div class="rb-more">`;
-  const v=String(REST_CFG.verse||"").trim();
-  if(v) h+=`<div class="rb-sec rb-verse"><h3>📖 이번 주 말씀</h3><p>${esc(v).replace(/\n/g,"<br>")}</p>${REST_CFG.verseRef?`<cite>${esc(REST_CFG.verseRef)}</cite>`:""}</div>`;
+  const V=pickVerse(), v=V?V.t:"";
+  if(V) h+=`<div class="rb-sec rb-verse">${REST_CFG.motto?`<div class="motto">✝️ <b>${esc(REST_CFG.motto)}</b>${V.kind!=="motto"&&REST_CFG.mottoRef?` <small>${esc(REST_CFG.mottoRef)}</small>`:""}</div>`:""}<h3>📖 ${V.label}</h3><p>${esc(V.t).replace(/\n/g,"<br>")}</p>${V.r?`<cite>${esc(V.r)}</cite>`:""}</div>`;
   const w=String(REST_CFG.worship||"").split(/\n/).map(x=>x.trim()).filter(Boolean);
   if(w.length) h+=worshipHtml(w);
   h+=weekHtml()+`</div>`;
-  const box=$("restBox"); box.classList.toggle("nv",!v); box.classList.toggle("nw",!w.length);
+  const box=$("restBox"); box.classList.toggle("nv",!V); box.classList.toggle("nw",!w.length);
   setH(box,h); rbShow();
 }
 // 안내 칸이 좁을 때(포스터와 함께)는 말씀 · 예배 안내 · 이번 주 운행을 10초마다 하나씩 보여 줌
@@ -1213,7 +1228,7 @@ try{
   onValue(ref(db,"live"), s=>{ const v=s.val()||{}; LIVE={yatap:v.yatap||{},park:v.park||{}}; applyRT(); drawMap(); drawBoards(); });
   onValue(ref(db,"config"), s=>{ const c=s.val()||{}; applyBrand(c); WAIT_CFG=c.waitCfg||{};
     TV_ROUTES=["auto","both","yatap","park"].includes(c.tvRoutes)?c.tvRoutes:"auto";
-    const tr=c.tvRest||{}; REST_CFG={afterEnd: tr.afterEnd!==false, beforeFirst: tr.beforeFirst!==false, dates: tr.dates||{}, verse: tr.verse||"", verseRef: tr.verseRef||"", worship: tr.worship||""};
+    const tr=c.tvRest||{}; REST_CFG={afterEnd: tr.afterEnd!==false, beforeFirst: tr.beforeFirst!==false, dates: tr.dates||{}, verse: tr.verse||"", verseRef: tr.verseRef||"", worship: tr.worship||"", motto: tr.motto||"", mottoRef: tr.mottoRef||"", mottoVerse: tr.mottoVerse||"", verses: tr.verses||"", verseMode: tr.verseMode||"", verseEvery: tr.verseEvery||"day"};
     const pc=c.tvPosters||{}; POSTER_CFG={when:["rest","always","off"].includes(pc.when)?pc.when:"rest", sec:pc.sec||8}; POSTER_META=c.tvPosterList||{};
     applyRT();
     if(applyStops(c.stops)) drawStopMarks();
