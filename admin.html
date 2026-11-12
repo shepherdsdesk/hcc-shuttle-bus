@@ -81,6 +81,14 @@
   .th span em{font-style:normal;color:var(--sub);font-weight:600;font-size:12px;margin-left:4px}
   .phbox{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:6px}
   .phprev{width:320px;height:64px;border-radius:10px;border:1px solid var(--line);background:#F1F5F9 center/cover no-repeat;display:grid;place-items:center;color:var(--sub);font-size:12.5px}
+  #pathMap{height:360px;border-radius:14px;overflow:hidden;z-index:0;margin-top:10px}
+  .pthrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 10px;border:1px solid var(--line);border-radius:12px;margin-bottom:6px}
+  .pthrow b{min-width:190px}
+  .pthrow .st{font-size:12.5px;color:var(--sub);font-weight:700}
+  .pthrow .st.ok{color:#15803D}
+  .pthrow .btn{padding:7px 11px;font-size:13px}
+  .pthrow.cand{border-color:#D97706;background:#FFFBEB}
+  .pthrow select{width:auto;margin:0;padding:6px 8px}
   #stopMap{height:380px;border-radius:14px;overflow:hidden;z-index:0;margin-top:10px}
   .serow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 10px;border-radius:12px;border:1px solid var(--line);margin-bottom:6px}
   .serow.on{border-color:#D97706;background:#FFFBEB}
@@ -339,6 +347,18 @@
         <p class="muted" style="margin:8px 0 0">‘지도에서 위치 고르기’를 누른 뒤 지도에서 버스가 실제로 서는 곳(예: 교회 입구 도로)을 누르세요. 교회처럼 넓은 곳은 반경을 120~150m로 두면 입구에만 와도 도착 알림이 갑니다. 저장하면 성도님·드라이버·TV 화면에 바로 반영됩니다.</p>
       </div>
       <div class="card">
+        <h2>노선 줄 <small>성도님·TV 지도에 그려지는 버스 길. 줄이 있으면 도착 시간도 실제 길을 따라 계산합니다</small></h2>
+        <div id="pathList"></div>
+        <div id="pathMap"></div>
+        <div class="row" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line);align-items:center">
+          <b style="font-size:14px">운행 기록에서 가져오기</b>
+          <input type="date" id="pathDate" style="width:auto;margin:0;padding:7px 8px">
+          <button class="btn ghost" id="pathLoad">기록 불러오기</button>
+        </div>
+        <div id="pathLegs" style="margin-top:8px"></div>
+        <p class="muted" style="margin:8px 0 0">드라이버가 운행하면 회차마다 지나간 길이 자동으로 기록됩니다. 길을 바르게 다녀온 회차를 골라 ‘지도에서 보기’로 확인한 뒤 ‘노선 줄로 저장’을 누르세요. 길이 바뀌면 새 운행 기록으로 다시 저장하면 됩니다. 지우면 예전처럼 줄 없이 동작합니다.</p>
+      </div>
+      <div class="card">
         <h2>지도 설정 <small>카카오 지도 키를 넣으면 성도님·드라이버·관리자·TV 화면 지도가 카카오맵으로 바뀝니다</small></h2>
         <div class="row">
           <input id="kKey" placeholder="카카오 JavaScript 키 (예: 1a2b3c…)" style="max-width:380px;margin:0" autocomplete="off">
@@ -492,7 +512,11 @@ const MapKit = (()=>{
       onDrag(cb){ K.event.addListener(map,"dragstart",cb); },
       circle(lat,lng,r,color){ const c=new K.Circle({center:new K.LatLng(lat,lng),radius:r,strokeWeight:2,strokeColor:color,strokeOpacity:.9,strokeStyle:"dash",fillColor:color,fillOpacity:.12}); c.setMap(map);
         return { set(a,b,rr){ c.setPosition(new K.LatLng(a,b)); c.setRadius(rr); }, remove(){ c.setMap(null); } }; },
-      onClick(cb){ K.event.addListener(map,"click",e=>cb(e.latLng.getLat(),e.latLng.getLng())); }
+      onClick(cb){ K.event.addListener(map,"click",e=>cb(e.latLng.getLat(),e.latLng.getLng())); },
+      // 선 그리기: pts=[[lat,lng],…], o={color,weight,opacity,dash}
+      line(pts,o){ o=o||{}; const mk=(p,oo)=>new K.Polyline({path:p.map(a=>new K.LatLng(a[0],a[1])),strokeWeight:oo.weight||5,strokeColor:oo.color||"#1B2B5C",strokeOpacity:dv(oo.opacity,.8),strokeStyle:oo.dash?"shortdash":"solid",zIndex:oo.z||1});
+        let pl=mk(pts,o); pl.setMap(map);
+        return { set(p,oo){ pl.setMap(null); pl=mk(p,oo||o); pl.setMap(map); }, remove(){ pl.setMap(null); } }; }
     };
   }
   // ---------- OpenStreetMap (Leaflet) ----------
@@ -522,7 +546,10 @@ const MapKit = (()=>{
       onDrag(cb){ map.on("dragstart",cb); },
       circle(lat,lng,r,color){ const c=L.circle([lat,lng],{radius:r,color,weight:2,dashArray:"6 5",fillColor:color,fillOpacity:.12,interactive:false}).addTo(map);
         return { set(a,b,rr){ c.setLatLng([a,b]); c.setRadius(rr); }, remove(){ map.removeLayer(c); } }; },
-      onClick(cb){ map.on("click",e=>cb(e.latlng.lat,e.latlng.lng)); }
+      onClick(cb){ map.on("click",e=>cb(e.latlng.lat,e.latlng.lng)); },
+      line(pts,o){ o=o||{}; const st=oo=>({color:oo.color||"#1B2B5C",weight:oo.weight||5,opacity:dv(oo.opacity,.8),dashArray:oo.dash?"8 8":null,interactive:false,lineCap:"round",lineJoin:"round"});
+        let pl=L.polyline(pts,st(o)).addTo(map);
+        return { set(p,oo){ pl.setLatLngs(p); pl.setStyle(st(oo||o)); }, remove(){ map.removeLayer(pl); } }; }
     };
   }
   async function create(el,opt={}){
@@ -596,7 +623,7 @@ $("tabs").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!
   $("pageTitle").textContent=TITLES[curTab]; $("pageSub").textContent= curTab==="now"? nowSub() : "";
   $("rf").classList.toggle("hide", !(curTab==="now"||curTab==="stats"));
   if(curTab==="now" && map) setTimeout(()=>{ map.resize(); fitRF(); },50);
-  if(curTab==="notice") setTimeout(openStopEdit,50);
+  if(curTab==="notice") setTimeout(()=>{ openStopEdit(); openPathMap(); },50);
 });
 // 노선 고르기: 전체 / 야탑역 셔틀 / 파킹엔젤스
 $("rf").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return;
@@ -735,6 +762,78 @@ $("phFile").onchange=async e=>{ const f=e.target.files[0]; e.target.value=""; if
   }catch(_){ toast("사진을 올리지 못했습니다. 데이터베이스 규칙을 새로 게시했는지 확인해 주세요"); } };
 $("phDel").onclick=async()=>{ if(!PHOTO_ADMIN){ toast("올린 사진이 없습니다"); return; } if(!confirm("사진을 지울까요?")) return;
   try{ await remove(ref(db,"tvmedia/photo")); await update(ref(db,"config/tvTheme"),{photo:false}); toast("지웠습니다"); }catch(_){ toast("지우지 못했습니다"); } };
+
+// ---------- 노선 줄 ----------
+const PATH_DIRS=[["yatap","church","야탑역 셔틀 · 야탑역 → 교회"],["yatap","byc","야탑역 셔틀 · 교회 → 야탑역"],["park","church","파킹엔젤스 · C동 → 교회"],["park","cdong","파킹엔젤스 · 교회 → C동"]];
+const TO_KEY={yatap:{"교회":"church","야탑역":"byc"},park:{"교회":"church","C동":"cdong"}};
+const gdist=(a,b)=>{ const R=6371000,t=Math.PI/180,x=(b.lng-a.lng)*t*Math.cos((a.lat+b.lat)/2*t),y=(b.lat-a.lat)*t; return Math.sqrt(x*x+y*y)*R; };
+const ptsOf=str=>(str||"").split(";").map(p=>p.split(",").map(Number)).filter(a=>a.length===2&&isFinite(a[0])&&isFinite(a[1]));
+const lenOf=pts=>{ let L=0; for(let i=1;i<pts.length;i++) L+=gdist({lat:pts[i-1][0],lng:pts[i-1][1]},{lat:pts[i][0],lng:pts[i][1]}); return L; };
+// 줄을 단순하게 (6m 오차 안에서 점 줄이기)
+function simplify(pts,tol){
+  if(pts.length<3) return pts; const k=Math.cos(pts[0][0]*Math.PI/180)*111320, m=110540;
+  const xy=pts.map(p=>[p[1]*k,p[0]*m]), keep=new Uint8Array(pts.length); keep[0]=keep[pts.length-1]=1;
+  const st=[[0,pts.length-1]];
+  while(st.length){ const [a,b]=st.pop(); let mx=0,ix=-1; const [ax,ay]=xy[a],[bx,by]=xy[b],dx=bx-ax,dy=by-ay,L=Math.hypot(dx,dy)||1;
+    for(let i=a+1;i<b;i++){ const d=Math.abs(dy*(xy[i][0]-ax)-dx*(xy[i][1]-ay))/L; if(d>mx){mx=d;ix=i;} }
+    if(mx>tol){ keep[ix]=1; st.push([a,ix],[ix,b]); } }
+  return pts.filter((_,i)=>keep[i]);
+}
+const PT={map:null, lines:{}, cand:null, legs:[]};
+function drawPathAdmin(){
+  if(!$("pathList")) return;
+  const paths=A.config.paths||{}, info=A.config.pathInfo||{};
+  $("pathList").innerHTML=PATH_DIRS.map(([r,k,label])=>{ const str=(paths[r]||{})[k], pts=ptsOf(str), inf=(info[r]||{})[k]||{};
+    return `<div class="pthrow"><span class="chip" style="background:${ROUTES[r].color}">${r==="yatap"?"야탑":"P"}</span><b>${label}</b>
+      ${pts.length>1?`<span class="st ok">저장됨 · ${(lenOf(pts)/1000).toFixed(1)}km${inf.src?" · "+esc(inf.src):""}</span><button class="btn ghost" data-pdel="${r}/${k}">지우기</button>`:`<span class="st">없음 (예전 방식으로 계산)</span>`}</div>`; }).join("");
+  drawPathMap();
+}
+function drawPathMap(){
+  if(!PT.map) return; Object.values(PT.lines).forEach(l=>l.remove()); PT.lines={};
+  const paths=A.config.paths||{}, all=[];
+  PATH_DIRS.forEach(([r,k])=>{ const pts=ptsOf((paths[r]||{})[k]); if(pts.length>1){ PT.lines[r+k]=PT.map.line(pts,{color:ROUTES[r].color,weight:5,opacity:.7,dash:k!=="church"}); all.push(...pts); } });
+  if(PT.cand){ PT.lines.cand=PT.map.line(PT.cand,{color:"#D97706",weight:7,opacity:.95}); }
+  const fitPts = PT.cand || (all.length?all:STOP_EDIT.map(x=>[x.stop.lat,x.stop.lng]));
+  PT.map.resize(); PT.map.fit(fitPts,{top:30,left:30,right:30,bottom:30});
+}
+async function openPathMap(){
+  drawPathAdmin(); if(!$("pathDate").value) $("pathDate").value=new Date(Date.now()+9*3600e3).toISOString().slice(0,10);
+  if(PT.map||PT.loading){ if(PT.map) drawPathMap(); return; } PT.loading=true;
+  PT.map=await MapKit.create("pathMap",{zoomControl:true, kakaoKey: await getKakaoKey(db,ref,get)});
+  const sl=PT.map.layer(); STOP_EDIT.forEach(({stop:s,route})=>sl.add(s.lat,s.lng,`<div class="stopmk" style="border-color:${ROUTES[route].color}"><span class="stoplab">${esc(s.name)}</span></div>`,{z:2}));
+  drawPathMap();
+}
+$("pathLoad").onclick=async()=>{
+  const date=$("pathDate").value; if(!date) return; $("pathLegs").innerHTML=`<p class="muted">불러오는 중…</p>`;
+  try{
+    const logs=(await get(ref(db,"logs/"+date))).val()||{}; PT.legs=[];
+    Object.entries(logs).forEach(([sid,ss])=>Object.entries((ss&&ss.legs)||{}).forEach(([k,l])=>{ const pts=ptsOf(l&&l.path); if(pts.length>5 && ROUTES[ss.route]) PT.legs.push({sid,route:ss.route,bus:ss.bus,name:ss.name||"",leg:+k,from:l.from||"",to:l.to||"",t:l.t,pts}); }));
+    PT.legs.sort((a,b)=>(a.t||0)-(b.t||0));
+    if(!PT.legs.length){ $("pathLegs").innerHTML=`<p class="muted">이 날짜에는 기록된 길이 없습니다. (이 기능을 올린 뒤에 운행한 기록부터 남습니다)</p>`; return; }
+    $("pathLegs").innerHTML=PT.legs.map((L,i)=>{ const key=(TO_KEY[L.route]||{})[L.to]||"";
+      return `<div class="pthrow" data-pleg="${i}"><span class="chip" style="background:${ROUTES[L.route].color}">${L.bus}호차</span><b>${hm(L.t)} · ${L.leg}회차 · ${esc(L.from||"?")} → ${esc(L.to||"?")}</b>
+        <span class="st">${(lenOf(L.pts)/1000).toFixed(1)}km · 점 ${L.pts.length}개</span>
+        <button class="btn ghost" data-pview="${i}">지도에서 보기</button>
+        <select data-pdir="${i}" aria-label="어느 방향 노선 줄로 저장할지">${PATH_DIRS.filter(d=>d[0]===L.route).map(([r,k,lb])=>`<option value="${k}" ${k===key?"selected":""}>${lb.split(" · ")[1]}</option>`).join("")}</select>
+        <button class="btn" data-psave="${i}">노선 줄로 저장</button></div>`; }).join("");
+  }catch(_){ $("pathLegs").innerHTML=`<p class="muted">불러오지 못했습니다.</p>`; }
+};
+document.addEventListener("click",async e=>{
+  const v=e.target.closest("[data-pview]"); if(v){ const L=PT.legs[+v.dataset.pview]; PT.cand=L.pts;
+    document.querySelectorAll("[data-pleg]").forEach(x=>x.classList.toggle("cand",x.dataset.pleg===v.dataset.pview)); drawPathMap(); $("pathMap").scrollIntoView({behavior:"smooth",block:"center"}); return; }
+  const sv=e.target.closest("[data-psave]"); if(sv){ const i=+sv.dataset.psave, L=PT.legs[i], k=document.querySelector(`[data-pdir="${i}"]`).value;
+    const lab=PATH_DIRS.find(d=>d[0]===L.route&&d[1]===k)[2];
+    const had=((A.config.paths||{})[L.route]||{})[k];
+    if(!confirm(`이 길을 ‘${lab}’ 노선 줄로 저장할까요?${had?"\n(지금 저장된 줄은 바뀝니다)":""}`)) return;
+    const pts=simplify(L.pts,6), str=pts.map(p=>p[0].toFixed(5)+","+p[1].toFixed(5)).join(";");
+    try{ await set(ref(db,`config/paths/${L.route}/${k}`),str);
+      await set(ref(db,`config/pathInfo/${L.route}/${k}`),{ts:Date.now(),src:`${$("pathDate").value} ${L.bus}호차 ${L.leg}회차`});
+      PT.cand=null; document.querySelectorAll("[data-pleg]").forEach(x=>x.classList.remove("cand"));
+      toast("노선 줄을 저장했습니다. 성도님·TV 지도에 바로 그려집니다"); }catch(_){ toast("저장하지 못했습니다"); } return; }
+  const dl=e.target.closest("[data-pdel]"); if(dl){ const [r,k]=dl.dataset.pdel.split("/");
+    if(!confirm("이 노선 줄을 지울까요? 지우면 이 방향은 예전 방식(직선 거리)으로 도착 시간을 계산합니다.")) return;
+    try{ await remove(ref(db,`config/paths/${r}/${k}`)); await remove(ref(db,`config/pathInfo/${r}/${k}`)); toast("지웠습니다"); }catch(_){ toast("지우지 못했습니다"); } }
+});
 
 // ---------- 정류장 그리기 (운행 현황 지도) ----------
 let mainStopL, mainCircles=[];
@@ -1088,7 +1187,7 @@ function fillConfig(){
   const c=A.config;
   drawTpls(); drawVehicles();
   if(applyStops(c.stops)){ drawMainStops(); }
-  drawNewsAdmin(); drawThemeAdmin();
+  drawNewsAdmin(); drawThemeAdmin(); drawPathAdmin();
   drawStopEdit();
   if(!configFilled){ $("kKey").value=c.kakaoKey||""; $("nText").value=c.notice?.text||""; $("nOn").checked=!!c.notice?.on; $("pTimes").value=c.parkTimes||""; configFilled=true; loadTimeKey(); previewNotice(); }
   else loadTimeKey(true);

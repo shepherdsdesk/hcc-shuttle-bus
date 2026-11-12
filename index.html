@@ -490,7 +490,11 @@ const MapKit = (()=>{
       onDrag(cb){ K.event.addListener(map,"dragstart",cb); },
       circle(lat,lng,r,color){ const c=new K.Circle({center:new K.LatLng(lat,lng),radius:r,strokeWeight:2,strokeColor:color,strokeOpacity:.9,strokeStyle:"dash",fillColor:color,fillOpacity:.12}); c.setMap(map);
         return { set(a,b,rr){ c.setPosition(new K.LatLng(a,b)); c.setRadius(rr); }, remove(){ c.setMap(null); } }; },
-      onClick(cb){ K.event.addListener(map,"click",e=>cb(e.latLng.getLat(),e.latLng.getLng())); }
+      onClick(cb){ K.event.addListener(map,"click",e=>cb(e.latLng.getLat(),e.latLng.getLng())); },
+      // 선 그리기: pts=[[lat,lng],…], o={color,weight,opacity,dash}
+      line(pts,o){ o=o||{}; const mk=(p,oo)=>new K.Polyline({path:p.map(a=>new K.LatLng(a[0],a[1])),strokeWeight:oo.weight||5,strokeColor:oo.color||"#1B2B5C",strokeOpacity:dv(oo.opacity,.8),strokeStyle:oo.dash?"shortdash":"solid",zIndex:oo.z||1});
+        let pl=mk(pts,o); pl.setMap(map);
+        return { set(p,oo){ pl.setMap(null); pl=mk(p,oo||o); pl.setMap(map); }, remove(){ pl.setMap(null); } }; }
     };
   }
   // ---------- OpenStreetMap (Leaflet) ----------
@@ -520,7 +524,10 @@ const MapKit = (()=>{
       onDrag(cb){ map.on("dragstart",cb); },
       circle(lat,lng,r,color){ const c=L.circle([lat,lng],{radius:r,color,weight:2,dashArray:"6 5",fillColor:color,fillOpacity:.12,interactive:false}).addTo(map);
         return { set(a,b,rr){ c.setLatLng([a,b]); c.setRadius(rr); }, remove(){ map.removeLayer(c); } }; },
-      onClick(cb){ map.on("click",e=>cb(e.latlng.lat,e.latlng.lng)); }
+      onClick(cb){ map.on("click",e=>cb(e.latlng.lat,e.latlng.lng)); },
+      line(pts,o){ o=o||{}; const st=oo=>({color:oo.color||"#1B2B5C",weight:oo.weight||5,opacity:dv(oo.opacity,.8),dashArray:oo.dash?"8 8":null,interactive:false,lineCap:"round",lineJoin:"round"});
+        let pl=L.polyline(pts,st(o)).addTo(map);
+        return { set(p,oo){ pl.setLatLngs(p); pl.setStyle(st(oo||o)); }, remove(){ map.removeLayer(pl); } }; }
     };
   }
   async function create(el,opt={}){
@@ -593,6 +600,24 @@ function drawStopsOnMap(){
   r.stops.forEach(s=>stopLayer.add(s.lat,s.lng,stopHtml(s,r.color),{z:2}));
   fitMap();
 }
+// ---------- 노선 줄 그리기 ----------
+// 고른 정류장으로 오는 방향 줄은 진하게, 반대 방향은 흐린 점선, 다가오는 버스부터 정류장까지는 가장 진하게
+let pathLines=[], pathSig="";
+function drawPaths(){
+  if(!map || !map.line) return;
+  const route=S.route, R=ROUTES[route], st=heroStop(), dest=stopDest(route,st.id), mine=dest?pathFor(route,dest):null;
+  let hi=null, ps=null;
+  if(mine){ ps=projectOn(mine,st);
+    liveBuses(route).forEach(b=>{ if(b.old||b.to!==dest) return; const pb=projectOn(mine,b); if(!pb||pb.off>60||pb.along>ps.along+30) return; if(hi==null||pb.along>hi) hi=pb.along; }); }
+  const sig=[route,st.id,PATHS_VER,hi==null?"":Math.round(hi/15)].join("|");
+  if(sig===pathSig) return; pathSig=sig;
+  pathLines.forEach(l=>l.remove()); pathLines=[];
+  Object.values(PATHS[route]||{}).forEach(P=>{ if(P!==mine) pathLines.push(map.line(P.pts,{color:R.color,weight:4,opacity:.3,dash:true})); });
+  if(mine){
+    pathLines.push(map.line(mine.pts,{color:R.color,weight:6,opacity:.4}));
+    if(hi!=null && ps){ const seg=slicePath(mine,hi,ps.along); if(seg.length>1) pathLines.push(map.line(seg,{color:R.color,weight:7,opacity:.95})); }
+  }
+}
 function liveBuses(route){
   const now=serverNow(); const out=[];
   Object.entries(S.live[route]||{}).forEach(([bus,v])=>{
@@ -646,6 +671,49 @@ const SLOW_KMH = 12;
 const RTERM = { yatap:["byc","church"], park:["cdong","church"] };
 function bearingTo(a,b){ const t=Math.PI/180, y=Math.sin((b.lng-a.lng)*t)*Math.cos(b.lat*t), x=Math.cos(a.lat*t)*Math.sin(b.lat*t)-Math.sin(a.lat*t)*Math.cos(b.lat*t)*Math.cos((b.lng-a.lng)*t); return (Math.atan2(y,x)/t+360)%360; }
 function angDiff(a,b){ const d=Math.abs(a-b)%360; return d>180?360-d:d; }
+// ==== PATHKIT START ====  (노선 줄: 실제 운행 기록으로 만든 길 — index·tv에 똑같이 들어갑니다)
+// config/paths/{route}/{도착 정류장 id} = "lat,lng;lat,lng;…"  (그 정류장으로 가는 길)
+const PATH_KEY = { yatap:{"교회":"church","야탑역":"byc"}, park:{"교회":"church","C동":"cdong"} };
+let PATHS = {}, PATHS_SIG = "", PATHS_VER = 0;
+function parsePath(str){
+  if(typeof str!=="string") return null;
+  const pts=str.split(";").map(p=>p.split(",").map(Number)).filter(a=>a.length===2 && isFinite(a[0]) && isFinite(a[1]));
+  if(pts.length<2) return null;
+  const cum=[0]; for(let i=1;i<pts.length;i++) cum.push(cum[i-1]+dist({lat:pts[i-1][0],lng:pts[i-1][1]},{lat:pts[i][0],lng:pts[i][1]}));
+  return {pts,cum,len:cum[cum.length-1]};
+}
+function applyPaths(cfg){
+  const sig=JSON.stringify(cfg||{}); if(sig===PATHS_SIG) return false; PATHS_SIG=sig; PATHS={}; PATHS_VER++;
+  Object.entries(cfg||{}).forEach(([route,dirs])=>{ PATHS[route]={}; Object.entries(dirs||{}).forEach(([k,v])=>{ const P=parsePath(v); if(P) PATHS[route][k]=P; }); });
+  return true;
+}
+function pathFor(route,to){ const k=(PATH_KEY[route]||{})[to]; return (k && PATHS[route] && PATHS[route][k]) || null; }
+// 점을 노선 줄 위에 올려 보기: 줄에서 떨어진 거리(off)와 출발점부터 줄을 따라간 거리(along)
+function projectOn(P,pt){
+  const k=Math.cos(pt.lat*Math.PI/180)*111320, m=110540; let best=null;
+  for(let i=0;i<P.pts.length-1;i++){
+    const ax=(P.pts[i][1]-pt.lng)*k, ay=(P.pts[i][0]-pt.lat)*m, bx=(P.pts[i+1][1]-pt.lng)*k, by=(P.pts[i+1][0]-pt.lat)*m;
+    const dx=bx-ax, dy=by-ay, L2=dx*dx+dy*dy; let t=L2? -(ax*dx+ay*dy)/L2 : 0; t=Math.max(0,Math.min(1,t));
+    const x=ax+t*dx, y=ay+t*dy, off=Math.sqrt(x*x+y*y);
+    if(!best || off<best.off) best={off, i, t, along:P.cum[i]+t*(P.cum[i+1]-P.cum[i])};
+  }
+  return best;
+}
+// 줄의 일부(along a ~ b 미터)만 잘라 점 목록으로
+function slicePath(P,a,b){
+  a=Math.max(0,a); b=Math.min(P.len,b); if(b<=a) return [];
+  const at=s=>{ let i=0; while(i<P.cum.length-2 && P.cum[i+1]<s) i++; const seg=P.cum[i+1]-P.cum[i]||1, t=(s-P.cum[i])/seg; return [P.pts[i][0]+(P.pts[i+1][0]-P.pts[i][0])*t, P.pts[i][1]+(P.pts[i+1][1]-P.pts[i][1])*t]; };
+  const out=[at(a)]; P.cum.forEach((c,i)=>{ if(c>a && c<b) out.push(P.pts[i]); }); out.push(at(b)); return out;
+}
+// 노선 줄을 따라 남은 거리 (줄을 쓸 수 없으면 null)
+//  → {rem: 남은 거리(m, 음수면 이미 지나감)}
+function alongRemain(route,stop,b){
+  const P=b.to?pathFor(route,b.to):null; if(!P) return null;
+  const pb=projectOn(P,b), ps=projectOn(P,stop);
+  if(!pb || !ps || pb.off>60 || ps.off>90) return null;   // 버스가 노선에서 벗어남(우회 등) → 예전 방식
+  return {rem: ps.along-pb.along};
+}
+// ==== PATHKIT END ====
 function busRel(route,stop,b,prev){
   const d=dist(b,stop), r=stopR(stop), de=Math.max(0,d-r), dest=stopDest(route,stop.id);
   const moving = typeof b.spd==="number" && b.spd>SLOW_KMH, inside = d<=r;
@@ -655,6 +723,11 @@ function busRel(route,stop,b,prev){
     return null;
   }
   if(!b.to && moving && typeof b.hd==="number" && !inside && angDiff(bearingTo(b,stop),b.hd)>100) return null;
+  // 노선 줄이 있으면: 줄을 따라 남은 거리로 계산하고, 이미 지나간 정류장은 빼기
+  if(match && b.to){ const A=alongRemain(route,stop,b);
+    if(A){ if(inside && !moving) return {d,de:0,arrived:true,eta:0};
+      if(A.rem < -Math.max(r,30)) return null;
+      const remE=Math.max(0,A.rem-r); return {d,de:remE,arrived:false,eta:remE/BUS_SPEED_M_PER_MIN,onPath:true}; } }
   const key=route+b.bus+stop.id, p=prev[key];
   const approaching = (inside&&!moving) || p==null || d < p.d-10 || (p.approaching && d <= p.d+10);
   if(p==null || Math.abs(d-p.d)>10) prev[key]={d,approaching};
@@ -725,7 +798,7 @@ $("stops").addEventListener("click", async ev=>{
     $("stops")._h=null; drawStopList(); return;
   }
   const c=ev.target.closest(".stopcard"); if(!c) return;
-  S.heroStop[S.route]=c.dataset.stop; $("stops")._h=null; drawStopList(); drawHero();
+  S.heroStop[S.route]=c.dataset.stop; $("stops")._h=null; drawStopList(); drawHero(); drawPaths();
 });
 $("stops").addEventListener("keydown",ev=>{ if((ev.key==="Enter"||ev.key===" ") && ev.target.classList.contains("stopcard")){ ev.preventDefault(); ev.target.click(); } });
 
@@ -918,7 +991,7 @@ function selectRoute(r){
   drawStopsOnMap(); refreshSaint();
 }
 $("routes").addEventListener("click",e=>{ const b=e.target.closest("button"); if(b) selectRoute(b.dataset.route); });
-function refreshSaint(){ if(!map) return; drawBusesOnMap(); drawHero(); drawStopList(); checkAlerts(); drawRide(); drawUpcoming(); if(location.hash==="#times") drawTimes(); }
+function refreshSaint(){ if(!map) return; drawPaths(); drawBusesOnMap(); drawHero(); drawStopList(); checkAlerts(); drawRide(); drawUpcoming(); if(location.hash==="#times") drawTimes(); }
 
 // 홈 화면 설치 안내
 let deferredPrompt=null;
@@ -963,6 +1036,7 @@ async function startSaint(){
   onValue(ref(db,"config"), s=>{ const c=s.val()||{};
     PARK_TIMES = parseTimes(c.parkTimes); TIMES = c.times||{};
     if(applyStops(c.stops) && stopLayer){ drawStopsOnMap(); }
+    if(applyPaths(c.paths) && map) drawPaths();
     drawNews(c.news);
     const n=c.notice; const show = n && n.on && n.text;
     $("notice").classList.toggle("hide",!show); if(show) $("notice").innerHTML=`<span aria-hidden="true">📢</span><span>${esc(n.text)}</span>`;
@@ -990,7 +1064,21 @@ function showLeg(from){
   $("liveFrom").textContent=from||"";
   $("liveDir").textContent= D.to ? `${D.to}행` : "방향 확인 중";
 }
+// 운행 경로 기록: 20m 넘게 움직일 때마다 점을 모아 30초마다 저장 → 관리자가 '노선 줄'로 저장할 수 있음
+function pathAdd(c){
+  if(!D.path) D.path=[];
+  if(c.accuracy && c.accuracy>40) return;
+  const pt={lat:c.latitude,lng:c.longitude}, last=D.path[D.path.length-1];
+  if(last && dist(last,pt)<20) return;
+  D.path.push(pt); if(D.path.length>1500) D.path.shift();
+  if(!D.pathT || Date.now()-D.pathT>30000) pathFlush();
+}
+function pathFlush(){
+  if(!D.path || D.path.length<2 || !D.sid) return; D.pathT=Date.now();
+  update(ref(db,logPath("legs",D.leg)),{path:D.path.map(p=>p.lat.toFixed(5)+","+p.lng.toFixed(5)).join(";")}).catch(()=>{});
+}
 function newLeg(stop){
+  pathFlush(); D.path=[{lat:stop.lat,lng:stop.lng}]; D.pathT=0;
   D.leg++; D.legFrom=stop.id; D.trip=`${D.sid}_${D.leg}`; D.to=DEST[D.route][stop.id]||"";
   set(ref(db,logPath("legs",D.leg)),{from:stop.name, to:D.to, t:serverTimestamp()}).catch(()=>{});
   showLeg(stop.name+" 출발"); watchBoard();
@@ -1126,7 +1214,7 @@ function motion(p){
   return {spd: spd==null?null:Math.round(spd), hd: hd==null?null:Math.round(hd)};
 }
 async function sendPos(p){
-  D.last=p; const mv=motion(p);
+  D.last=p; const mv=motion(p); try{ pathAdd(p.coords); }catch(_){}
   try{ legCheck(p.coords.latitude,p.coords.longitude,mv.spd); moveMe(p.coords.latitude,p.coords.longitude); }catch(_){}
   if($("dst").classList.contains("bad")) liveState("전송 중",false);
   const now=Date.now(); if(now-D.lastSent < SEND_EVERY_MS - 300) return;
@@ -1167,7 +1255,7 @@ $("startBtn").onclick=async()=>{
     $("startErr").textContent="이 차량을 운행할 권한이 없습니다. 배정이 바뀌었을 수 있으니 셔틀 담당자에게 확인해 주세요.";
     $("startBtn").disabled=false; noSleepVideo(false); return;
   }
-  D.on=true; D.count=0; D.lastSent=0;
+  D.on=true; D.count=0; D.lastSent=0; D.path=[]; D.pathT=0;
   $("liveTitle").textContent=`${D.bus}호차`;
   liveState("위치 찾는 중…",false); drvShow("drvLive"); keepAwake();
   $("liveRide").innerHTML="0<small> 명</small>"; $("liveWait").innerHTML="0<small> 명</small>"; showLeg("운행 시작");
@@ -1187,6 +1275,7 @@ async function stopDriving(){
   clearInterval(D.tick);
   try{ D.wake && await D.wake.release(); }catch(_){} D.wake=null; noSleepVideo(false);
   try{ await remove(D.busRef); await onDisconnect(D.busRef).cancel(); }catch(_){}
+  try{ pathFlush(); }catch(_){}
   try{ await update(ref(db,logPath()),{end:serverTimestamp(), sent:D.count, legs_n:D.leg}); }catch(_){}
   if(D.unBoard){ D.unBoard(); D.unBoard=null; } if(D.unWait){ D.unWait(); D.unWait=null; }
   $("dst").classList.add("hide");

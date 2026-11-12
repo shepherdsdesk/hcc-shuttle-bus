@@ -337,7 +337,11 @@ const MapKit = (()=>{
       onDrag(cb){ K.event.addListener(map,"dragstart",cb); },
       circle(lat,lng,r,color){ const c=new K.Circle({center:new K.LatLng(lat,lng),radius:r,strokeWeight:2,strokeColor:color,strokeOpacity:.9,strokeStyle:"dash",fillColor:color,fillOpacity:.12}); c.setMap(map);
         return { set(a,b,rr){ c.setPosition(new K.LatLng(a,b)); c.setRadius(rr); }, remove(){ c.setMap(null); } }; },
-      onClick(cb){ K.event.addListener(map,"click",e=>cb(e.latLng.getLat(),e.latLng.getLng())); }
+      onClick(cb){ K.event.addListener(map,"click",e=>cb(e.latLng.getLat(),e.latLng.getLng())); },
+      // 선 그리기: pts=[[lat,lng],…], o={color,weight,opacity,dash}
+      line(pts,o){ o=o||{}; const mk=(p,oo)=>new K.Polyline({path:p.map(a=>new K.LatLng(a[0],a[1])),strokeWeight:oo.weight||5,strokeColor:oo.color||"#1B2B5C",strokeOpacity:dv(oo.opacity,.8),strokeStyle:oo.dash?"shortdash":"solid",zIndex:oo.z||1});
+        let pl=mk(pts,o); pl.setMap(map);
+        return { set(p,oo){ pl.setMap(null); pl=mk(p,oo||o); pl.setMap(map); }, remove(){ pl.setMap(null); } }; }
     };
   }
   // ---------- OpenStreetMap (Leaflet) ----------
@@ -367,7 +371,10 @@ const MapKit = (()=>{
       onDrag(cb){ map.on("dragstart",cb); },
       circle(lat,lng,r,color){ const c=L.circle([lat,lng],{radius:r,color,weight:2,dashArray:"6 5",fillColor:color,fillOpacity:.12,interactive:false}).addTo(map);
         return { set(a,b,rr){ c.setLatLng([a,b]); c.setRadius(rr); }, remove(){ map.removeLayer(c); } }; },
-      onClick(cb){ map.on("click",e=>cb(e.latlng.lat,e.latlng.lng)); }
+      onClick(cb){ map.on("click",e=>cb(e.latlng.lat,e.latlng.lng)); },
+      line(pts,o){ o=o||{}; const st=oo=>({color:oo.color||"#1B2B5C",weight:oo.weight||5,opacity:dv(oo.opacity,.8),dashArray:oo.dash?"8 8":null,interactive:false,lineCap:"round",lineJoin:"round"});
+        let pl=L.polyline(pts,st(o)).addTo(map);
+        return { set(p,oo){ pl.setLatLngs(p); pl.setStyle(st(oo||o)); }, remove(){ map.removeLayer(pl); } }; }
     };
   }
   async function create(el,opt={}){
@@ -505,7 +512,7 @@ function applyTheme(){
   $("hdDeco").innerHTML = showDeco ? TV_DECO[id] : "";
   $("hdPhoto").style.backgroundImage = showPhoto ? `url("${PHOTO_URL}")` : "none";
   b.classList.toggle("band", showDeco||showPhoto);
-  if(id!==THEME_ID){ THEME_ID=id; if(typeof drawStopMarks==="function") drawStopMarks(); $("boards")._h=null; $("times")._h=null; }
+  if(id!==THEME_ID){ THEME_ID=id; if(typeof drawStopMarks==="function") drawStopMarks(); if(typeof drawTvPaths==="function") drawTvPaths(); $("boards")._h=null; $("times")._h=null; }
 }
 function watchPhoto(){
   const want=!!THEME_CFG.photo;
@@ -552,6 +559,49 @@ const SLOW_KMH = 12;
 const RTERM = { yatap:["byc","church"], park:["cdong","church"] };
 function bearingTo(a,b){ const t=Math.PI/180, y=Math.sin((b.lng-a.lng)*t)*Math.cos(b.lat*t), x=Math.cos(a.lat*t)*Math.sin(b.lat*t)-Math.sin(a.lat*t)*Math.cos(b.lat*t)*Math.cos((b.lng-a.lng)*t); return (Math.atan2(y,x)/t+360)%360; }
 function angDiff(a,b){ const d=Math.abs(a-b)%360; return d>180?360-d:d; }
+// ==== PATHKIT START ====  (노선 줄: 실제 운행 기록으로 만든 길 — index·tv에 똑같이 들어갑니다)
+// config/paths/{route}/{도착 정류장 id} = "lat,lng;lat,lng;…"  (그 정류장으로 가는 길)
+const PATH_KEY = { yatap:{"교회":"church","야탑역":"byc"}, park:{"교회":"church","C동":"cdong"} };
+let PATHS = {}, PATHS_SIG = "", PATHS_VER = 0;
+function parsePath(str){
+  if(typeof str!=="string") return null;
+  const pts=str.split(";").map(p=>p.split(",").map(Number)).filter(a=>a.length===2 && isFinite(a[0]) && isFinite(a[1]));
+  if(pts.length<2) return null;
+  const cum=[0]; for(let i=1;i<pts.length;i++) cum.push(cum[i-1]+dist({lat:pts[i-1][0],lng:pts[i-1][1]},{lat:pts[i][0],lng:pts[i][1]}));
+  return {pts,cum,len:cum[cum.length-1]};
+}
+function applyPaths(cfg){
+  const sig=JSON.stringify(cfg||{}); if(sig===PATHS_SIG) return false; PATHS_SIG=sig; PATHS={}; PATHS_VER++;
+  Object.entries(cfg||{}).forEach(([route,dirs])=>{ PATHS[route]={}; Object.entries(dirs||{}).forEach(([k,v])=>{ const P=parsePath(v); if(P) PATHS[route][k]=P; }); });
+  return true;
+}
+function pathFor(route,to){ const k=(PATH_KEY[route]||{})[to]; return (k && PATHS[route] && PATHS[route][k]) || null; }
+// 점을 노선 줄 위에 올려 보기: 줄에서 떨어진 거리(off)와 출발점부터 줄을 따라간 거리(along)
+function projectOn(P,pt){
+  const k=Math.cos(pt.lat*Math.PI/180)*111320, m=110540; let best=null;
+  for(let i=0;i<P.pts.length-1;i++){
+    const ax=(P.pts[i][1]-pt.lng)*k, ay=(P.pts[i][0]-pt.lat)*m, bx=(P.pts[i+1][1]-pt.lng)*k, by=(P.pts[i+1][0]-pt.lat)*m;
+    const dx=bx-ax, dy=by-ay, L2=dx*dx+dy*dy; let t=L2? -(ax*dx+ay*dy)/L2 : 0; t=Math.max(0,Math.min(1,t));
+    const x=ax+t*dx, y=ay+t*dy, off=Math.sqrt(x*x+y*y);
+    if(!best || off<best.off) best={off, i, t, along:P.cum[i]+t*(P.cum[i+1]-P.cum[i])};
+  }
+  return best;
+}
+// 줄의 일부(along a ~ b 미터)만 잘라 점 목록으로
+function slicePath(P,a,b){
+  a=Math.max(0,a); b=Math.min(P.len,b); if(b<=a) return [];
+  const at=s=>{ let i=0; while(i<P.cum.length-2 && P.cum[i+1]<s) i++; const seg=P.cum[i+1]-P.cum[i]||1, t=(s-P.cum[i])/seg; return [P.pts[i][0]+(P.pts[i+1][0]-P.pts[i][0])*t, P.pts[i][1]+(P.pts[i+1][1]-P.pts[i][1])*t]; };
+  const out=[at(a)]; P.cum.forEach((c,i)=>{ if(c>a && c<b) out.push(P.pts[i]); }); out.push(at(b)); return out;
+}
+// 노선 줄을 따라 남은 거리 (줄을 쓸 수 없으면 null)
+//  → {rem: 남은 거리(m, 음수면 이미 지나감)}
+function alongRemain(route,stop,b){
+  const P=b.to?pathFor(route,b.to):null; if(!P) return null;
+  const pb=projectOn(P,b), ps=projectOn(P,stop);
+  if(!pb || !ps || pb.off>60 || ps.off>90) return null;   // 버스가 노선에서 벗어남(우회 등) → 예전 방식
+  return {rem: ps.along-pb.along};
+}
+// ==== PATHKIT END ====
 function busRel(route,stop,b,prev){
   const d=dist(b,stop), r=stopR(stop), de=Math.max(0,d-r), dest=stopDest(route,stop.id);
   const moving = typeof b.spd==="number" && b.spd>SLOW_KMH, inside = d<=r;
@@ -561,6 +611,11 @@ function busRel(route,stop,b,prev){
     return null;
   }
   if(!b.to && moving && typeof b.hd==="number" && !inside && angDiff(bearingTo(b,stop),b.hd)>100) return null;
+  // 노선 줄이 있으면: 줄을 따라 남은 거리로 계산하고, 이미 지나간 정류장은 빼기
+  if(match && b.to){ const A=alongRemain(route,stop,b);
+    if(A){ if(inside && !moving) return {d,de:0,arrived:true,eta:0};
+      if(A.rem < -Math.max(r,30)) return null;
+      const remE=Math.max(0,A.rem-r); return {d,de:remE,arrived:false,eta:remE/BUS_SPEED_M_PER_MIN,onPath:true}; } }
   const key=route+b.bus+stop.id, p=prev[key];
   const approaching = (inside&&!moving) || p==null || d < p.d-10 || (p.approaching && d <= p.d+10);
   if(p==null || Math.abs(d-p.d)>10) prev[key]={d,approaching};
@@ -609,7 +664,12 @@ async function initMap(){
   fit(); window.addEventListener("resize",()=>setTimeout(fit,200));
   if("ResizeObserver" in window) new ResizeObserver(()=>fit()).observe($("map"));
 }
-let stopL;
+let stopL, tvLines=[];
+// 노선 줄: 두 노선 모두 노선색으로
+function drawTvPaths(){
+  if(!map || !map.line) return; tvLines.forEach(l=>l.remove()); tvLines=[];
+  RT.forEach(r=>Object.values(PATHS[r]||{}).forEach(P=>tvLines.push(map.line(P.pts,{color:ROUTES[r].color,weight:5,opacity:.6}))));
+}
 function drawStopMarks(){
   if(!stopL) return; stopL.clear();
   RT.forEach(r=>ROUTES[r].stops.forEach(s=>{
@@ -692,12 +752,13 @@ try{
 // ---------- 시작 ----------
 (async()=>{
   applyTheme();
-  await initMap();
+  await initMap(); drawTvPaths();
   onValue(ref(db,"live"), s=>{ const v=s.val()||{}; LIVE={yatap:v.yatap||{},park:v.park||{}}; drawMap(); drawBoards(); });
   onValue(ref(db,"config"), s=>{ const c=s.val()||{};
     if(applyStops(c.stops)) drawStopMarks();
     NEWS_CFG=c.news||null; drawTicker();
     THEME_CFG=c.tvTheme||{}; watchPhoto(); applyTheme();
+    if(applyPaths(c.paths)) drawTvPaths();
     PARK_TIMES=parseTimes(c.parkTimes); TIMES=c.times||{};
     const n=c.notice, show=n&&n.on&&n.text; $("notice").classList.toggle("hide",!show);
     if(show) $("notice").innerHTML=`<span aria-hidden="true">📢</span><span>${esc(n.text)}</span>`;
