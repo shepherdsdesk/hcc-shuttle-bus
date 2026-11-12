@@ -83,11 +83,27 @@
   .next b{background:#1E293B;color:#F8FAFC;border-radius:.8vmin;padding:.35vmin 1vmin;font-size:2.05vmin;font-variant-numeric:tabular-nums}
   .next b.first{background:var(--navy);color:#fff}
   .rt.park .next b.first{background:var(--teal)}
-  footer{display:flex;align-items:center;gap:1.6vmin;color:var(--sub);font-size:1.8vmin;font-weight:600}
+  /* 교회 소식 자막 */
+  .ticker{display:flex;align-items:stretch;background:#0F1A30;border:.2vmin solid #2B3D75;border-radius:1.4vmin;overflow:hidden;height:5.6vmin;flex:none}
+  .ticker .tag{flex:none;display:flex;align-items:center;gap:.8vmin;background:var(--navy);color:#fff;font-size:2.2vmin;font-weight:900;padding:0 2vmin;white-space:nowrap}
+  .ticker .tag i{width:1.2vmin;height:1.2vmin;border-radius:50%;background:#FCD34D}
+  .tk-view{position:relative;flex:1;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent);mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent)}
+  .tk-track{position:absolute;top:0;bottom:0;left:0;display:flex;align-items:center;white-space:nowrap;will-change:transform;animation:tk linear infinite}
+  .tk-track span{font-size:2.6vmin;font-weight:800;color:#F8FAFC;padding-right:8vmin}
+  .tk-track span::before{content:"●";color:#FCD34D;font-size:1.4vmin;margin-right:1.4vmin;vertical-align:.4vmin}
+  @keyframes tk{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  footer{display:flex;align-items:center;gap:1.6vmin;color:var(--sub);font-size:1.8vmin;font-weight:600;flex:none}
+  footer .ftxt{min-width:0}
+  footer .ftxt span{display:block;white-space:nowrap}
+  footer .ftxt .site{font-size:1.5vmin;opacity:.75;margin-top:.2vmin}
   footer .qr{background:#fff;border-radius:1vmin;padding:.6vmin;width:8.5vmin;height:8.5vmin}
   footer .qr svg{width:100%;height:100%;display:block}
   footer b{color:#F8FAFC;font-size:2.3vmin;display:block}
-  footer .credit{margin-left:auto;text-align:right;font-size:1.6vmin}
+  footer .credit{margin-left:auto;text-align:right;white-space:nowrap}
+  footer .credit .tel{display:block;font-size:2.6vmin;font-weight:900;color:#F8FAFC}
+  footer .credit .tel em{font-style:normal;font-size:1.7vmin;color:var(--sub);font-weight:700;margin-right:.8vmin}
+  footer .credit small{display:block;font-size:1.25vmin;opacity:.4;margin-top:.3vmin}
+  body.portrait footer .credit .tel{font-size:3.4vmin}
   /* 지도 표시 */
   .mkc{position:absolute;left:0;top:0;transform:translate(-50%,-50%)}
   .pill{display:inline-flex;align-items:center;gap:.6vmin;white-space:nowrap;font-size:2.1vmin;font-weight:900;padding:.6vmin 1.3vmin .6vmin .7vmin;border-radius:999px;box-shadow:0 .4vmin 1.4vmin rgba(0,0,0,.5);border:.3vmin solid #0B1220;color:#fff}
@@ -129,10 +145,11 @@
     <div class="boards" id="boards"></div>
     <section class="times" id="times"></section>
   </div>
+  <div class="ticker hide" id="ticker"><div class="tag"><i></i>교회 소식</div><div class="tk-view"><div class="tk-track" id="tkTrack"></div></div></div>
   <footer>
     <div class="qr" id="qr" aria-hidden="true"></div>
-    <div><b>휴대폰으로도 확인하세요</b>QR을 찍으면 내 정류장 도착 알림까지 받을 수 있어요 · AI목양지원센터 mokyangdesk.com</div>
-    <div class="credit">셔틀 문의 031-780-9600<br>만든 사람 AI목양지원센터 · 이세진 목사</div>
+    <div class="ftxt"><b>휴대폰으로도 확인하세요</b><span>QR을 찍으면 내 정류장 도착 알림까지 받을 수 있어요</span><span class="site">AI목양지원센터 · mokyangdesk.com</span></div>
+    <div class="credit"><span class="tel"><em>셔틀 문의</em>031-780-9600</span><small>만든 사람 AI목양지원센터 · 이세진 목사</small></div>
   </footer>
   <div class="ctl" id="ctl"><button id="fsBtn">전체 화면</button><span>화면</span><span id="layBtns" style="display:flex;gap:.8vmin;margin:0"></span></div>
 </div>
@@ -422,6 +439,26 @@ function liveEta(route,stop){
   return best;
 }
 
+
+// ---------- 교회 소식 (관리자 → config/news) ----------
+const todayKST = () => new Date((typeof serverNow==="function"?serverNow():Date.now())+9*3600e3).toISOString().slice(0,10);
+function activeNews(cfg){ const t=todayKST();
+  return Object.entries(cfg||{}).map(([id,v])=>Object.assign({id},v)).filter(n=>n && n.text && n.on!==false && (!n.from||n.from<=t) && (!n.until||n.until>=t)).sort((a,b)=>(a.ts||0)-(b.ts||0)); }
+let NEWS_CFG=null, tkSig="";
+function drawTicker(){
+  const list=activeNews(NEWS_CFG), box=$("ticker"), tr=$("tkTrack");
+  box.classList.toggle("hide",!list.length); if(!list.length){ tkSig=""; return; }
+  const sig=list.map(n=>n.text).join("\u0001")+"|"+innerWidth; if(sig===tkSig) return; tkSig=sig;
+  const one=list.map(n=>`<span>${esc(n.text)}</span>`).join("");
+  tr.innerHTML=one; const w=tr.scrollWidth, view=tr.parentNode.clientWidth;
+  // 한 바퀴가 화면보다 짧으면 반복해서 채움 → 두 벌을 이어 붙여 끊김 없이 흐르게
+  let reps=1; while(w*reps<view && reps<8) reps++;
+  tr.innerHTML=one.repeat(reps*2);
+  const px=tr.scrollWidth/2, speed=Math.max(60, Math.min(innerWidth,innerHeight)*0.09); // 초당 화면 짧은 변의 약 9%
+  tr.style.animationDuration=(px/speed).toFixed(1)+"s";
+}
+window.addEventListener("resize",()=>{ tkSig=""; setTimeout(drawTicker,300); });
+
 // ---------- 지도 ----------
 let map, busL, markers={};
 async function initMap(){
@@ -460,7 +497,7 @@ function nextList(route,id,n){
 // 오늘 시간표: 지금 이후 출발 시각만
 function drawTimes(){
   const {day,min}=nowKST(), port=document.body.classList.contains("portrait"), N=port?14:12;
-  let h=`<h2>오늘 시간표<small>${DAYNAME[day]} · 지금 이후 출발</small></h2>`;
+  let h=`<h2>오늘 운행 시간표<small>${DAYNAME[day]} · 지금 이후 출발</small></h2>`;
   RT.forEach(r=>{ const R=ROUTES[r];
     const rows = r==="yatap" ? [["byc","야탑역 BYC 앞 출발 → 교회"],["church","교회 출발 → 야탑역"]] : [["cdong","테크노파크 C동 출발 → 교회"]];
     h+=`<div class="ttr ${r}"><h3><i style="background:${R.color}"></i>${R.name}</h3><div class="ttls">`;
@@ -520,11 +557,13 @@ try{
   onValue(ref(db,"live"), s=>{ const v=s.val()||{}; LIVE={yatap:v.yatap||{},park:v.park||{}}; drawMap(); drawBoards(); });
   onValue(ref(db,"config"), s=>{ const c=s.val()||{};
     if(applyStops(c.stops)) drawStopMarks();
+    NEWS_CFG=c.news||null; drawTicker();
     PARK_TIMES=parseTimes(c.parkTimes); TIMES=c.times||{};
     const n=c.notice, show=n&&n.on&&n.text; $("notice").classList.toggle("hide",!show);
     if(show) $("notice").innerHTML=`<span aria-hidden="true">📢</span><span>${esc(n.text)}</span>`;
     $("boards")._h=null; drawBoards(); });
   setInterval(()=>{ drawMap(); drawBoards(); },4000);
+  setInterval(drawTicker,60e3); // 날짜가 바뀌면 지난 소식 내리기
   tickClock(); setInterval(tickClock,1000);
   keepAwake();
 })();
