@@ -298,6 +298,7 @@
           <button class="btn" id="stLoad">보기</button>
           <button class="btn ghost" id="stToday">오늘</button>
           <button class="btn ghost" id="stSunday">지난 주일</button>
+          <button class="btn red hide" id="stDelDay" style="margin-left:auto">🗑 이날 기록 모두 지우기</button>
         </div>
       </div>
       <div id="stOut"></div>
@@ -305,6 +306,17 @@
         <h2>최근 8주 주일 탑승 <small>앱으로 '탑승'을 누른 인원 기준</small></h2>
         <button class="btn ghost" id="stWeeks">불러오기</button>
         <div id="stWeeksOut" style="margin-top:12px"></div>
+      </div>
+      <div class="card" style="border:2px solid #FECACA">
+        <h2>🧹 운행기록 초기화 <small>테스트로 쌓인 기록을 정리할 때</small></h2>
+        <ul class="muted" style="margin:0 0 12px;padding-left:20px;line-height:1.8">
+          <li>지워지는 것: <b>운행 기록</b>과 <b>탑승 인원 기록</b></li>
+          <li>그대로 남는 것: 노선 줄 · 정류장 · 시간표 · 기사님 · 공지 · TV 설정</li>
+          <li>지우기 전에 <b>백업 파일</b>이 자동으로 내려받아집니다. 지운 기록은 되돌릴 수 없습니다.</li>
+          <li>운행 1건만 지우려면 위에서 날짜를 보고, 그 운행의 <b>🗑 이 운행 지우기</b>를 누르세요.</li>
+        </ul>
+        <button class="btn red" id="stDelAll">🗑 전체 운행기록 초기화</button>
+        <div id="stDelMsg" class="muted" style="margin-top:8px"></div>
       </div>
     </section>
 
@@ -1295,14 +1307,68 @@ function initStats(){
   $("stToday").onclick=()=>{ $("stDate").value=kstDate(now()); loadDay($("stDate").value); };
   $("stSunday").onclick=()=>{ $("stDate").value=lastSunday(); loadDay($("stDate").value); };
   $("stWeeks").onclick=loadWeeks;
+  $("stDelDay").onclick=()=>lastDay && delDay(lastDay);
+  $("stDelAll").onclick=delAll;
+  $("stOut").addEventListener("click",e=>{ const b=e.target.closest("[data-delrun]"); if(b) delRun(lastDay,b.dataset.delrun,b.dataset.label); });
+}
+// ---------- 운행기록 지우기 (백업 먼저 받고, '초기화'를 직접 입력해야 진행) ----------
+function saveBackup(name,data){
+  const blob=new Blob([JSON.stringify(data,null,1)],{type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1500);
+}
+function askReset(what){
+  const v=prompt(`${what}\n\n지운 기록은 되돌릴 수 없습니다. (백업 파일은 먼저 받아집니다)\n계속하려면 아래 칸에 초기화 라고 입력하세요.`,"");
+  if(v===null) return false;
+  if(v.trim()!=="초기화"){ toast("‘초기화’라고 입력하지 않아 취소했습니다"); return false; }
+  return true;
+}
+const stamp=()=>new Date(now()+9*3600e3).toISOString().slice(0,16).replace(/[-:T]/g,"");
+async function delRun(date,sid,label){
+  if(!date||!sid||!askReset(`${date} · ${label||"이 운행"} 기록을 지웁니다.`)) return;
+  try{
+    const [ls,bs]=await Promise.all([get(ref(db,`logs/${date}/${sid}`)),get(ref(db,"board/"+date))]);
+    const log=ls.val(), board=bs.val()||{}, upd={}, bk={};
+    upd[`logs/${date}/${sid}`]=null;
+    Object.entries(board).forEach(([r,buses])=>Object.entries(buses||{}).forEach(([bus,trips])=>Object.entries(trips||{}).forEach(([trip,v])=>{
+      if(trip.startsWith(sid+"_")){ upd[`board/${date}/${r}/${bus}/${trip}`]=null; bk[`${r}/${bus}/${trip}`]=v; } })));
+    saveBackup(`셔틀기록백업_${date}_운행1건_${stamp()}.json`,{date,sid,log,board:bk});
+    await update(ref(db),upd); toast("이 운행 기록을 지웠습니다"); loadDay(date); if(weeksLoaded) loadWeeks();
+  }catch(_){ toast("지우지 못했습니다. 관리자 권한을 확인해 주세요"); }
+}
+async function delDay(date){
+  if(!askReset(`${date} 하루치 운행·탑승 기록을 모두 지웁니다.`)) return;
+  try{
+    const [ls,bs]=await Promise.all([get(ref(db,"logs/"+date)),get(ref(db,"board/"+date))]);
+    if(!ls.exists() && !bs.exists()){ toast("이 날짜에는 지울 기록이 없습니다"); return; }
+    saveBackup(`셔틀기록백업_${date}_하루_${stamp()}.json`,{date,logs:ls.val(),board:bs.val()});
+    await update(ref(db),{[`logs/${date}`]:null,[`board/${date}`]:null}); toast(`${date} 기록을 지웠습니다`); loadDay(date); if(weeksLoaded) loadWeeks();
+  }catch(_){ toast("지우지 못했습니다. 관리자 권한을 확인해 주세요"); }
+}
+async function delAll(){
+  $("stDelMsg").textContent="기록을 확인하는 중…";
+  let ls,bs;
+  try{ [ls,bs]=await Promise.all([get(ref(db,"logs")),get(ref(db,"board"))]); }catch(_){ $("stDelMsg").textContent=""; toast("기록을 불러오지 못했습니다"); return; }
+  const days=new Set([...Object.keys(ls.val()||{}),...Object.keys(bs.val()||{})]);
+  const runs=Object.values(ls.val()||{}).reduce((n,d)=>n+Object.keys(d||{}).length,0);
+  $("stDelMsg").textContent="";
+  if(!days.size){ toast("지울 운행기록이 없습니다"); return; }
+  if(!askReset(`전체 운행기록을 초기화합니다.\n(${days.size}일 · 운행 ${runs}건)`)) return;
+  try{
+    saveBackup(`셔틀기록백업_전체_${stamp()}.json`,{logs:ls.val(),board:bs.val()});
+    await update(ref(db),{logs:null,board:null});
+    toast("전체 운행기록을 초기화했습니다"); $("stDelMsg").textContent=`초기화 완료 · ${days.size}일 · 운행 ${runs}건 (백업 파일을 받았습니다)`;
+    if(lastDay) loadDay(lastDay); if(weeksLoaded) loadWeeks();
+  }catch(_){ toast("지우지 못했습니다. 관리자 권한을 확인해 주세요"); }
 }
 let lastDay=null, weeksLoaded=false;
 async function loadDay(date){
-  if(!date) return; lastDay=date; $("stOut").innerHTML=`<div class="card muted">불러오는 중…</div>`;
+  if(!date) return; lastDay=date; $("stOut").innerHTML=`<div class="card muted">불러오는 중…</div>`; $("stDelDay").classList.add("hide");
   try{
     const [ls,bs]=await Promise.all([get(ref(db,"logs/"+date)),get(ref(db,"board/"+date))]);
     const logs=ls.val()||{}, board=bs.val()||{};
     const byRoute={yatap:sumAll(board.yatap), park:sumAll(board.park)};
+    $("stDelDay").classList.toggle("hide",!Object.keys(logs).length && !Object.keys(board).length);
     let h=`<div class="grid"><div class="stat"><b>${byRoute.yatap+byRoute.park}명</b><span>${date} 전체 탑승 (앱)</span></div>
       <div class="stat"><b>${byRoute.yatap}명</b><span>야탑역 셔틀</span></div><div class="stat"><b>${byRoute.park}명</b><span>파킹엔젤스</span></div>
       <div class="stat"><b>${Object.values(logs).filter(x=>RF().includes(x.route)).length}회</b><span>운행 횟수${A.rf==="all"?"":" · "+ROUTES[A.rf].name}</span></div></div>`;
@@ -1315,7 +1381,8 @@ async function loadDay(date){
       const rows=legs.map(l=>{ const trip=`${s.sid}_${l.k}`; const t=board?.[s.route]?.[s.bus]?.[trip]; let n=0, ppl=0; if(t) Object.values(t).forEach(v=>{n+=+(v?.n||0);ppl++;}); tot+=n;
         return `<tr><td>${l.k}회차</td><td>${esc(l.from)}${l.to?' → '+esc(l.to):''}</td><td>${hm(l.t)}</td><td>${hm(l.dep)}</td><td><b>${n}명</b> <span class="muted">(${ppl}건)</span></td></tr>`; }).join("");
       h+=`<div class="card"><h2><span class="chip" style="background:${busColor(s.route)}">${s.bus}호차</span> ${ROUTES[s.route]?.name||s.route} · ${esc(nm)}
-        <small>${hm(s.start)} ~ ${s.end?hm(s.end):'(종료 안 누름)'} · 탑승 ${tot}명</small></h2>
+        <small>${hm(s.start)} ~ ${s.end?hm(s.end):'(종료 안 누름)'} · 탑승 ${tot}명</small>
+        <button class="btn ghost" style="margin-left:auto;padding:6px 12px;font-size:13px;color:#B91C1C" data-delrun="${esc(s.sid)}" data-label="${esc(s.bus+'호차 '+hm(s.start))}">🗑 이 운행 지우기</button></h2>
         <div class="tblwrap"><table><tr><th>회차</th><th>출발 정류장 → 방향</th><th>도착/시작</th><th>출발</th><th>탑승 (앱)</th></tr>${rows}</table></div></div>`;
     });
     $("stOut").innerHTML=h;

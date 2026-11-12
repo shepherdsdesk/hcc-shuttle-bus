@@ -282,6 +282,50 @@ body.drun #stopBtn{margin-top:0;flex:none}
   body.drun #stopBtn{grid-area:stop;align-self:end}
   #drvSetup{max-width:760px}
 }
+.brbar{position:sticky;top:0;z-index:9000;display:flex;align-items:center;gap:10px;padding:10px 12px;background:#FEF3C7;color:#78350F;border-bottom:1px solid #FCD34D;font-size:14px;line-height:1.35;word-break:keep-all}
+.brbar>span{font-size:22px}.brbar>div{flex:1}.brbar b{display:block}.brbar small{font-size:12.5px}
+.brbar button{border:0;border-radius:10px;padding:9px 12px;font:inherit;font-weight:800;cursor:pointer;background:#B45309;color:#fff;white-space:nowrap}
+.brbar #brX{background:transparent;color:#92400E;padding:6px}
+.scbox{position:fixed;inset:0;z-index:9500;background:rgba(10,15,30,.55);display:none;align-items:center;justify-content:center;padding:16px}
+.scbox.show{display:flex}
+.scin{background:#fff;color:#14213D;border-radius:20px;max-width:460px;width:100%;max-height:90vh;overflow:auto;padding:20px;font-size:15.5px;line-height:1.6;word-break:keep-all}
+.scin h3{margin:0 0 8px;font-size:19px}.scin ul{list-style:none;margin:0 0 10px;padding:0}.scin li{margin:4px 0}
+.sctip{background:#F1F5F9;border-radius:14px;padding:12px 14px;font-size:14.5px}.sctip ol{margin:6px 0;padding-left:20px}.sctip small{color:#64748B}
+.scbtns{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+.scbtns button{border:0;border-radius:12px;padding:12px 18px;font:inherit;font-weight:800;cursor:pointer;background:#1B2B5C;color:#fff}
+.scbtns #scOpen{background:#B45309}
+.dsound{width:100%;border:1.5px solid #24304A;background:#131C2E;color:#E2E8F0;border-radius:16px;padding:14px;font:inherit;font-size:18px;font-weight:800;cursor:pointer}
+.dsound small{display:block;font-size:13px;color:#94A3B8;font-weight:600}
+/* ===== 성도님 화면: 기기·화면마다 맞춤 ===== */
+/* 태블릿 세로: 화면을 넓게 쓰고 글씨를 조금 크게 */
+@media (min-width:600px) and (orientation:portrait){
+  body:not(.drv) .app{max-width:760px}
+  body:not(.drv) .mapwrap{height:max(520px,52vh)}
+  body:not(.drv) .hdr h1{font-size:19px} body:not(.drv) .hdr small{font-size:13px}
+  body:not(.drv) .sheet{font-size:17px;padding-left:22px;padding-right:22px}
+  body:not(.drv) #stops{display:grid!important;grid-template-columns:1fr 1fr}
+}
+/* 가로 화면(태블릿 가로·휴대폰 가로): 왼쪽 큰 지도 + 오른쪽 정보 */
+@media (orientation:landscape) and (min-width:640px){
+  body:not(.drv) .app{max-width:none}
+  body:not(.drv) #vMain:not(.hide){display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,40%);align-items:start}
+  body:not(.drv) #vMain .mapwrap{position:sticky;top:0;height:100vh;height:100dvh}
+  body:not(.drv) #vMain .overlay{right:auto;width:min(440px,calc(100% - 24px))}
+  body:not(.drv) #vMain .sheet{margin-top:0;border-radius:0;min-height:100vh;min-height:100dvh;box-shadow:-6px 0 24px rgba(15,23,42,.10);padding-top:calc(14px + env(safe-area-inset-top))}
+  body:not(.drv) #vMain .grab{display:none}
+  body:not(.drv) #vTimes{max-width:900px;margin:0 auto}
+}
+/* 낮은 가로 화면(휴대폰 가로): 지도 위 머리글을 작게 */
+@media (orientation:landscape) and (max-height:520px){
+  body:not(.drv) .overlay{gap:6px;top:calc(8px + env(safe-area-inset-top))}
+  body:not(.drv) .hdr{padding:6px 10px} body:not(.drv) .hdr small{display:none} body:not(.drv) .logo{width:28px;height:28px}
+  body:not(.drv) .hero{padding:9px 12px}
+  body:not(.drv) .news{display:none}
+}
+/* 아주 큰 화면(가로 1200 이상): 정보 칸을 조금 더 넓게 */
+@media (orientation:landscape) and (min-width:1200px){
+  body:not(.drv) #vMain:not(.hide){grid-template-columns:minmax(0,1fr) 480px}
+}
 </style>
 </head>
 <body class="drv">
@@ -310,7 +354,7 @@ body.drun #stopBtn{margin-top:0;flex:none}
       <div class="grab"></div>
       <div class="notice hide" id="notice"></div>
       <div id="stops" style="display:flex;flex-direction:column;gap:10px"></div>
-      <div class="hint" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="flex:1;min-width:200px">정류장을 누르면 맨 위 도착 시간이 그 정류장으로 바뀌어요</span><button type="button" id="voiceBtn" class="voicebtn" aria-pressed="true">🔊 소리 알림 켜짐</button><button type="button" id="voiceTry" class="voicebtn">▶ 들어보기</button></div>
+      <div class="hint" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="flex:1;min-width:200px">정류장을 누르면 맨 위 도착 시간이 그 정류장으로 바뀌어요</span><button type="button" id="voiceBtn" class="voicebtn" aria-pressed="true">🔊 소리 알림 켜짐</button><button type="button" id="voiceTry" class="voicebtn">🔔 소리 점검</button></div>
       <div id="ride" style="display:flex;flex-direction:column;gap:10px"></div>
       <div class="card">
         <h2>다가오는 출발 시간 <small id="upNow"></small></h2>
@@ -377,6 +421,7 @@ body.drun #stopBtn{margin-top:0;flex:none}
           <li><span aria-hidden="true">🚫</span><div>다른 앱으로 넘어가면<br><b>위치 보내기가 멈춥니다</b></div></li>
           <li><span aria-hidden="true">📍</span><div>‘위치 사용’을 물으면<br><b>허용</b>을 눌러 주세요</div></li>
         </ul>
+        <button type="button" class="dsound" id="drvSoundCheck">🔔 소리 점검 <small>소리가 잘 나는지 확인</small></button>
       </div>
 
       <div id="drvLive" class="hide" style="display:flex;flex-direction:column;gap:14px;flex:1">
@@ -872,11 +917,99 @@ $("stops").addEventListener("keydown",ev=>{ if((ev.key==="Enter"||ev.key===" ") 
 let VOICE = (storage.get("voice")||"1")==="1";
 const GREET={said:false, armed:false};  // 기사님 인사 음성 상태
 function koVoice(){ try{ const v=speechSynthesis.getVoices(); return v.find(x=>/ko(-|_)KR/i.test(x.lang))||v.find(x=>/^ko/i.test(x.lang))||null; }catch(_){ return null; } }
-function speak(text,force,cb){
-  if((!VOICE && !force) || !("speechSynthesis" in window)) return;
+// 딩동 알림음: 휴대폰에 '읽어 주기'가 없어도 거의 모든 기기에서 납니다 (소리 파일 없이 직접 만듦)
+let ACX=null;
+function audioCtx(){ try{ if(!ACX){ const C=window.AudioContext||window.webkitAudioContext; if(!C) return null; ACX=new C(); } if(ACX.state==="suspended") ACX.resume(); return ACX; }catch(_){ return null; } }
+function ding(){
+  const c=audioCtx(); if(!c) return false;
+  try{
+    const t0=c.currentTime+0.02;
+    [[659.25,0],[523.25,0.42]].forEach(([f,d])=>{
+      const o=c.createOscillator(), o2=c.createOscillator(), g=c.createGain();
+      o.type="sine"; o2.type="sine"; o.frequency.value=f; o2.frequency.value=f*2;
+      const g2=c.createGain(); g2.gain.value=0.18; o2.connect(g2); g2.connect(g); o.connect(g); g.connect(c.destination);
+      g.gain.setValueAtTime(0.0001,t0+d); g.gain.exponentialRampToValueAtTime(0.5,t0+d+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t0+d+0.9);
+      o.start(t0+d); o2.start(t0+d); o.stop(t0+d+0.95); o2.stop(t0+d+0.95);
+    });
+    return true;
+  }catch(_){ return false; }
+}
+// 첫 터치 때 소리 기능을 깨워 둠 (아이폰·일부 안드로이드는 터치 전에는 소리를 막음)
+let SOUND_UNLOCKED=false;
+function unlockSound(){
+  if(SOUND_UNLOCKED) return; SOUND_UNLOCKED=true;
+  const c=audioCtx(); try{ if(c){ const b=c.createBuffer(1,1,22050), s=c.createBufferSource(); s.buffer=b; s.connect(c.destination); s.start(0); } }catch(_){}
+  try{ if("speechSynthesis" in window){ const u=new SpeechSynthesisUtterance(" "); u.volume=0; speechSynthesis.speak(u); } }catch(_){}
+}
+["pointerdown","touchstart","keydown"].forEach(ev=>document.addEventListener(ev,unlockSound,{capture:true,passive:true}));
+function speakNow(text,cb){
+  if(!("speechSynthesis" in window)){ if(cb) cb(false); return; }
   try{ const u=new SpeechSynthesisUtterance(text); u.lang="ko-KR"; u.rate=0.95; u.pitch=1; const v=koVoice(); if(v) u.voice=v;
     if(cb){ u.onstart=()=>cb(true); u.onerror=()=>cb(false); }
     speechSynthesis.speak(u); }catch(_){ if(cb) cb(false); }
+}
+// ---------- 브라우저 확인: 카카오톡·네이버 등 앱 안 화면은 '읽어 주기'가 없는 경우가 많음 ----------
+const UA=navigator.userAgent||"", IS_ANDROID=/Android/i.test(UA), IS_IOS=/iPhone|iPad|iPod/i.test(UA)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+function inAppName(){
+  if(/KAKAOTALK/i.test(UA)) return "카카오톡"; if(/NAVER\(inapp|NAVER/i.test(UA)) return "네이버 앱"; if(/DaumApps/i.test(UA)) return "다음 앱";
+  if(/\bLine\//i.test(UA)) return "라인"; if(/Instagram/i.test(UA)) return "인스타그램"; if(/FBAN|FBAV/i.test(UA)) return "페이스북";
+  if(/BAND\//i.test(UA)) return "밴드"; if(IS_ANDROID && /; wv\)/.test(UA)) return "앱 안의 화면"; return "";
+}
+function chromeUrl(){ const u=new URL(location.href); return `intent://${u.host}${u.pathname}${u.search}${u.hash}#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent(location.href)};end`; }
+function openOutside(){
+  if(/KAKAOTALK/i.test(UA)){ location.href="kakaotalk://web/openExternal?url="+encodeURIComponent(location.href); return; }
+  if(IS_ANDROID){ location.href=chromeUrl(); return; }
+  toast("Safari로 열어 주세요","화면 아래(또는 위) ⋯ 메뉴에서 ‘Safari로 열기’를 눌러 주세요");
+}
+// 카카오톡에서 열리면 자동으로 바깥 브라우저(크롬·사파리)로 넘김 (한 번만 시도)
+(function(){ try{ if(/KAKAOTALK/i.test(UA) && !sessionStorage.getItem("ext")){ sessionStorage.setItem("ext","1"); location.href="kakaotalk://web/openExternal?url="+encodeURIComponent(location.href); } }catch(_){} })();
+function showBrowserBar(){
+  const app=inAppName(), noTTS=!("speechSynthesis" in window);
+  if((!app && !noTTS) || document.getElementById("brBar")) return;
+  try{ if(sessionStorage.getItem("brBarX")) return; }catch(_){}
+  const d=document.createElement("div"); d.id="brBar"; d.className="brbar"; d.setAttribute("role","alert");
+  d.innerHTML=`<span aria-hidden="true">🔇</span><div><b>${app?app+" 안에서는":"이 브라우저에서는"} 소리 알림이 안 날 수 있어요</b><small>${IS_IOS?"⋯ 메뉴에서 ‘Safari로 열기’를 눌러 주세요":"크롬으로 열면 소리가 잘 납니다"}</small></div>${IS_IOS?"":'<button type="button" id="brOpen">크롬으로 열기</button>'}<button type="button" id="brX" aria-label="닫기">✕</button>`;
+  document.body.prepend(d);
+  const o=document.getElementById("brOpen"); if(o) o.onclick=openOutside;
+  document.getElementById("brX").onclick=()=>{ d.remove(); try{ sessionStorage.setItem("brBarX","1"); }catch(_){} };
+}
+// ---------- 소리 점검: 딩동 → 목소리 → 결과를 화면에 알려 드림 ----------
+function soundCheck(text){
+  unlockSound();
+  const rang=ding(), app=inAppName(), hasTTS="speechSynthesis" in window;
+  let started=false;
+  const report=()=>{
+    const ko=!!koVoice();
+    let h=`<h3>🔔 소리 점검 결과</h3><ul>
+      <li>${rang?"✅":"❌"} 딩동 알림음 ${rang?"(들리셨나요? 안 들리면 미디어 볼륨을 올려 주세요)":"을 낼 수 없는 브라우저입니다"}</li>
+      <li>${started?"✅ 목소리 안내가 나왔습니다":hasTTS?"❌ 목소리 안내가 나오지 않았습니다":"❌ 이 브라우저에는 목소리 읽어 주기 기능이 없습니다"}</li>
+      <li>${ko?"✅ 한국어 목소리가 있습니다":"⚠️ 한국어 목소리를 찾지 못했습니다"}</li></ul>`;
+    if(!started||!ko){
+      h+=`<div class="sctip"><b>이렇게 해 보세요</b><ol>`+
+        (app||!hasTTS?`<li>${app?app+" 안에서 열려 있습니다. ":""}<b>${IS_IOS?"Safari":"크롬"}</b>으로 열어 주세요.</li>`:"")+
+        `<li>미디어(음악) 볼륨을 올리고 무음·방해금지를 꺼 주세요.</li>`+
+        (IS_ANDROID?`<li>Play 스토어에서 <b>Google 음성 서비스</b>(Speech Services by Google)를 설치·업데이트해 주세요.</li><li>설정에서 <b>텍스트 음성 변환</b>을 찾아 엔진은 Google, 언어는 <b>한국어</b>로 하고 한국어 음성 데이터를 내려받아 주세요.</li>`:"")+
+        (IS_IOS?`<li>설정 → 손쉬운 사용 → 읽기 및 말하기 → 음성 → <b>한국어</b> 목소리를 내려받아 주세요.</li>`:"")+
+        `<li>브라우저를 완전히 껐다가 다시 열고 한 번 더 점검해 주세요.</li></ol>`+
+        `<small>목소리가 안 나와도 딩동 소리는 계속 울려서 알려 드립니다.</small></div>`;
+    }
+    h+=`<div class="scbtns">${(app||!hasTTS)&&!IS_IOS?'<button type="button" id="scOpen">크롬으로 열기</button>':""}<button type="button" id="scClose">확인</button></div>`;
+    let m=document.getElementById("scBox"); if(!m){ m=document.createElement("div"); m.id="scBox"; m.className="scbox"; m.setAttribute("role","dialog"); document.body.appendChild(m); }
+    m.innerHTML=`<div class="scin">${h}</div>`; m.classList.add("show");
+    m.querySelector("#scClose").onclick=()=>m.classList.remove("show");
+    const so=m.querySelector("#scOpen"); if(so) so.onclick=openOutside;
+  };
+  setTimeout(()=>{
+    if(!hasTTS){ report(); return; }
+    speakNow(text,ok=>{ if(ok) started=true; });
+    setTimeout(report, 2600);
+  }, rang?900:0);
+}
+// 딩동 → 목소리 순서로 알림
+function speak(text,force,cb){
+  if(!VOICE && !force) return;
+  const rang=ding();
+  if(rang) setTimeout(()=>speakNow(text,cb),900); else speakNow(text,cb);
 }
 // 한국어 목소리 목록을 미리 불러 둠 (처음 말할 때 늦어지지 않게, 최대 1초만 기다림)
 function voicesReady(){
@@ -889,7 +1022,7 @@ function voicesReady(){
     }catch(_){ res(); }
   });
 }
-function drawVoiceBtn(){ const b=$("voiceBtn"); if(!b) return; b.classList.toggle("on",VOICE); b.setAttribute("aria-pressed",String(VOICE)); b.textContent= VOICE?"🔊 소리 알림 켜짐":"🔇 소리 알림 꺼짐"; if(!("speechSynthesis" in window)){ b.style.display="none"; const t=$("voiceTry"); if(t) t.style.display="none"; } }
+function drawVoiceBtn(){ const b=$("voiceBtn"); if(!b) return; b.classList.toggle("on",VOICE); b.setAttribute("aria-pressed",String(VOICE)); b.textContent= VOICE?"🔊 소리 알림 켜짐":"🔇 소리 알림 꺼짐"; }
 async function notify(title,body,say){
   toast(title,body); if(say) speak(say);
   try{ navigator.vibrate && navigator.vibrate([250,120,250]); }catch(_){}
@@ -1116,7 +1249,7 @@ function drawNews(cfg){
   el.firstElementChild.onclick=()=>{ newsOpen=!newsOpen; drawNews(cfg); };
   if(first && typeof fitMap==="function" && map) setTimeout(fitMap,50);
 }
-window.addEventListener("resize",()=>{ if(!newsCfg) return; newsSig=""; drawNews(newsCfg); });
+window.addEventListener("resize",()=>{ clearTimeout(window.__mr); window.__mr=setTimeout(()=>{ try{ if(map && !document.body.classList.contains("drv")) map.resize(); }catch(_){} },150); if(!newsCfg) return; newsSig=""; drawNews(newsCfg); });
 // ---------- 교회 이름 · 로고 (관리자 › 기본 설정, config/brand) ----------
 const BRAND_DEF={short:"HCC",church:"할렐루야교회"};
 function brandOf(c){ const b=(c&&c.brand)||{}; return {short:String(b.short||BRAND_DEF.short).trim(), church:String(b.church||BRAND_DEF.church).trim(), logo:typeof b.logo==="string"&&b.logo.indexOf("data:image/")===0?b.logo:"", bg:b.logoBg||"white"}; }
@@ -1132,8 +1265,9 @@ function applyBrand(c){
   paintLogo($("brandLogo"),B,"3px");
 }
 async function startSaint(){
+  showBrowserBar();
   drawVoiceBtn();
-  $("voiceTry").onclick=()=>speak("셔틀버스 곧 도착합니다",true);
+  $("voiceTry").onclick=()=>soundCheck("셔틀버스 곧 도착합니다");
   $("voiceBtn").onclick=()=>{ VOICE=!VOICE; storage.set("voice",VOICE?"1":"0"); drawVoiceBtn(); if(VOICE) speak("소리 알림을 켰어요",true); else { try{ speechSynthesis.cancel(); }catch(_){} } };
   try{ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged=()=>{}; }catch(_){}
   await initMap(); selectRoute(S.route); setupInstall(); showView();
@@ -1395,6 +1529,7 @@ async function stopDriving(){
   drvShow("drvSetup"); drawDrvSetup();
   speak("운행을 마쳤습니다. 오늘도 수고 많으셨습니다.",true);
 }
+$("drvSoundCheck").onclick=()=>soundCheck(greetText());
 $("drvGreetVoice").onclick=()=>{ GREET.said=true; storage.set("greetDay",greetToday()); try{ speechSynthesis.cancel(); }catch(_){} speak(greetText(),true); };
 $("stopBtn").onclick=()=>$("modal").classList.add("show");
 $("mNo").onclick=()=>$("modal").classList.remove("show");
@@ -1406,6 +1541,7 @@ document.addEventListener("visibilitychange",()=>{
 window.addEventListener("beforeunload",e=>{ if(D.on){ e.preventDefault(); e.returnValue=""; } });
 
 async function startDriver(){
+  showBrowserBar();
   $("vMain").classList.add("hide"); $("vTimes").classList.add("hide"); $("driver").classList.remove("hide");
   document.body.classList.add("drv"); document.title="셔틀 드라이버 · HCC 셔틀버스"; $("iosTitle").content="셔틀 드라이버";
   document.querySelector('meta[name="theme-color"]').content="#0B1220";
@@ -1440,7 +1576,7 @@ function sayGreet(){
   if(GREET.said || GREET.busy || storage.get("greetDay")===day) return;
   let started=false; GREET.busy=true;
   speak(greetText(),true,ok=>{ if(ok){ started=true; GREET.said=true; storage.set("greetDay",day); } });
-  setTimeout(()=>{ GREET.busy=false; if(!started && !GREET.said){ try{ speechSynthesis.cancel(); }catch(_){} armGreetTouch(); } },1200);
+  setTimeout(()=>{ GREET.busy=false; if(!started && !GREET.said){ try{ speechSynthesis.cancel(); }catch(_){} armGreetTouch(); } },2400);
 }
 function armGreetTouch(){
   if(GREET.armed) return; GREET.armed=true;
