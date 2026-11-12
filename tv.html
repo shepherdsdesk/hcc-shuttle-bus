@@ -14,7 +14,8 @@
   *{box-sizing:border-box}
   html,body{margin:0;height:100%;background:var(--bg);color:#F8FAFC;font-family:"Pretendard Variable",Pretendard,"Noto Sans KR",system-ui,sans-serif;letter-spacing:-.02em;overflow:hidden}
   body.idle{cursor:none}
-  .tv{height:100vh;display:grid;grid-template-rows:auto auto 1fr auto;gap:1.2vmin;padding:1.6vmin 1.8vmin}
+  .tv{height:100vh;display:flex;flex-direction:column;gap:1.2vmin;padding:1.6vmin 1.8vmin}
+  .tv>.main{flex:1}
   header{display:flex;align-items:center;gap:1.6vmin}
   .logo{width:6vmin;height:6vmin;border-radius:1.6vmin;background:var(--navy);display:grid;place-items:center;border:.25vmin solid #2B3D75}
   .logo svg{width:58%;height:58%}
@@ -28,7 +29,33 @@
   .clock b{display:block;font-size:5.4vmin;font-weight:900;line-height:1;font-variant-numeric:tabular-nums}
   .clock span{font-size:1.9vmin;color:var(--sub);font-weight:700}
   .notice{display:flex;gap:1.2vmin;align-items:center;background:#2A1C08;border:.25vmin solid #8A5A12;color:#FCD34D;border-radius:1.6vmin;padding:1.2vmin 2vmin;font-size:2.6vmin;font-weight:800}
-  .main{display:grid;grid-template-columns:1.35fr 1fr;gap:1.6vmin;min-height:0}
+  .main{display:grid;grid-template-columns:1.25fr 1fr .8fr;grid-template-areas:"map boards times";gap:1.6vmin;min-height:0}
+  .mapbox{grid-area:map}.boards{grid-area:boards}.times{grid-area:times}
+  /* 시간표 */
+  .times{background:var(--card);border:.2vmin solid var(--line);border-radius:2vmin;padding:1.2vmin 1.8vmin;display:flex;flex-direction:column;gap:1vmin;overflow:hidden;min-height:0}
+  .times>h2{margin:0;display:flex;align-items:baseline;gap:1vmin;font-size:2.7vmin;font-weight:900}
+  .times>h2 small{margin-left:auto;font-size:1.8vmin;color:var(--sub);font-weight:700}
+  .ttr{display:flex;flex-direction:column;gap:.6vmin;padding-top:.9vmin;border-top:.15vmin solid var(--line)}
+  .ttr h3{margin:0;display:flex;align-items:center;gap:1vmin;font-size:2.1vmin;font-weight:900}
+  .ttr h3 i{width:1.6vmin;height:1.6vmin;border-radius:.4vmin}
+  .ttl{display:flex;flex-direction:column;gap:.5vmin}
+  .ttl .lab{font-size:1.75vmin;color:var(--sub);font-weight:800}
+  .chips{display:flex;flex-wrap:wrap;gap:.6vmin}
+  .chips b{background:#1E293B;color:#F8FAFC;border-radius:.8vmin;padding:.4vmin 1vmin;font-size:2.2vmin;font-weight:800;font-variant-numeric:tabular-nums}
+  .chips b.first{background:var(--navy);color:#fff;box-shadow:0 0 0 .25vmin #93C5FD}
+  .ttr.park .chips b.first{background:var(--teal);box-shadow:0 0 0 .25vmin #5EEAD4}
+  .chips .none{font-size:1.9vmin;color:#64748B;font-weight:700}
+  /* 화면 방향 고르기 */
+  .ctl{position:fixed;left:50%;bottom:1.4vmin;transform:translateX(-50%);z-index:2000;display:flex;gap:1vmin;align-items:center;background:rgba(11,18,32,.92);border:.2vmin solid var(--line);border-radius:1.4vmin;padding:.8vmin;transition:opacity .3s}
+  .ctl button{white-space:nowrap;border:0;background:#1E293B;color:#fff;border-radius:1vmin;padding:1vmin 1.5vmin;font:inherit;font-size:1.8vmin;font-weight:800;cursor:pointer}
+  .ctl button.on{background:#F59E0B;color:#0B1220}
+  .ctl button:focus-visible{outline:.4vmin solid #FCD34D;outline-offset:.2vmin}
+  .ctl span{white-space:nowrap;font-size:1.6vmin;color:var(--sub);font-weight:700;margin:0 .4vmin 0 1vmin}
+  body.idle .ctl{opacity:0;pointer-events:none}
+  /* TV를 세로로 세웠는데 화면이 가로로 나올 때: 화면을 90도 돌림 */
+  body.rot-r .tv,body.rot-l .tv{position:fixed;width:100vh;height:100vw;transform-origin:0 0}
+  body.rot-r .tv{top:0;left:100vw;transform:rotate(90deg)}
+  body.rot-l .tv{top:100vh;left:0;transform:rotate(-90deg)}
   .mapbox{position:relative;border-radius:2vmin;overflow:hidden;border:.2vmin solid var(--line);min-height:0}
   #map{position:absolute;inset:0;background:#111A2B}
   #map .leaflet-tile-pane,#map.is-kakao img{filter:invert(1) hue-rotate(180deg) brightness(.82) contrast(.92)}
@@ -61,8 +88,6 @@
   footer .qr svg{width:100%;height:100%;display:block}
   footer b{color:#F8FAFC;font-size:2.3vmin;display:block}
   footer .credit{margin-left:auto;text-align:right;font-size:1.6vmin}
-  .fsbtn{position:fixed;left:50%;bottom:1.4vmin;transform:translateX(-50%);z-index:2000;border:0;background:#1E293B;color:#fff;border-radius:1.2vmin;padding:1.2vmin 1.8vmin;font:inherit;font-size:1.8vmin;font-weight:800;cursor:pointer;transition:opacity .3s}
-  body.idle .fsbtn{opacity:0;pointer-events:none}
   /* 지도 표시 */
   .mkc{position:absolute;left:0;top:0;transform:translate(-50%,-50%)}
   .pill{display:inline-flex;align-items:center;gap:.6vmin;white-space:nowrap;font-size:2.1vmin;font-weight:900;padding:.6vmin 1.3vmin .6vmin .7vmin;border-radius:999px;box-shadow:0 .4vmin 1.4vmin rgba(0,0,0,.5);border:.3vmin solid #0B1220;color:#fff}
@@ -76,13 +101,15 @@
   .hide{display:none!important}
   .toast{display:none}
   /* 세로 화면 */
-  @media (orientation:portrait){
-    .main{grid-template-columns:1fr;grid-template-rows:38% 1fr}
-    .boards{flex-direction:column}
-    header h1{font-size:4vmin}
-  }
+  body.portrait .main{grid-template-columns:1fr;grid-template-rows:32% 1fr auto;grid-template-areas:"map" "boards" "times"}
+  body.portrait header h1{font-size:4vmin}
+  body.portrait .times>h2{font-size:3vmin}
+  body.portrait .ttr{flex-direction:row;gap:2vmin}
+  body.portrait .ttr h3{min-width:22vmin;align-self:flex-start;padding-top:.4vmin}
+  body.portrait .ttr .ttls{flex:1;display:flex;flex-direction:column;gap:.8vmin}
   /* 노선 하나만 보여 줄 때 (tv.html?route=yatap) */
-  body.one .main{grid-template-columns:1.2fr 1fr}
+  body.one .main{grid-template-columns:1.2fr 1fr .8fr}
+  body.one.portrait .main{grid-template-columns:1fr}
   body.one .rt{flex:1}
 </style>
 </head>
@@ -100,14 +127,15 @@
       <div class="legend" id="legend"><span><i style="background:#3B5BA9"></i>야탑역 셔틀</span><span><i style="background:#14B8A6"></i>파킹엔젤스</span><span>꽉 찬 표시 = 교회행</span><span>테두리 = 반대 방향</span></div>
     </div>
     <div class="boards" id="boards"></div>
+    <section class="times" id="times"></section>
   </div>
   <footer>
     <div class="qr" id="qr" aria-hidden="true"></div>
-    <div><b>휴대폰으로도 확인하세요</b>QR을 찍으면 내 정류장 도착 알림까지 받을 수 있어요 · shepherdsdesk.github.io/hcc-shuttle-bus</div>
+    <div><b>휴대폰으로도 확인하세요</b>QR을 찍으면 내 정류장 도착 알림까지 받을 수 있어요 · AI목양지원센터 mokyangdesk.com</div>
     <div class="credit">셔틀 문의 031-780-9600<br>만든 사람 AI목양지원센터 · 이세진 목사</div>
   </footer>
+  <div class="ctl" id="ctl"><button id="fsBtn">전체 화면</button><span>화면</span><span id="layBtns" style="display:flex;gap:.8vmin;margin:0"></span></div>
 </div>
-<button class="fsbtn" id="fsBtn">전체 화면</button>
 <div class="toast" id="toast"><b id="toastT"></b><span id="toastS"></span><button id="toastX"></button></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -214,6 +242,7 @@ signInAnonymously(auth).catch(e=>{ console.error(e); toast("연결에 문제가 
 // ==== MAPKIT START ====  (카카오맵 / OpenStreetMap 공통 지도 — 이 블록은 index·driver·admin·tv에 똑같이 들어갑니다)
 // 관리자 설정에 카카오 지도 키(config/kakaoKey)가 있으면 카카오맵, 없거나 불러오지 못하면 OpenStreetMap(Leaflet)을 씁니다.
 const MapKit = (()=>{
+  const dv=(v,d)=>v==null?d:v; // 오래된 TV 브라우저에서도 동작하도록
   let kakaoReady=null;
   function loadKakao(key){
     if(kakaoReady) return kakaoReady;
@@ -250,8 +279,8 @@ const MapKit = (()=>{
       fit(pts,p={}){
         if(!pts.length) return;
         const b=new K.LatLngBounds(); pts.forEach(([a,c])=>b.extend(new K.LatLng(a,c)));
-        map.setBounds(b,p.top??40,p.right??40,p.bottom??40,p.left??40);
-        if(map.getLevel()<(p.minLevel??3)) map.setLevel(p.minLevel??3);
+        map.setBounds(b,dv(p.top,40),dv(p.right,40),dv(p.bottom,40),dv(p.left,40));
+        if(map.getLevel()<(dv(p.minLevel,3))) map.setLevel(dv(p.minLevel,3));
       },
       center(lat,lng,keep){ map.setCenter(new K.LatLng(lat,lng)); if(!keep && map.getLevel()>4) map.setLevel(4); },
       resize(){ map.relayout(); },
@@ -281,7 +310,7 @@ const MapKit = (()=>{
       },
       fit(pts,p={}){
         if(!pts.length) return; map.invalidateSize();
-        map.fitBounds(L.latLngBounds(pts),{paddingTopLeft:[p.left??40,p.top??40],paddingBottomRight:[p.right??40,p.bottom??40],maxZoom:p.maxZoom??16,animate:false});
+        map.fitBounds(L.latLngBounds(pts),{paddingTopLeft:[dv(p.left,40),dv(p.top,40)],paddingBottomRight:[dv(p.right,40),dv(p.bottom,40)],maxZoom:dv(p.maxZoom,16),animate:false});
       },
       center(lat,lng,keep){ map.setView([lat,lng], keep? map.getZoom() : Math.max(map.getZoom()||15,15), {animate:false}); },
       resize(){ map.invalidateSize(); },
@@ -331,9 +360,23 @@ const qs=new URLSearchParams(location.search);
 const ONLY=qs.get("route");
 const RT = ROUTES[ONLY] ? [ONLY] : ["yatap","park"];
 if(RT.length===1) document.body.classList.add("one");
+// 화면 방향: 자동 / 가로 / 세로 / 세로(화면 돌리기). 주소 뒤 ?layout=port 처럼 정할 수도 있음
+const LAYS=[["auto","자동"],["land","가로"],["port","세로"],["port-r","세로 ↻"],["port-l","세로 ↺"]];
+let LAY=(()=>{ const q=qs.get("layout"); if(LAYS.some(x=>x[0]===q)) return q; try{ const v=localStorage.getItem("tvLayout"); if(LAYS.some(x=>x[0]===v)) return v; }catch(_){} return "auto"; })();
+function applyLayout(){
+  const b=document.body;
+  b.classList.toggle("rot-r",LAY==="port-r"); b.classList.toggle("rot-l",LAY==="port-l");
+  b.classList.toggle("portrait", LAY.indexOf("port")===0 || (LAY==="auto" && innerHeight>innerWidth));
+  const box=document.getElementById("layBtns");
+  if(box) box.innerHTML=LAYS.map(([k,t])=>`<button data-lay="${k}" class="${k===LAY?'on':''}">${t}</button>`).join("");
+}
+applyLayout(); window.addEventListener("resize",applyLayout);
+document.getElementById("layBtns").addEventListener("click",e=>{ const bt=e.target.closest("button"); if(!bt) return;
+  LAY=bt.dataset.lay; try{ localStorage.setItem("tvLayout",LAY); }catch(_){}
+  applyLayout(); $("times")._h=null; drawTimes(); });
 // 어두운 화면에서 잘 보이도록 노선 색을 밝게
 ROUTES.yatap.color="#3B5BA9"; ROUTES.park.color="#0D9488";
-const esc = s => String(s??"").replace(/[<>&"]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;"}[c]));
+const esc = s => String(s==null?"":s).replace(/[<>&"]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;"}[c]));
 const hhmm = m => Math.floor(m/60)+":"+String(Math.floor(m)%60).padStart(2,"0");
 const inTxt = m => { m=Math.ceil(m); if(m<1) return "곧"; if(m<60) return m+"분 후"; const h=Math.floor(m/60), r=m%60; return r? `${h}시간 ${r}분 후` : `${h}시간 후`; };
 const DAYNAME = {0:"주일",1:"월요일",2:"화요일",3:"수요일",4:"목요일",5:"금요일",6:"토요일"};
@@ -362,8 +405,8 @@ function scheduleFor(route,stopId,day){
   if(route==="park" && day===0 && stopId==="cdong") return PARK_TIMES;
   return [];
 }
-function stopDest(route,id){ return ({yatap:{church:"교회",byc:"야탑역"},park:{church:"교회",cdong:"C동",dmv:"교회"}})[route]?.[id]||null; }
-function rideDir(route,id){ return ({yatap:{byc:"교회 가는 버스",church:"야탑역 가는 버스"},park:{cdong:"교회 가는 버스",dmv:"교회 가는 버스",church:"C동 가는 버스"}})[route]?.[id]||""; }
+function stopDest(route,id){ return (({yatap:{church:"교회",byc:"야탑역"},park:{church:"교회",cdong:"C동",dmv:"교회"}})[route]||{})[id]||null; }
+function rideDir(route,id){ return (({yatap:{byc:"교회 가는 버스",church:"야탑역 가는 버스"},park:{cdong:"교회 가는 버스",dmv:"교회 가는 버스",church:"C동 가는 버스"}})[route]||{})[id]||""; }
 function liveEta(route,stop){
   let best=null;
   liveBuses(route).forEach(b=>{
@@ -414,7 +457,21 @@ function nextList(route,id,n){
   const {day,min}=nowKST();
   return scheduleFor(route,id,day).map(toM).filter(m=>m>=Math.floor(min)).sort((a,b)=>a-b).slice(0,n);
 }
+// 오늘 시간표: 지금 이후 출발 시각만
+function drawTimes(){
+  const {day,min}=nowKST(), port=document.body.classList.contains("portrait"), N=port?14:12;
+  let h=`<h2>오늘 시간표<small>${DAYNAME[day]} · 지금 이후 출발</small></h2>`;
+  RT.forEach(r=>{ const R=ROUTES[r];
+    const rows = r==="yatap" ? [["byc","야탑역 BYC 앞 출발 → 교회"],["church","교회 출발 → 야탑역"]] : [["cdong","테크노파크 C동 출발 → 교회"]];
+    h+=`<div class="ttr ${r}"><h3><i style="background:${R.color}"></i>${R.name}</h3><div class="ttls">`;
+    rows.forEach(([id,lab])=>{ const l=nextList(r,id,N);
+      const none = r==="park"&&day!==0 ? "주일에만 운행합니다" : scheduleFor(r,id,day).length ? "오늘 운행이 끝났습니다" : "오늘은 운행하지 않습니다";
+      h+=`<div class="ttl"><span class="lab">${lab}</span><div class="chips">${l.length? l.map((m,k)=>`<b class="${k===0?'first':''}">${hhmm(m)}</b>`).join("") : `<span class="none">${none}</span>`}</div></div>`; });
+    h+=`</div></div>`; });
+  setH($("times"),h);
+}
 function drawBoards(){
+  drawTimes();
   const {day,min}=nowKST();
   let h="";
   RT.forEach(r=>{
@@ -429,9 +486,6 @@ function drawBoards(){
       else eta=`<div class="eta none"><b>운행 없음</b></div>`;
       h+=`<div class="stop"><div class="nm"><b>${esc(s.name)}</b><span>${rideDir(r,s.id)}</span></div>${eta}</div>`;
     });
-    const rows = r==="yatap" ? [["byc","야탑역 출발"],["church","교회 출발"]] : [["cdong","C동 출발"]];
-    rows.forEach(([id,lab],i)=>{ const l=nextList(r,id,4);
-      h+=`<div class="next"${i?' style="margin-top:0;border-top:0;padding-top:0"':''}>${lab}${l.length? l.map((m,k)=>`<b class="${k===0?'first':''}">${hhmm(m)}</b>`).join("") : ' <span>오늘 남은 시간표 없음</span>'}</div>`; });
     h+=`</section>`;
   });
   setH($("boards"),h);

@@ -429,6 +429,7 @@ signInAnonymously(auth).catch(e=>{ console.error(e); toast("연결에 문제가 
 // ==== MAPKIT START ====  (카카오맵 / OpenStreetMap 공통 지도 — 이 블록은 index·driver·admin·tv에 똑같이 들어갑니다)
 // 관리자 설정에 카카오 지도 키(config/kakaoKey)가 있으면 카카오맵, 없거나 불러오지 못하면 OpenStreetMap(Leaflet)을 씁니다.
 const MapKit = (()=>{
+  const dv=(v,d)=>v==null?d:v; // 오래된 TV 브라우저에서도 동작하도록
   let kakaoReady=null;
   function loadKakao(key){
     if(kakaoReady) return kakaoReady;
@@ -465,8 +466,8 @@ const MapKit = (()=>{
       fit(pts,p={}){
         if(!pts.length) return;
         const b=new K.LatLngBounds(); pts.forEach(([a,c])=>b.extend(new K.LatLng(a,c)));
-        map.setBounds(b,p.top??40,p.right??40,p.bottom??40,p.left??40);
-        if(map.getLevel()<(p.minLevel??3)) map.setLevel(p.minLevel??3);
+        map.setBounds(b,dv(p.top,40),dv(p.right,40),dv(p.bottom,40),dv(p.left,40));
+        if(map.getLevel()<(dv(p.minLevel,3))) map.setLevel(dv(p.minLevel,3));
       },
       center(lat,lng,keep){ map.setCenter(new K.LatLng(lat,lng)); if(!keep && map.getLevel()>4) map.setLevel(4); },
       resize(){ map.relayout(); },
@@ -496,7 +497,7 @@ const MapKit = (()=>{
       },
       fit(pts,p={}){
         if(!pts.length) return; map.invalidateSize();
-        map.fitBounds(L.latLngBounds(pts),{paddingTopLeft:[p.left??40,p.top??40],paddingBottomRight:[p.right??40,p.bottom??40],maxZoom:p.maxZoom??16,animate:false});
+        map.fitBounds(L.latLngBounds(pts),{paddingTopLeft:[dv(p.left,40),dv(p.top,40)],paddingBottomRight:[dv(p.right,40),dv(p.bottom,40)],maxZoom:dv(p.maxZoom,16),animate:false});
       },
       center(lat,lng,keep){ map.setView([lat,lng], keep? map.getZoom() : Math.max(map.getZoom()||15,15), {animate:false}); },
       resize(){ map.invalidateSize(); },
