@@ -560,9 +560,9 @@ function applyTheme(){
 const BRAND_DEF={short:"HCC",church:"할렐루야교회"};
 function brandOf(c){ const b=(c&&c.brand)||{}; return {short:String(b.short||BRAND_DEF.short).trim(), church:String(b.church||BRAND_DEF.church).trim(), logo:typeof b.logo==="string"&&b.logo.indexOf("data:image/")===0?b.logo:"", bg:b.logoBg||"white"}; }
 function paintLogo(el,B,pad){
-  if(!el) return; if(!el._def) el._def=el.innerHTML;
+  if(!el) return; if(!el._def){ el._def=el.innerHTML; el._bg=el.style.background; }
   if(B.logo){ el.innerHTML=`<img src="${B.logo}" alt="" style="width:100%;height:100%;object-fit:contain;display:block">`; el.style.background = B.bg==="navy"?"#1B2B5C":B.bg==="none"?"transparent":"#FFFFFF"; el.style.padding=pad; el.style.boxSizing="border-box"; }
-  else { el.innerHTML=el._def; el.style.background=""; el.style.padding=""; }
+  else { el.innerHTML=el._def; el.style.background=el._bg||""; el.style.padding=""; }
 }
 function applyBrand(c){ const B=brandOf(c); $("brandTitle").textContent=B.short+" 셔틀버스 운행 현황"; $("brandSub").textContent=B.church+" 셔틀 실시간 안내"; document.title=B.short+" 셔틀버스 · 운행 현황판"; paintLogo($("brandLogo"),B,".6vmin"); }
 // ---------- 계절 효과 ----------
