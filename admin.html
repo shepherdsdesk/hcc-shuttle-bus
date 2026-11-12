@@ -193,6 +193,9 @@
   .wcauto{display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer}
   .wcauto input{width:20px!important;height:20px;margin:0!important;flex:none;accent-color:#1B2B5C}
   .wcauto{white-space:nowrap}
+  .wcauto select{width:auto!important;margin:0!important;padding:4px 8px}
+  .wcauto.dim{opacity:.5}
+  .wcrow{row-gap:6px}
 </style>
 </head>
 <body>
@@ -395,7 +398,8 @@
           <li><b>끄기</b>: 성도님 화면에서 ‘기다려요’ 버튼이 사라지고 인원도 세지 않습니다.</li>
           <li><b>정류장에서만</b>: 정류장 근처에서만 누를 수 있습니다. 기사님 화면에는 정류장별 인원만 나옵니다 (길 중간 정차 없음).</li>
           <li><b>어디서나</b>: 길에서도 누를 수 있고, 기사님 지도에 주황 점으로 위치가 나옵니다.</li>
-          <li><b>자동으로 세기</b>: 동의한 성도님이 앱을 연 채 정류장에 1분 이상 계시면 1명으로 셉니다. 이름·위치는 저장하지 않고 숫자만 셉니다.</li>
+          <li><b>어디서나</b>일 때 길에서는 <b>노선 줄</b>에서 고른 거리(30·50·100m) 안에서만 받습니다. 노선 줄이 아직 없는 노선은 정류장에서만 받습니다.</li>
+          <li><b>정류장 자동 알림</b>: 동의한 성도님이 앱을 연 채 정류장에 1분 이상 계시면 버튼을 누르지 않아도 1명으로 알려집니다. 이름·위치는 저장하지 않고 인원 숫자만 알립니다.</li>
         </ul>
       </div>
       <div class="card">
@@ -1152,7 +1156,8 @@ $("nowTbl").addEventListener("click",async e=>{ const b=e.target.closest("[data-
 // ---------- 기다리는 분 (정류장별 인원 · 기능 설정) ----------
 const WAIT_AUTO_MS=10*60e3, WAIT_DEF={yatap:{mode:"any",auto:true}, park:{mode:"stop",auto:true}};
 function waitCfgOf(r){ const o=(A.config.waitCfg&&A.config.waitCfg[r])||{}, d=WAIT_DEF[r];
-  return {mode:["off","stop","any"].includes(o.mode)?o.mode:d.mode, auto: typeof o.auto==="boolean"?o.auto:d.auto}; }
+  return {mode:["off","stop","any"].includes(o.mode)?o.mode:d.mode, auto: typeof o.auto==="boolean"?o.auto:d.auto, lineM:[30,50,100].includes(o.lineM)?o.lineM:50}; }
+const PTHAS = r => !!(A.config.paths && A.config.paths[r] && Object.keys(A.config.paths[r]).length);
 function waitCounts(v,now){ const out={_road:0,_all:0};
   Object.values(v||{}).forEach(e=>{ if(!e||typeof e.ts!=="number") return; if(now-e.ts>(e.a?WAIT_AUTO_MS:WAIT_MS)) return;
     const n=Math.max(1,Math.min(9,+e.n||1)), k=e.s&&e.s!=="road"?e.s:"_road"; out[k]=(out[k]||0)+n; out._all+=n; }); return out; }
@@ -1162,7 +1167,8 @@ function drawWaitCfg(){
   el.innerHTML=["yatap","park"].map(r=>{ const c=waitCfgOf(r);
     return `<div class="wcrow"><b><i style="background:${ROUTES[r].color}"></i>${ROUTES[r].name}</b>
       <div class="seg3">${Object.entries(WMODE).map(([k,l])=>`<button type="button" data-wr="${r}" data-wm="${k}" class="${c.mode===k?'on':''}">${l}</button>`).join("")}</div>
-      <label class="wcauto"><input type="checkbox" data-wa="${r}" ${c.auto?'checked':''} ${c.mode==='off'?'disabled':''}> 앱을 연 성도님 자동으로 세기</label></div>`; }).join("");
+      <label class="wcauto"><input type="checkbox" data-wa="${r}" ${c.auto?'checked':''} ${c.mode==='off'?'disabled':''}> 정류장 자동 알림 <small class="muted">(정류장에 계시면 자동으로 인원에 넣기)</small></label>
+      <label class="wcauto${c.mode==='any'?'':' dim'}">길에서는 노선 줄에서 <select data-wl="${r}" ${c.mode==='any'?'':'disabled'}>${[30,50,100].map(m=>`<option value="${m}" ${c.lineM===m?'selected':''}>${m}m</option>`).join("")}</select> 안에서만${PTHAS(r)?'':' <small style="color:#B45309">· 노선 줄이 아직 없어 지금은 정류장에서만</small>'}</label></div>`; }).join("");
 }
 async function saveWaitCfg(r,patch){
   const cur=waitCfgOf(r), next={...cur,...patch};
@@ -1176,11 +1182,12 @@ async function saveWaitCfg(r,patch){
       Object.entries(cs).forEach(([u,e])=>{ if(next.mode==="off" || (next.mode==="stop" && (!e||e.s==="road")) || (!next.auto && e&&e.a)) upd[`waitc/${r}/${u}`]=null; });
       if(Object.keys(upd).length) await update(ref(db),upd);
     }
-    toast(`${ROUTES[r].name} · ${WMODE[next.mode]}${next.mode!=="off"?(next.auto?" · 자동 세기 켬":" · 자동 세기 끔"):""} — 모든 화면에 바로 반영됩니다`);
+    toast(patch.lineM?`${ROUTES[r].name} · 길에서는 노선 줄 ${next.lineM}m 안에서만 받습니다`:`${ROUTES[r].name} · ${WMODE[next.mode]}${next.mode!=="off"?(next.auto?" · 정류장 자동 알림 켬":" · 정류장 자동 알림 끔"):""} — 모든 화면에 바로 반영됩니다`);
   }catch(_){ toast("저장하지 못했습니다"); }
 }
 document.addEventListener("click",e=>{ const b=e.target.closest("[data-wm]"); if(!b) return; saveWaitCfg(b.dataset.wr,{mode:b.dataset.wm}); });
-document.addEventListener("change",e=>{ const c=e.target.closest("[data-wa]"); if(!c) return; saveWaitCfg(c.dataset.wa,{auto:c.checked}); });
+document.addEventListener("change",e=>{ const c=e.target.closest("[data-wa]"); if(c){ saveWaitCfg(c.dataset.wa,{auto:c.checked}); return; }
+  const l=e.target.closest("[data-wl]"); if(l) saveWaitCfg(l.dataset.wl,{lineM:+l.value}); });
 
 // ---------- 차량 (호차) ----------
 function busesFor(route){

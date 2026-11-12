@@ -369,7 +369,7 @@ body.dmoving .wbadge{display:none}
       <div class="grab"></div>
       <div class="notice hide" id="notice"></div>
       <div id="stops" style="display:flex;flex-direction:column;gap:10px"></div>
-      <div class="hint" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="flex:1;min-width:200px">정류장을 누르면 맨 위 도착 시간이 그 정류장으로 바뀌어요</span><button type="button" id="voiceBtn" class="voicebtn" aria-pressed="true">🔊 소리 알림 켜짐</button><button type="button" id="voiceTry" class="voicebtn">🔔 소리 점검</button><button type="button" id="autoBtn" class="voicebtn hide">📍 인원 함께 세기</button></div>
+      <div class="hint" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="flex:1;min-width:200px">정류장을 누르면 맨 위 도착 시간이 그 정류장으로 바뀌어요</span><button type="button" id="voiceBtn" class="voicebtn" aria-pressed="true">🔊 소리 알림 켜짐</button><button type="button" id="voiceTry" class="voicebtn">🔔 소리 점검</button><button type="button" id="autoBtn" class="voicebtn hide">📍 정류장 자동 알림</button></div>
       <div id="ride" style="display:flex;flex-direction:column;gap:10px"></div>
       <div class="card">
         <h2>다가오는 출발 시간 <small id="upNow"></small></h2>
@@ -467,12 +467,12 @@ body.dmoving .wbadge{display:none}
 <div class="toast" id="toast"><div style="font-size:22px">🚌</div><div><b id="toastT"></b><span id="toastS"></span></div><button id="toastX" aria-label="닫기">×</button></div>
 <div class="modal" id="modal"><div class="box"><p>운행을 종료할까요?<br><span style="font-weight:500;font-size:13.5px;color:#94A3B8">성도님 화면에서 이 버스가 사라집니다.</span></p><div class="row2"><button class="btn ghost" id="mNo">계속 운행</button><button class="btn" id="mYes" style="background:#DC2626;color:#fff">종료</button></div></div></div>
 <div class="modal" id="busModal"><div class="box"><p>몇 호차에 타셨나요?</p><div class="cnt pick" id="busBtns"></div><div class="row2"><button class="btn ghost" id="busNo">취소</button></div></div></div>
-<div class="modal" id="awModal"><div class="box"><p style="font-size:19px">📍 정류장에서 기다리는 인원을<br>함께 세어 드릴까요?</p>
+<div class="modal" id="awModal"><div class="box"><p style="font-size:19px">📍 정류장에 계시면<br>기다리는 인원에 자동으로 알려 드릴까요?</p>
   <ul style="text-align:left;margin:4px 0 14px;padding-left:20px;line-height:1.7;font-size:15px;color:#334155;word-break:keep-all">
-    <li>정류장에서 이 화면을 열어 두시면 <b>"기다리는 분 ○명"</b>에 1명으로 더해집니다.</li>
-    <li><b>이름이나 위치는 저장하지 않고</b> 숫자만 셉니다.</li>
+    <li>정류장에서 이 화면을 열어 두시면 버튼을 누르지 않아도 <b>"기다리는 분 ○명"</b>에 1명으로 알려집니다.</li>
+    <li><b>이름이나 위치는 저장하지 않고</b> 인원 숫자만 알립니다.</li>
     <li>버스를 타거나 정류장을 떠나면 자동으로 빠집니다.</li>
-    <li>언제든 아래 <b>📍 인원 함께 세기</b> 버튼으로 끌 수 있어요.</li></ul>
+    <li>언제든 아래 <b>📍 정류장 자동 알림</b> 버튼으로 끌 수 있어요.</li></ul>
   <div class="row2"><button class="btn ghost" id="awNo">괜찮아요</button><button class="btn navy" id="awYes">좋아요</button></div></div></div>
 <div class="modal" id="cntModal"><div class="box"><p id="cntTitle">몇 분이 함께 타셨나요?</p><div class="cnt" id="cntBtns"><button data-n="1">1</button><button data-n="2">2</button><button data-n="3">3</button><button data-n="4">4</button><button data-n="5">5</button></div><div class="row2"><button class="btn ghost" id="cntNo">취소</button></div></div></div>
 
@@ -505,7 +505,7 @@ const WAIT_AUTO_MS = 10 * 60 * 1000;  // 자동 집계: 마지막으로 정류�
 const WAIT_DEF = {yatap:{mode:"any",auto:true}, park:{mode:"stop",auto:true}};  // 관리자가 안 정했을 때 기본값
 let WAIT_CFG = {};
 function waitCfgOf(r){ const o=(WAIT_CFG&&WAIT_CFG[r])||{}, d=WAIT_DEF[r]||{mode:"stop",auto:true};
-  return {mode:["off","stop","any"].includes(o.mode)?o.mode:d.mode, auto: typeof o.auto==="boolean"?o.auto:d.auto}; }
+  return {mode:["off","stop","any"].includes(o.mode)?o.mode:d.mode, auto: typeof o.auto==="boolean"?o.auto:d.auto, lineM:[30,50,100].includes(o.lineM)?o.lineM:50}; }
 function waitCounts(v,now){ const out={_road:0,_all:0};
   Object.values(v||{}).forEach(e=>{ if(!e||typeof e.ts!=="number") return; if(now-e.ts > (e.a?WAIT_AUTO_MS:WAIT_MS)) return;
     const n=Math.max(1,Math.min(9,+e.n||1)), k=e.s&&e.s!=="road"?e.s:"_road"; out[k]=(out[k]||0)+n; out._all+=n; });
@@ -1106,7 +1106,7 @@ function drawRide(){
     } else if(mode==="off"){
       h=`<button class="btn ${cls}" data-act="board">버스 탑승했어요</button>`;
     } else {
-      const lab = (S.autoStop || mode==="stop") ? "정류장에서 기다려요" : "여기서 기다려요";
+      const lab = (S.autoStop || mode==="stop" || !Object.keys(PATHS[r]||{}).length) ? "정류장에서 기다려요" : "여기서 기다려요";
       h=`<div class="ridebtns"><button class="btn ${cls}" data-act="board">버스 탑승했어요</button><button class="btn wait" data-act="wait">${lab}</button></div>`;
     }
   }
@@ -1144,6 +1144,10 @@ $("ride").addEventListener("click", async e=>{
       const st=ROUTES[S.route].stops.filter(x=>dist(me,x)<=waitR(x)).sort((a,c)=>dist(me,a)-dist(me,c))[0]||null;
       $("ride")._h=null; drawRide();
       if(!st && mode==="stop"){ toast("정류장 근처에서만 누를 수 있어요","안전을 위해 이 노선은 정류장에서만 기다려 주세요."); return; }
+      if(!st){   // 길에서: 노선 줄(버스가 실제로 다니는 길) 근처에서만 받음
+        const lines=Object.values(PATHS[S.route]||{}), lm=waitCfgOf(S.route).lineM;
+        if(!lines.length){ toast("지금은 정류장에서만 알릴 수 있어요","정류장 근처에서 눌러 주세요. 버스 길이 정해지면 길에서도 알릴 수 있어요."); return; }
+        if(!lines.some(P=>{ const q=projectOn(P,me); return q && q.off<=lm; })){ toast("버스가 다니는 길 근처에서 눌러 주세요","지금 계신 곳은 셔틀이 지나가지 않아요."); return; } }
       S.pendWait={route:S.route,lat,lng,s:st?st.id:"road"};
       S.cntMode="wait"; $("cntTitle").textContent=`${st?st.name+"에서":"이곳에서"} · 몇 분이 함께 기다리세요?`; $("cntModal").classList.add("show");
     }, err=>{ toast("위치를 확인하지 못했어요", err.code===1?"위치 사용을 허용해 주세요.":"잠시 후 다시 눌러 주세요."); $("ride")._h=null; drawRide(); },
@@ -1214,9 +1218,9 @@ function askAutoConsent(){
   if(storage.get("autoWait")!==null || !anyAutoRoute() || $("awModal").classList.contains("show")) return;
   $("awModal").classList.add("show");
 }
-$("awYes").onclick=()=>{ storage.set("autoWait","1"); $("awModal").classList.remove("show"); drawAutoBtn(); autoStart(); toast("고맙습니다","정류장에서 이 화면을 열어 두시면 기다리는 인원에 함께 세어 드려요."); };
+$("awYes").onclick=()=>{ storage.set("autoWait","1"); $("awModal").classList.remove("show"); drawAutoBtn(); autoStart(); toast("고맙습니다","정류장에서 이 화면을 열어 두시면 기다리는 인원에 자동으로 알려 드려요."); };
 $("awNo").onclick=()=>{ storage.set("autoWait","0"); $("awModal").classList.remove("show"); drawAutoBtn(); };
-function drawAutoBtn(){ const b=$("autoBtn"); if(!b) return; b.classList.toggle("hide",!anyAutoRoute()); b.classList.toggle("on",autoOn()); b.textContent=autoOn()?"📍 인원 함께 세기 켜짐":"📍 인원 함께 세기 꺼짐"; }
+function drawAutoBtn(){ const b=$("autoBtn"); if(!b) return; b.classList.toggle("hide",!anyAutoRoute()); b.classList.toggle("on",autoOn()); b.textContent=autoOn()?"📍 정류장 자동 알림 켜짐":"📍 정류장 자동 알림 꺼짐"; }
 $("autoBtn").onclick=()=>{ if(autoOn()){ storage.set("autoWait","0"); autoRemove(); autoStop(); setAutoStop(null); } else { storage.set("autoWait","1"); autoStart(); } drawAutoBtn(); };
 document.addEventListener("visibilitychange",()=>{ if(isDriverPage) return; if(document.hidden) autoStop(); else autoStart(); });
 
