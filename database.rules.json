@@ -27,7 +27,7 @@
       ".read": true,
       "$route": {
         "$bus": {
-          ".write": "(((auth != null && root.child('drivers').child(auth.uid).child('pin').exists() && root.child('pins').child(root.child('drivers').child(auth.uid).child('pin').val()).exists())) && ($route === 'yatap' || $route === 'park') && $bus.matches(/^[1-9]$/)) || (((auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())) && !newData.exists())",
+          ".write": "((auth != null && root.child('drivers').child(auth.uid).child('pin').exists() && root.child('pins').child(root.child('drivers').child(auth.uid).child('pin').val()).child('slot').val() === $route + '/' + $bus) && ($route === 'yatap' || $route === 'park') && $bus.matches(/^[1-9]$/)) || (((auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())) && !newData.exists())",
           ".validate": "!newData.exists() || (newData.child('lat').isNumber() && newData.child('lng').isNumber() && newData.child('ts').isNumber() && newData.child('uid').val() === auth.uid && newData.child('trip').isString())"
         }
       }

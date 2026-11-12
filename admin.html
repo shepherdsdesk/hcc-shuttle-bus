@@ -93,7 +93,15 @@
   code{background:#F1F3F8;padding:2px 6px;border-radius:6px;font-size:13px}
   .pill{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;font-size:12.5px;font-weight:900;padding:4px 9px;border-radius:999px;border:2px solid #fff;color:#fff;box-shadow:0 3px 10px rgba(15,23,42,.3)}
   .pill.out{background:#fff!important}
-  .stopmk{width:16px;height:16px;border-radius:50%;background:#fff;border:4px solid var(--navy)}
+  .mkc{position:absolute;left:0;top:0;transform:translate(-50%,-50%)}
+  .stopmk{position:relative;width:16px;height:16px;border-radius:50%;background:#fff;border:4px solid var(--navy);box-sizing:border-box}
+  .stoplab{position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%);white-space:nowrap;background:#fff;box-shadow:0 1px 4px rgba(15,23,42,.2);font-size:11.5px;font-weight:700;padding:2px 7px;border-radius:7px;color:var(--ink)}
+  .asg{width:auto;min-width:170px;margin:0;padding:6px 8px;font-size:13px;font-weight:700}
+  .smsbox{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;place-items:center;z-index:2500;padding:16px}
+  .smsbox.show{display:grid}
+  .smsbox .box{background:#fff;border-radius:18px;padding:20px;width:min(480px,100%)}
+  .smsbox h3{margin:0 0 4px;font-size:18px}
+  .smsbox textarea{min-height:170px;font-size:14px}
   .waitmk{width:16px;height:16px;border-radius:50%;background:var(--amber);border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.45)}
   .toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,220%);transition:transform .3s;background:var(--ink);color:#fff;border-radius:12px;padding:12px 18px;font-weight:700;z-index:3000}
   .toast.show{transform:translate(-50%,0)}
@@ -179,7 +187,7 @@
         <div class="stat"><b id="sDrivers">0</b><span>등록된 기사님</span></div>
       </div>
       <div class="row2">
-        <div class="card" style="flex-grow:3"><h2>지도</h2>
+        <div class="card" style="flex-grow:3"><h2>지도 <small id="mapKind"></small></h2>
           <div class="legend">
             <div class="lg"><span class="lt">노선</span><span class="li"><i class="sw" style="background:#1B2B5C"></i>야탑역 셔틀</span><span class="li"><i class="sw" style="background:#0F766E"></i>파킹엔젤스</span></div>
             <div class="lg"><span class="lt">방향</span><span class="li"><span class="lp" style="background:#1B2B5C">1 → 교회</span>교회행</span><span class="li"><span class="lp out">← 2</span>반대 방향</span></div>
@@ -202,8 +210,8 @@
           <div><label>이름</label><input id="fName" placeholder="예: 김OO 집사"></div>
           <div><label>연락처 (선택)</label><input id="fPhone" placeholder="010-0000-0000"></div>
           <div><label>메모 (선택)</label><input id="fMemo" placeholder="예: 주일 2부 담당"></div>
-          <div><label>운행 번호 (자동)</label><input id="fPin" inputmode="numeric" maxlength="8"></div>
-          <div><label>기본 배정 (선택)</label><select id="fAssign"></select></div>
+          <div><label>인증번호 (자동)</label><input id="fPin" inputmode="numeric" maxlength="8"></div>
+          <div><label>배정 차량</label><select id="fAssign"></select></div>
         </div>
         <div class="row" style="margin-top:12px">
           <button class="btn green" id="fSave">추가</button>
@@ -267,6 +275,15 @@
         </div>
       </div>
       <div class="card">
+        <h2>지도 설정 <small>카카오 지도 키를 넣으면 성도님·드라이버·관리자·TV 화면 지도가 카카오맵으로 바뀝니다</small></h2>
+        <div class="row">
+          <input id="kKey" placeholder="카카오 JavaScript 키 (예: 1a2b3c…)" style="max-width:380px;margin:0" autocomplete="off">
+          <button class="btn" id="kSave">저장</button>
+          <button class="btn ghost" id="kClear">지우기 (OpenStreetMap 사용)</button>
+        </div>
+        <p class="muted" style="margin:8px 0 0">카카오 디벨로퍼스 앱의 <b>JavaScript 키</b>를 넣어 주세요. 그 키의 <b>JavaScript SDK 도메인</b>에 <code>https://shepherdsdesk.github.io</code>를 등록하고, <b>카카오맵 사용 설정</b>을 켜야 지도가 열립니다. 키가 맞지 않으면 자동으로 OpenStreetMap으로 보입니다. 저장 뒤 각 화면을 새로고침하면 바뀝니다.</p>
+      </div>
+      <div class="card">
         <h2>파킹엔젤스 시간표 <small>테크노파크 C동 출발 시각 · 주일</small></h2>
         <textarea id="pTimes" placeholder="예: 8:00, 8:10, 8:20, 9:20 …"></textarea>
         <div class="row" style="margin-top:10px"><button class="btn" id="pSave">저장</button><span class="muted">쉼표나 띄어쓰기로 구분합니다.</span></div>
@@ -299,6 +316,13 @@
   </div>
 </div>
 <div class="toast" id="toast"></div>
+<div class="smsbox" id="smsBox" role="dialog" aria-modal="true" aria-labelledby="smsH"><div class="box">
+  <h3 id="smsH">문자로 배차 보내기</h3>
+  <p class="muted" id="smsTo" style="margin:0 0 10px"></p>
+  <textarea id="smsBody" aria-label="문자 내용"></textarea>
+  <p class="muted" style="margin:8px 0 12px;line-height:1.6">‘문자 앱 열기’를 누르면 이 휴대폰의 문자 앱에 받는 사람과 내용이 채워집니다. 보내기만 누르시면 됩니다.<br>PC에서는 ‘내용 복사’ 후 카카오톡 등으로 보내 주세요.</p>
+  <div class="row"><button class="btn" id="smsGo">문자 앱 열기</button><button class="btn ghost" id="smsCopy">내용 복사</button><button class="btn ghost" id="smsClose" style="margin-left:auto">닫기</button></div>
+</div></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script type="module">
@@ -351,6 +375,101 @@ let tt; function toast(m){ $("toast").textContent=m; $("toast").classList.add("s
 const randPin=()=>{ const a=new Uint32Array(1); crypto.getRandomValues(a); return String(100000 + a[0]%900000); };
 
 const app=initializeApp(firebaseConfig), auth=getAuth(app), db=getDatabase(app);
+// ==== MAPKIT START ====  (카카오맵 / OpenStreetMap 공통 지도 — 이 블록은 index·driver·admin·tv에 똑같이 들어갑니다)
+// 관리자 설정에 카카오 지도 키(config/kakaoKey)가 있으면 카카오맵, 없거나 불러오지 못하면 OpenStreetMap(Leaflet)을 씁니다.
+const MapKit = (()=>{
+  let kakaoReady=null;
+  function loadKakao(key){
+    if(kakaoReady) return kakaoReady;
+    kakaoReady = new Promise((res,rej)=>{
+      if(!key) return rej(new Error("no key"));
+      const t=setTimeout(()=>rej(new Error("timeout")),8000);
+      const sc=document.createElement("script");
+      sc.src=`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${encodeURIComponent(key)}&autoload=false`;
+      sc.onload=()=>{ try{ window.kakao.maps.load(()=>{ clearTimeout(t); res(window.kakao); }); }catch(e){ clearTimeout(t); rej(e); } };
+      sc.onerror=()=>{ clearTimeout(t); rej(new Error("load error")); };
+      document.head.appendChild(sc);
+    });
+    return kakaoReady;
+  }
+  // ---------- 카카오맵 ----------
+  function kakaoMap(el,opt){
+    const K=window.kakao.maps;
+    const map=new K.Map(el,{center:new K.LatLng(37.4105,127.145),level:5});
+    if(opt.zoomControl) map.addControl(new K.ZoomControl(), K.ControlPosition.RIGHT);
+    const node=html=>{ const d=document.createElement("div"); d.innerHTML=html; return d.firstElementChild||d; };
+    return {
+      kind:"kakao",
+      layer(){
+        const items=new Set();
+        return {
+          add(lat,lng,html,o={}){
+            const ov=new K.CustomOverlay({position:new K.LatLng(lat,lng),content:node(html),xAnchor:.5,yAnchor:.5,zIndex:o.z||1,clickable:false});
+            ov.setMap(map); items.add(ov);
+            return { move(a,b){ ov.setPosition(new K.LatLng(a,b)); }, html(h){ ov.setContent(node(h)); }, remove(){ ov.setMap(null); items.delete(ov); } };
+          },
+          clear(){ items.forEach(o=>o.setMap(null)); items.clear(); }
+        };
+      },
+      fit(pts,p={}){
+        if(!pts.length) return;
+        const b=new K.LatLngBounds(); pts.forEach(([a,c])=>b.extend(new K.LatLng(a,c)));
+        map.setBounds(b,p.top??40,p.right??40,p.bottom??40,p.left??40);
+        if(map.getLevel()<(p.minLevel??3)) map.setLevel(p.minLevel??3);
+      },
+      center(lat,lng,keep){ map.setCenter(new K.LatLng(lat,lng)); if(!keep && map.getLevel()>4) map.setLevel(4); },
+      resize(){ map.relayout(); },
+      onDrag(cb){ K.event.addListener(map,"dragstart",cb); }
+    };
+  }
+  // ---------- OpenStreetMap (Leaflet) ----------
+  function leafletMap(el,opt){
+    const map=L.map(el,{zoomControl:!!opt.zoomControl,attributionControl:false});
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(map);
+    map.setView([37.4105,127.145],14);
+    return {
+      kind:"osm",
+      layer(){
+        const g=L.layerGroup().addTo(map);
+        return {
+          add(lat,lng,html,o={}){
+            const ic=h=>L.divIcon({className:"",html:`<div class="mkc">${h}</div>`,iconSize:null,iconAnchor:[0,0]});
+            const m=L.marker([lat,lng],{icon:ic(html),interactive:false,zIndexOffset:(o.z||1)*100}).addTo(g);
+            return { move(a,b){ m.setLatLng([a,b]); }, html(h){ m.setIcon(ic(h)); }, remove(){ g.removeLayer(m); } };
+          },
+          clear(){ g.clearLayers(); }
+        };
+      },
+      fit(pts,p={}){
+        if(!pts.length) return; map.invalidateSize();
+        map.fitBounds(L.latLngBounds(pts),{paddingTopLeft:[p.left??40,p.top??40],paddingBottomRight:[p.right??40,p.bottom??40],maxZoom:p.maxZoom??16,animate:false});
+      },
+      center(lat,lng,keep){ map.setView([lat,lng], keep? map.getZoom() : Math.max(map.getZoom()||15,15), {animate:false}); },
+      resize(){ map.invalidateSize(); },
+      onDrag(cb){ map.on("dragstart",cb); }
+    };
+  }
+  async function create(el,opt={}){
+    if(typeof el==="string") el=document.getElementById(el);
+    let key=opt.kakaoKey;
+    if(key){
+      try{ await loadKakao(key); const m=kakaoMap(el,opt); el.classList.add("is-kakao"); return m; }
+      catch(e){ console.warn("카카오맵을 불러오지 못해 OpenStreetMap으로 표시합니다.", e); }
+    }
+    el.classList.add("is-osm");
+    return leafletMap(el,opt);
+  }
+  return { create };
+})();
+// 카카오 지도 키: 지난번 받은 값을 먼저 쓰고(빠른 시작), Firebase 설정에서 새 값을 확인
+async function getKakaoKey(db, ref, get){
+  let cached=null; try{ cached=localStorage.getItem("kakaoKey"); }catch(_){}
+  const fresh = get(ref(db,"config/kakaoKey")).then(s=>{ const v=(s.val()||"").trim(); try{ localStorage.setItem("kakaoKey",v); }catch(_){} return v; }).catch(()=>cached||"");
+  if(cached){ fresh.then(v=>{ if(v!==cached) console.info("지도 키가 바뀌었습니다. 다음에 열 때 반영됩니다."); }); return cached; }
+  return await Promise.race([fresh, new Promise(r=>setTimeout(()=>r(""),3000))]);
+}
+// ==== MAPKIT END ====
+
 let offset=0; onValue(ref(db,".info/serverTimeOffset"),s=>{offset=s.val()||0;});
 const now=()=>Date.now()+offset;
 let me=null;
@@ -394,17 +513,18 @@ $("tabs").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!
 $("rf").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return;
   A.rf=b.dataset.rf; document.querySelectorAll("#rf button").forEach(x=>x.classList.toggle("on",x===b));
   drawNow(); fitRF(); if(lastDay) loadDay(lastDay); if(weeksLoaded) loadWeeks(); });
-function fitRF(){ if(!map) return; const st=RF().flatMap(r=>ROUTES[r].stops); map.fitBounds(L.latLngBounds(st.map(s=>[s.lat,s.lng])),{padding:[40,40],maxZoom:16}); }
+function fitRF(){ if(!map) return; const st=RF().flatMap(r=>ROUTES[r].stops); map.resize(); map.fit(st.map(s=>[s.lat,s.lng]),{top:50,left:40,right:40,bottom:40}); }
 
 // ---------- 시작 ----------
 let started=false, map, busLayer, waitLayer;
-function startAdmin(){
+async function startAdmin(){
   if(started) return; started=true;
-  map=L.map("map",{attributionControl:false}); L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(map);
-  const all=[...ROUTES.yatap.stops,...ROUTES.park.stops];
-  Object.values(ROUTES).forEach(r=>r.stops.forEach(s=>L.marker([s.lat,s.lng],{icon:L.divIcon({className:"",html:`<div class="stopmk" style="border-color:${r.color}"></div>`,iconSize:[16,16],iconAnchor:[8,8]})}).bindTooltip(s.name).addTo(map)));
+  map=await MapKit.create("map",{zoomControl:true, kakaoKey: await getKakaoKey(db,ref,get)});
+  const stopL=map.layer();
+  Object.values(ROUTES).forEach(r=>{ const seen=new Set(); r.stops.forEach(s=>{ if(r===ROUTES.park && s.id==="church") return; stopL.add(s.lat,s.lng,`<div class="stopmk" style="border-color:${r.color}"><span class="stoplab">${esc(s.name)}</span></div>`,{z:2}); }); });
+  busLayer=map.layer(); waitLayer=map.layer();
   fitRF(); $("pageSub").textContent=nowSub();
-  busLayer=L.layerGroup().addTo(map); waitLayer=L.layerGroup().addTo(map);
+  $("mapKind").textContent = map.kind==="kakao" ? "카카오맵" : "OpenStreetMap";
 
   onValue(ref(db,"live"),s=>{A.live=s.val()||{}; drawNow();});
   onValue(ref(db,"pins"),s=>{A.pins=s.val()||{}; drawNow(); drawDrivers();});
@@ -423,7 +543,7 @@ function sumTrip(route,bus,trip){ const t=A.boardToday?.[route]?.[bus]?.[trip]; 
 function sumAll(obj){ let n=0; const walk=o=>{ if(o&&typeof o==="object"){ if(typeof o.n==="number") n+=o.n; else Object.values(o).forEach(walk);} }; walk(obj); return n; }
 function drawNow(){
   if(!map) return;
-  const t=now(); busLayer.clearLayers(); waitLayer.clearLayers();
+  const t=now(); busLayer.clear(); waitLayer.clear();
   if(curTab==="now") $("pageSub").textContent=nowSub();
   const rows=[];
   RF().forEach(r=>Object.entries(A.live[r]||{}).forEach(([bus,v])=>{
@@ -434,12 +554,11 @@ function drawNow(){
     const html = v.to && v.to!=="교회"
       ? `<div class="pill out" style="color:${c};border-color:${c};${old}">← ${ROUTES[r].short}${bus} ${esc(v.to)}</div>`
       : `<div class="pill" style="background:${c};${old}">${ROUTES[r].short}${bus}${v.to?' → 교회':''}</div>`;
-    L.marker([v.lat,v.lng],{icon:L.divIcon({className:"",html,iconSize:null,iconAnchor:[24,13]}),zIndexOffset:1000})
-      .bindTooltip(`${ROUTES[r].name} ${bus}호차 · ${esc(dr.name)}`).addTo(busLayer);
+    busLayer.add(v.lat,v.lng,html,{z:10});
   }));
   let waitN=0;
   RF().forEach(r=>Object.values(A.wait[r]||{}).forEach(w=>{ if(w&&typeof w.lat==="number"&&t-(w.ts||0)<WAIT_MS){ waitN++;
-    L.marker([w.lat,w.lng],{icon:L.divIcon({className:"",html:'<div class="waitmk"></div>',iconSize:[16,16],iconAnchor:[8,8]})}).bindTooltip(`${ROUTES[r].name} · ${Math.round((t-w.ts)/60000)}분 전부터 기다림`).addTo(waitLayer); } }));
+    waitLayer.add(w.lat,w.lng,'<div class="waitmk"></div>',{z:5}); } }));
   $("sBus").innerHTML=rows.length+'<span style="font-size:16px;color:#5B6478"> 대</span>'; $("sWait").innerHTML=waitN+'<span style="font-size:16px"> 명</span>';
   $("sToday").innerHTML=RF().reduce((n,r)=>n+sumAll(A.boardToday[r]),0)+'<span style="font-size:16px;color:#5B6478"> 명</span>';
   $("sDrivers").innerHTML=Object.keys(A.pins).length+'<span style="font-size:16px;color:#5B6478"> 명</span>';
@@ -472,7 +591,7 @@ function drawVehicles(){
       <button data-vdel="${r}/${v.no}" aria-label="${ROUTES[r].name} ${v.no}호차 삭제">×</button></span>`).join("")}
       ${busesFor(r).length<9?`<button class="btn ghost small" data-vadd="${r}">+ 호차 추가</button>`:''}</div>`).join("");
   const sel=$("fAssign"), cur=sel.value;
-  sel.innerHTML=`<option value="">정하지 않음 (기사님이 고름)</option>`+["yatap","park"].map(r=>busesFor(r).map(v=>`<option value="${r}/${v.no}">${ROUTES[r].name} ${v.no}호차</option>`).join("")).join("");
+  sel.innerHTML=asgOptions("");
   sel.value=cur;
 }
 async function saveBuses(r,list){ const o={}; list.forEach(v=>o[v.no]={memo:v.memo||""}); await set(ref(db,"config/buses/"+r),o); }
@@ -488,6 +607,41 @@ $("vehicles").addEventListener("change",async e=>{ const i=e.target.closest("[da
   const [r,no]=i.dataset.vmemo.split("/"); const l=busesFor(r).map(v=>v.no===+no?{...v,memo:i.value.trim()}:v);
   try{ await saveBuses(r,l); toast("메모를 저장했습니다"); }catch(_){ toast("저장하지 못했습니다"); } });
 
+// ---------- 배정 ----------
+function asgOptions(cur){
+  return `<option value="">배정 안 함</option>`+["yatap","park"].map(r=>`<optgroup label="${ROUTES[r].name}">`+busesFor(r).map(v=>`<option value="${r}/${v.no}" ${cur===r+"/"+v.no?"selected":""}>${ROUTES[r].name} ${v.no}호차${v.memo?" · "+esc(v.memo):""}</option>`).join("")+`</optgroup>`).join("");
+}
+const asgData=val=>{ const [route,b]=(val||"").split("/"); return route&&b ? {route, bus:+b, slot:`${route}/${+b}`} : {route:null,bus:null,slot:null}; };
+function sameSlot(pin,slot){ return Object.entries(A.pins).filter(([p,v])=>p!==pin && v && v.slot===slot).map(([,v])=>v.name||"이름 없음"); }
+async function assign(pin,val){
+  const d=asgData(val);
+  try{ await update(ref(db,"pins/"+pin),d);
+    const dup = d.slot ? sameSlot(pin,d.slot) : [];
+    toast(d.slot ? `${A.pins[pin]?.name||""} 기사님 → ${ROUTES[d.route].name} ${d.bus}호차 배정${dup.length?` (같은 차량: ${dup.join(", ")})`:''}` : "배정을 풀었습니다");
+  }catch(_){ toast("배정하지 못했습니다"); }
+}
+// ---------- 문자로 배차 보내기 (관리자 휴대폰 문자 앱) ----------
+const driverUrl=pin=> location.origin + location.pathname.replace(/[^/]*$/,"") + "driver.html#c=" + pin;
+function smsText(pin){
+  const v=A.pins[pin]||{}, car = v.route&&v.bus ? `${ROUTES[v.route].name} ${v.bus}호차` : "셔틀";
+  return `[HCC 셔틀버스] ${v.name||""} 기사님, ${car} 운행을 부탁드립니다.\n\n드라이버 앱: ${driverUrl(pin)}\n인증번호: ${pin}\n\n주소를 누르면 인증번호가 자동으로 들어갑니다. 운행 중에는 화면을 켜 두시고, 마치면 ‘운행 종료’를 눌러 주세요. 감사합니다.`;
+}
+let smsPin=null;
+function openSms(pin){
+  smsPin=pin; const v=A.pins[pin]||{};
+  if(!v.route){ toast("먼저 배정 차량을 정해 주세요"); }
+  $("smsTo").textContent = `${v.name||"기사님"} · ${v.phone||"연락처 없음"}`;
+  $("smsBody").value=smsText(pin); $("smsBox").classList.add("show");
+  $("smsGo").disabled = !v.phone;
+}
+$("smsClose").onclick=()=>$("smsBox").classList.remove("show");
+$("smsCopy").onclick=async()=>{ try{ await navigator.clipboard.writeText($("smsBody").value); toast("문자 내용을 복사했습니다"); }catch(_){ $("smsBody").select(); toast("복사가 막혀 있어요. 선택된 글을 길게 눌러 복사해 주세요"); } };
+$("smsGo").onclick=()=>{
+  const v=A.pins[smsPin]||{}; const to=(v.phone||"").replace(/[^0-9]/g,"");
+  const ios=/iphone|ipad|ipod|macintosh/i.test(navigator.userAgent) && "ontouchend" in document;
+  location.href=`sms:${to}${ios?"&":"?"}body=${encodeURIComponent($("smsBody").value)}`;
+};
+
 // ---------- 기사님 ----------
 let editPin=null;
 function resetForm(){ editPin=null; $("fName").value=""; $("fPhone").value=""; $("fMemo").value=""; $("fAssign").value=""; $("fPin").value=randPin(); $("fPin").disabled=false;
@@ -497,27 +651,29 @@ function drawDrivers(){
   if(!$("fPin").value && !editPin) $("fPin").value=randPin();
   const list=Object.entries(A.pins).map(([pin,v])=>({pin, ...(v&&typeof v==="object"?v:{name:""})})).sort((a,b)=>(a.name||"").localeCompare(b.name||"","ko"));
   $("drvCount").textContent=`${list.length}명`;
-  $("drvTbl").innerHTML = list.length ? `<table><tr><th>이름</th><th>연락처</th><th>메모</th><th>기본 배정</th><th>운행 번호</th><th>등록된 휴대폰</th><th></th></tr>`+
+  $("drvTbl").innerHTML = list.length ? `<table><tr><th>이름</th><th>연락처</th><th>메모</th><th>배정 차량</th><th>인증번호</th><th>등록된 휴대폰</th><th></th></tr>`+
     list.map(d=>`<tr><td><b>${esc(d.name)||'<span class="muted">(이름 없음)</span>'}</b></td><td>${esc(d.phone)}</td><td>${esc(d.memo)}</td>
-      <td>${ROUTES[d.route]&&d.bus?`<span class="chip" style="background:${ROUTES[d.route].color}">${d.bus}호차</span> <span class="muted">${ROUTES[d.route].name}</span>`:'<span class="muted">-</span>'}</td><td><code>${d.pin}</code></td><td>${devicesOf(d.pin)}대</td>
-      <td class="row"><button class="btn ghost small" data-edit="${d.pin}">수정</button><button class="btn ghost small" data-reissue="${d.pin}">번호 새로 발급</button><button class="btn red small" data-del="${d.pin}">삭제</button></td></tr>`).join("")+`</table>`
+      <td><select class="asg" data-asg="${d.pin}" aria-label="${esc(d.name)} 배정 차량">${asgOptions(d.route&&d.bus?d.route+"/"+d.bus:"")}</select></td><td><code>${d.pin}</code></td><td>${devicesOf(d.pin)}대</td>
+      <td class="row"><button class="btn small" data-sms="${d.pin}">문자로 배차</button><button class="btn ghost small" data-edit="${d.pin}">수정</button><button class="btn ghost small" data-reissue="${d.pin}">번호 새로 발급</button><button class="btn red small" data-del="${d.pin}">삭제</button></td></tr>`).join("")+`</table>`
     : `<div class="empty">등록된 기사님이 없습니다. 위에서 추가해 주세요.</div>`;
 }
 $("fCancel").onclick=resetForm;
 $("fSave").onclick=async()=>{
   const name=$("fName").value.trim(), phone=$("fPhone").value.trim(), memo=$("fMemo").value.trim(), pin=$("fPin").value.trim();
-  const [aRoute,aBus]=($("fAssign").value||"").split("/"); const route=aRoute||null, bus=aBus?+aBus:null;
+  const {route,bus,slot}=asgData($("fAssign").value);
   if(!name){ toast("이름을 입력해 주세요"); return; }
   if(!/^\d{4,8}$/.test(pin)){ toast("운행 번호는 숫자 4~8자리입니다"); return; }
   if(!editPin && A.pins[pin]){ toast("이미 쓰고 있는 번호입니다"); return; }
   try{
-    if(editPin){ await update(ref(db,"pins/"+editPin),{name,phone,memo,route,bus}); toast("저장했습니다"); }
-    else { await set(ref(db,"pins/"+pin),{name,phone,memo,route,bus,created:serverTimestamp()}); toast(`${name} 기사님 추가 · 번호 ${pin}`); }
+    if(editPin){ await update(ref(db,"pins/"+editPin),{name,phone,memo,route,bus,slot}); toast("저장했습니다"); }
+    else { await set(ref(db,"pins/"+pin),{name,phone,memo,route,bus,slot,created:serverTimestamp()}); toast(`${name} 기사님 추가 · 인증번호 ${pin}`); }
     resetForm();
   }catch(_){ toast("저장하지 못했습니다"); }
 };
+$("drvTbl").addEventListener("change",e=>{ const sel=e.target.closest("[data-asg]"); if(sel) assign(sel.dataset.asg, sel.value); });
 $("drvTbl").addEventListener("click",async e=>{
   const b=e.target.closest("button"); if(!b) return;
+  if(b.dataset.sms){ openSms(b.dataset.sms); return; }
   if(b.dataset.edit){ const p=b.dataset.edit, v=A.pins[p]||{}; editPin=p;
     $("fName").value=v.name||""; $("fPhone").value=v.phone||""; $("fMemo").value=v.memo||""; $("fPin").value=p; $("fPin").disabled=true;
     $("fAssign").value = v.route && v.bus ? `${v.route}/${v.bus}` : "";
@@ -655,7 +811,7 @@ let configFilled=false;
 function fillConfig(){
   const c=A.config;
   drawTpls(); drawVehicles();
-  if(!configFilled){ $("nText").value=c.notice?.text||""; $("nOn").checked=!!c.notice?.on; $("pTimes").value=c.parkTimes||""; configFilled=true; loadTimeKey(); previewNotice(); }
+  if(!configFilled){ $("kKey").value=c.kakaoKey||""; $("nText").value=c.notice?.text||""; $("nOn").checked=!!c.notice?.on; $("pTimes").value=c.parkTimes||""; configFilled=true; loadTimeKey(); previewNotice(); }
   else loadTimeKey(true);
 }
 // ---------- 공지 예문 ----------
@@ -707,6 +863,10 @@ $("tAdd").onclick=async()=>{
     $("tTitle").value=""; tCat="내 예문"; drawTpls(); toast("‘내 예문’에 저장했습니다"); }catch(_){ toast("저장하지 못했습니다"); }
 };
 $("nOff").onclick=async()=>{ try{ await update(ref(db,"config/notice"),{on:false, at:serverTimestamp()}); $("nOn").checked=false; toast("공지를 내렸습니다"); }catch(_){ toast("내리지 못했습니다"); } };
+$("kSave").onclick=async()=>{ const k=$("kKey").value.trim(); if(!/^[0-9a-f]{20,40}$/i.test(k)){ toast("키 모양이 맞지 않습니다. JavaScript 키를 그대로 붙여 넣어 주세요"); return; }
+  try{ await set(ref(db,"config/kakaoKey"),k); try{ localStorage.setItem("kakaoKey",k); }catch(_){} toast("저장했습니다. 새로고침하면 카카오맵으로 바뀝니다"); }catch(_){ toast("저장하지 못했습니다"); } };
+$("kClear").onclick=async()=>{ if(!confirm("카카오 지도 키를 지우고 OpenStreetMap으로 돌아갈까요?")) return;
+  try{ await remove(ref(db,"config/kakaoKey")); try{ localStorage.setItem("kakaoKey",""); }catch(_){} $("kKey").value=""; toast("지웠습니다"); }catch(_){ toast("지우지 못했습니다"); } };
 $("nSave").onclick=async()=>{ try{ await set(ref(db,"config/notice"),{text:$("nText").value.trim(), on:$("nOn").checked, at:serverTimestamp()}); toast($("nOn").checked?"공지를 띄웠습니다":"공지를 저장했습니다 (숨김)"); }catch(_){ toast("저장하지 못했습니다"); } };
 $("pSave").onclick=async()=>{ const t=parseTimes($("pTimes").value);
   try{ await set(ref(db,"config/parkTimes"), t.join(",")); $("pTimes").value=t.join(", "); toast(`파킹엔젤스 시간표 ${t.length}개 저장`); }catch(_){ toast("저장하지 못했습니다"); } };

@@ -60,9 +60,9 @@
   .pill.out .n{color:#fff}
   .pill.old{opacity:.5}
   .pill svg{flex:none}
-  .stopmk{width:18px;height:18px;border-radius:50%;background:#fff;border:4px solid var(--navy);box-shadow:0 1px 3px rgba(0,0,0,.3)}
-  .leaflet-tooltip.stoplbl{background:#fff;border:0;box-shadow:0 1px 4px rgba(15,23,42,.2);font:700 12px "Pretendard Variable",Pretendard,sans-serif;padding:3px 8px;border-radius:8px;color:var(--ink)}
-  .leaflet-tooltip.stoplbl:before{display:none}
+  .mkc{position:absolute;left:0;top:0;transform:translate(-50%,-50%)}
+  .stopmk{position:relative;width:18px;height:18px;border-radius:50%;background:#fff;border:4px solid var(--navy);box-shadow:0 1px 3px rgba(0,0,0,.3);box-sizing:border-box}
+  .stoplab{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);white-space:nowrap;background:#fff;box-shadow:0 1px 4px rgba(15,23,42,.2);font:700 12px "Pretendard Variable",Pretendard,sans-serif;padding:3px 8px;border-radius:8px;color:var(--ink);letter-spacing:-.2px}
   .memk{width:16px;height:16px;border-radius:50%;background:#2563EB;border:3px solid #fff;box-shadow:0 0 0 6px rgba(37,99,235,.2)}
   .waitmk{width:18px;height:18px;border-radius:50%;background:var(--amber);border:3px solid #fff;box-shadow:0 0 0 6px rgba(245,158,11,.25)}
   .leaflet-control-attribution{font-size:10px}
@@ -205,7 +205,7 @@
   .dtile.amb span,.dtile.amb small{color:#FCD34D!important}
   .dtile.amb b{color:#FBBF24}
   #drvMap{height:230px;border-radius:18px;overflow:hidden;border:1px solid #1F2A40;background:#111A2B;z-index:0}
-  #drvMap .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.85) contrast(.9)}
+  #drvMap .leaflet-tile-pane,#drvMap.is-kakao img{filter:invert(1) hue-rotate(180deg) brightness(.85) contrast(.9)}
   .dmeta{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:#94A3B8;padding:0 4px;flex-wrap:wrap}
   body.drv .modal .box{background:#131C2E;color:#fff}
   body.drv .modal .box p{color:#fff}
@@ -277,23 +277,24 @@
       </div>
 
       <div id="drvPin" class="hide" style="display:flex;flex-direction:column;gap:14px">
-        <div class="dlbl">운행 번호를 입력하세요</div>
-        <input class="dpin" id="pinInput" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="••••••" aria-label="운행 번호">
+        <div class="dlbl">인증번호를 입력하세요</div>
+        <input class="dpin" id="pinInput" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="••••••" aria-label="인증번호">
         <button class="dbig go" id="pinBtn">확인</button>
         <div class="derr" id="pinErr"></div>
-        <div class="dwarn">운행 번호는 셔틀 담당자에게 받으세요. 한 번 입력하면 이 휴대폰에서는 다시 묻지 않습니다.</div>
+        <div class="dwarn">인증번호는 셔틀 담당자가 보내 드린 문자에 있습니다. 한 번 입력하면 이 휴대폰에서는 다시 묻지 않습니다.</div>
       </div>
 
       <div id="drvSetup" class="hide" style="display:flex;flex-direction:column;gap:12px">
-        <div class="dlbl">① 노선</div>
-        <div class="dpick" id="drvRoute">
-          <button data-route="yatap" class="on">야탑역 셔틀</button>
-          <button data-route="park">파킹엔젤스</button>
+        <div class="dcard" id="asgCard">
+          <div style="font-size:14px;color:#94A3B8;font-weight:700">오늘 맡으신 차량</div>
+          <div style="display:flex;align-items:baseline;gap:12px;margin-top:4px;flex-wrap:wrap">
+            <span style="font-size:52px;font-weight:900;line-height:1.1" id="asgBus">-</span>
+            <span style="font-size:20px;font-weight:900" id="asgRoute"></span>
+          </div>
+          <div style="font-size:14px;color:#94A3B8;margin-top:6px" id="asgMemo"></div>
         </div>
-        <div class="dlbl">② 호차</div>
-        <div class="dpick four" id="drvBus"></div>
-        <div style="font-size:13px;color:#93C5FD;padding:0 4px" id="drvAssigned"></div>
-        <button class="dbig go" id="startBtn" style="margin-top:8px">운행 시작</button>
+        <div class="dwarn hide" id="asgNone" style="border-color:#7F1D1D;background:#2A1215;color:#FECACA"><b style="color:#fff">아직 배정된 차량이 없습니다.</b><br>셔틀 담당자에게 배정을 요청해 주세요. 배정되면 이 화면에 바로 나타납니다.</div>
+        <button class="dbig go" id="startBtn" style="margin-top:4px">운행 시작</button>
         <div class="derr" id="startErr"></div>
         <div class="dwarn"><b style="color:#fff">운행 중에는 화면을 켜 둔 채</b> 거치대에 꽂아 주세요. 다른 앱으로 넘어가거나 화면이 꺼지면 위치 보내기가 멈춥니다. 충전기를 꼭 연결해 주세요.<br>처음 시작할 때 ‘위치 사용’을 물으면 <b style="color:#fff">허용</b>을 눌러 주세요.</div>
       </div>
@@ -316,7 +317,6 @@
         <div class="dmeta"><span id="liveSent">-</span><span>GPS <b id="liveAcc">-</b></span><span>화면 <b id="liveWake">-</b></span><span>전송 <b id="liveCount">0회</b></span></div>
         <div style="font-size:12.5px;color:#94A3B8;padding:0 4px">주황 점 = 길에서 기다리는 성도님 · 정차한 뒤 확인해 주세요</div>
         <button class="dbig stop" id="stopBtn">운행 종료</button>
-        <button id="swapBtn" style="border:1.5px solid #24304A;background:transparent;color:#CBD5E1;border-radius:14px;padding:13px;font-size:15px;font-weight:700;cursor:pointer">노선 · 호차 바꾸기</button>
       </div>
     </div>
   </section>
@@ -414,6 +414,101 @@ const authReady = new Promise(res=>{ onAuthStateChanged(auth,u=>{ if(u){ uid=u.u
 signInAnonymously(auth).catch(e=>{ console.error(e); toast("연결에 문제가 있어요","잠시 후 다시 열어 주세요."); });
 
 
+// ==== MAPKIT START ====  (카카오맵 / OpenStreetMap 공통 지도 — 이 블록은 index·driver·admin·tv에 똑같이 들어갑니다)
+// 관리자 설정에 카카오 지도 키(config/kakaoKey)가 있으면 카카오맵, 없거나 불러오지 못하면 OpenStreetMap(Leaflet)을 씁니다.
+const MapKit = (()=>{
+  let kakaoReady=null;
+  function loadKakao(key){
+    if(kakaoReady) return kakaoReady;
+    kakaoReady = new Promise((res,rej)=>{
+      if(!key) return rej(new Error("no key"));
+      const t=setTimeout(()=>rej(new Error("timeout")),8000);
+      const sc=document.createElement("script");
+      sc.src=`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${encodeURIComponent(key)}&autoload=false`;
+      sc.onload=()=>{ try{ window.kakao.maps.load(()=>{ clearTimeout(t); res(window.kakao); }); }catch(e){ clearTimeout(t); rej(e); } };
+      sc.onerror=()=>{ clearTimeout(t); rej(new Error("load error")); };
+      document.head.appendChild(sc);
+    });
+    return kakaoReady;
+  }
+  // ---------- 카카오맵 ----------
+  function kakaoMap(el,opt){
+    const K=window.kakao.maps;
+    const map=new K.Map(el,{center:new K.LatLng(37.4105,127.145),level:5});
+    if(opt.zoomControl) map.addControl(new K.ZoomControl(), K.ControlPosition.RIGHT);
+    const node=html=>{ const d=document.createElement("div"); d.innerHTML=html; return d.firstElementChild||d; };
+    return {
+      kind:"kakao",
+      layer(){
+        const items=new Set();
+        return {
+          add(lat,lng,html,o={}){
+            const ov=new K.CustomOverlay({position:new K.LatLng(lat,lng),content:node(html),xAnchor:.5,yAnchor:.5,zIndex:o.z||1,clickable:false});
+            ov.setMap(map); items.add(ov);
+            return { move(a,b){ ov.setPosition(new K.LatLng(a,b)); }, html(h){ ov.setContent(node(h)); }, remove(){ ov.setMap(null); items.delete(ov); } };
+          },
+          clear(){ items.forEach(o=>o.setMap(null)); items.clear(); }
+        };
+      },
+      fit(pts,p={}){
+        if(!pts.length) return;
+        const b=new K.LatLngBounds(); pts.forEach(([a,c])=>b.extend(new K.LatLng(a,c)));
+        map.setBounds(b,p.top??40,p.right??40,p.bottom??40,p.left??40);
+        if(map.getLevel()<(p.minLevel??3)) map.setLevel(p.minLevel??3);
+      },
+      center(lat,lng,keep){ map.setCenter(new K.LatLng(lat,lng)); if(!keep && map.getLevel()>4) map.setLevel(4); },
+      resize(){ map.relayout(); },
+      onDrag(cb){ K.event.addListener(map,"dragstart",cb); }
+    };
+  }
+  // ---------- OpenStreetMap (Leaflet) ----------
+  function leafletMap(el,opt){
+    const map=L.map(el,{zoomControl:!!opt.zoomControl,attributionControl:false});
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(map);
+    map.setView([37.4105,127.145],14);
+    return {
+      kind:"osm",
+      layer(){
+        const g=L.layerGroup().addTo(map);
+        return {
+          add(lat,lng,html,o={}){
+            const ic=h=>L.divIcon({className:"",html:`<div class="mkc">${h}</div>`,iconSize:null,iconAnchor:[0,0]});
+            const m=L.marker([lat,lng],{icon:ic(html),interactive:false,zIndexOffset:(o.z||1)*100}).addTo(g);
+            return { move(a,b){ m.setLatLng([a,b]); }, html(h){ m.setIcon(ic(h)); }, remove(){ g.removeLayer(m); } };
+          },
+          clear(){ g.clearLayers(); }
+        };
+      },
+      fit(pts,p={}){
+        if(!pts.length) return; map.invalidateSize();
+        map.fitBounds(L.latLngBounds(pts),{paddingTopLeft:[p.left??40,p.top??40],paddingBottomRight:[p.right??40,p.bottom??40],maxZoom:p.maxZoom??16,animate:false});
+      },
+      center(lat,lng,keep){ map.setView([lat,lng], keep? map.getZoom() : Math.max(map.getZoom()||15,15), {animate:false}); },
+      resize(){ map.invalidateSize(); },
+      onDrag(cb){ map.on("dragstart",cb); }
+    };
+  }
+  async function create(el,opt={}){
+    if(typeof el==="string") el=document.getElementById(el);
+    let key=opt.kakaoKey;
+    if(key){
+      try{ await loadKakao(key); const m=kakaoMap(el,opt); el.classList.add("is-kakao"); return m; }
+      catch(e){ console.warn("카카오맵을 불러오지 못해 OpenStreetMap으로 표시합니다.", e); }
+    }
+    el.classList.add("is-osm");
+    return leafletMap(el,opt);
+  }
+  return { create };
+})();
+// 카카오 지도 키: 지난번 받은 값을 먼저 쓰고(빠른 시작), Firebase 설정에서 새 값을 확인
+async function getKakaoKey(db, ref, get){
+  let cached=null; try{ cached=localStorage.getItem("kakaoKey"); }catch(_){}
+  const fresh = get(ref(db,"config/kakaoKey")).then(s=>{ const v=(s.val()||"").trim(); try{ localStorage.setItem("kakaoKey",v); }catch(_){} return v; }).catch(()=>cached||"");
+  if(cached){ fresh.then(v=>{ if(v!==cached) console.info("지도 키가 바뀌었습니다. 다음에 열 때 반영됩니다."); }); return cached; }
+  return await Promise.race([fresh, new Promise(r=>setTimeout(()=>r(""),3000))]);
+}
+// ==== MAPKIT END ====
+
 const isDriverPage = /driver\.html$/.test(location.pathname);
 
 // =====================================================================
@@ -430,26 +525,23 @@ const esc = s => String(s??"").replace(/[<>&"]/g,c=>({"<":"&lt;",">":"&gt;","&":
 const DAYNAME = {0:"주일",1:"월요일",2:"화요일",3:"수요일",4:"목요일",5:"금요일",6:"토요일"};
 
 // ---------- 지도 ----------
-function initMap(){
-  map = L.map("map",{zoomControl:false,attributionControl:false});
-  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(map);
-  stopLayer = L.layerGroup().addTo(map); busLayer = L.layerGroup().addTo(map); meLayer = L.layerGroup().addTo(map);
-  map.on("dragstart",()=>{ userMoved=true; });
-  if("ResizeObserver" in window) new ResizeObserver(()=>{ map.invalidateSize(); if(!userMoved) fitMap(); }).observe($("map"));
-  window.addEventListener("load",()=>{ map.invalidateSize(); if(!userMoved) fitMap(); });
+const stopHtml=(s,c)=>`<div class="stopmk" style="border-color:${c}"><span class="stoplab">${esc(s.name)}</span></div>`;
+async function initMap(){
+  map = await MapKit.create("map",{kakaoKey: await getKakaoKey(db,ref,get)});
+  stopLayer=map.layer(); busLayer=map.layer(); meLayer=map.layer();
+  map.onDrag(()=>{ userMoved=true; });
+  if("ResizeObserver" in window) new ResizeObserver(()=>{ map.resize(); if(!userMoved) fitMap(); }).observe($("map"));
+  window.addEventListener("load",()=>{ map.resize(); if(!userMoved) fitMap(); });
 }
 function fitMap(){
-  const r=ROUTES[S.route]; map.invalidateSize();
+  const r=ROUTES[S.route]; map.resize();
   const top = ($(".overlay")?.offsetHeight||220) + 30;
-  map.fitBounds(L.latLngBounds(r.stops.map(s=>[s.lat,s.lng])),{paddingTopLeft:[36,top],paddingBottomRight:[36,50],maxZoom:16,animate:false});
+  map.fit(r.stops.map(s=>[s.lat,s.lng]),{top,left:36,right:36,bottom:50});
 }
 function drawStopsOnMap(){
-  stopLayer.clearLayers(); busLayer.clearLayers(); busMarkers={};
+  stopLayer.clear(); busLayer.clear(); busMarkers={};
   const r=ROUTES[S.route];
-  r.stops.forEach(s=>{
-    L.marker([s.lat,s.lng],{icon:L.divIcon({className:"",html:`<div class="stopmk" style="border-color:${r.color}"></div>`,iconSize:[18,18],iconAnchor:[9,9]}),interactive:false})
-      .addTo(stopLayer).bindTooltip(s.name,{permanent:true,direction:"top",offset:[0,-10],className:"stoplbl"});
-  });
+  r.stops.forEach(s=>stopLayer.add(s.lat,s.lng,stopHtml(s,r.color),{z:2}));
   fitMap();
 }
 function liveBuses(route){
@@ -474,11 +566,10 @@ function drawBusesOnMap(){
   const list=liveBuses(S.route); const seen={};
   list.forEach(b=>{
     seen[b.bus]=1; const html=pillHtml(S.route,b);
-    const mk=()=>L.divIcon({className:"",html,iconSize:null,iconAnchor:[20,15]});
-    if(!busMarkers[b.bus]){ busMarkers[b.bus]=L.marker([b.lat,b.lng],{icon:mk(),zIndexOffset:1000,interactive:false}).addTo(busLayer); busMarkers[b.bus]._html=html; }
-    else { busMarkers[b.bus].setLatLng([b.lat,b.lng]); if(busMarkers[b.bus]._html!==html){ busMarkers[b.bus].setIcon(mk()); busMarkers[b.bus]._html=html; } }
+    if(!busMarkers[b.bus]){ busMarkers[b.bus]=busLayer.add(b.lat,b.lng,html,{z:10}); busMarkers[b.bus]._html=html; }
+    else { busMarkers[b.bus].move(b.lat,b.lng); if(busMarkers[b.bus]._html!==html){ busMarkers[b.bus].html(html); busMarkers[b.bus]._html=html; } }
   });
-  Object.keys(busMarkers).forEach(k=>{ if(!seen[k]){ busLayer.removeLayer(busMarkers[k]); delete busMarkers[k]; } });
+  Object.keys(busMarkers).forEach(k=>{ if(!seen[k]){ busMarkers[k].remove(); delete busMarkers[k]; } });
 }
 
 // ---------- 시간표 ----------
@@ -618,8 +709,8 @@ function drawRide(){
     }
   }
   setH($("ride"),h);
-  const w=waitingNow(); meLayer.clearLayers();
-  if(w && w.route===r && !boarded) L.marker([w.lat,w.lng],{icon:L.divIcon({className:"",html:'<div class="memk"></div>',iconSize:[16,16],iconAnchor:[8,8]}),interactive:false}).addTo(meLayer);
+  const w=waitingNow(); if(meLayer){ meLayer.clear();
+  if(w && w.route===r && !boarded) meLayer.add(w.lat,w.lng,'<div class="memk"></div>',{z:5}); }
   if(S.myWait && !w){ clearWait(); }
 }
 function openCount(bus){ S.pickBus=bus; $("cntTitle").textContent=`${bus}호차 · 몇 분이 함께 타셨나요?`; $("cntModal").classList.add("show"); }
@@ -759,7 +850,7 @@ function selectRoute(r){
   drawStopsOnMap(); refreshSaint();
 }
 $("routes").addEventListener("click",e=>{ const b=e.target.closest("button"); if(b) selectRoute(b.dataset.route); });
-function refreshSaint(){ drawBusesOnMap(); drawHero(); drawStopList(); checkAlerts(); drawRide(); drawUpcoming(); if(location.hash==="#times") drawTimes(); }
+function refreshSaint(){ if(!map) return; drawBusesOnMap(); drawHero(); drawStopList(); checkAlerts(); drawRide(); drawUpcoming(); if(location.hash==="#times") drawTimes(); }
 
 // 홈 화면 설치 안내
 let deferredPrompt=null;
@@ -775,8 +866,8 @@ function setupInstall(){
   $("installBtn").onclick=async()=>{ if(!deferredPrompt) return; deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; $("installBtn").classList.add("hide"); };
 }
 
-function startSaint(){
-  initMap(); selectRoute(S.route); setupInstall(); showView();
+async function startSaint(){
+  await initMap(); selectRoute(S.route); setupInstall(); showView();
   S.cameFromMain = location.hash!=="#times";
   onValue(ref(db,"live"), s=>{ const v=s.val()||{}; S.live={yatap:v.yatap||{}, park:v.park||{}}; refreshSaint(); });
   onValue(ref(db,"config"), s=>{ const c=s.val()||{};
@@ -791,7 +882,7 @@ function startSaint(){
 // =====================================================================
 //                              기사님 화면
 // =====================================================================
-const D = { route: storage.get("drvRoute")||"yatap", bus: +(storage.get("drvBus")||1), on:false, watch:null, lastSent:0, count:0, wake:null, last:null, busRef:null, tick:null,
+const D = { route: null, bus: null, on:false, watch:null, lastSent:0, count:0, wake:null, last:null, busRef:null, tick:null,
             pin:null, name:"", date:null, sid:null, leg:1, legFrom:null, atT:null, trip:null, unBoard:null, unWait:null, map:null, me:null, waitLayer:null };
 const TERMINALS = { yatap:["byc","church"], park:["cdong","church"] };
 // 어느 종점에서 출발했으면 어디로 가는지
@@ -834,33 +925,28 @@ function legCheck(lat,lng){
   else if(D.atT){ const t=ROUTES[D.route].stops.find(s=>s.id===D.atT);
     if(dist({lat,lng},t)>150){ update(ref(db,logPath("legs",D.leg)),{dep:serverTimestamp()}).catch(()=>{}); D.atT=null; } }
 }
-function initDrvMap(){
+async function initDrvMap(){
   if(!D.map){
-    D.map=L.map("drvMap",{zoomControl:false,attributionControl:false,dragging:true});
-    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(D.map);
-    D.waitLayer=L.layerGroup().addTo(D.map);
+    D.map=await MapKit.create("drvMap",{kakaoKey: await getKakaoKey(db,ref,get)});
+    D.stopL=D.map.layer(); D.waitL=D.map.layer(); D.meL=D.map.layer();
+    D.map.onDrag(()=>{ D.userMoved=true; setTimeout(()=>{ D.userMoved=false; },20000); });
   }
-  D.waitLayer.clearLayers(); if(D.me){ D.me.remove(); D.me=null; }
+  D.stopL.clear(); D.meL.clear(); D.me=null;
   const r=ROUTES[D.route];
-  r.stops.forEach(s=>L.marker([s.lat,s.lng],{icon:L.divIcon({className:"",html:`<div class="stopmk" style="border-color:${r.color}"></div>`,iconSize:[18,18],iconAnchor:[9,9]}),interactive:false}).addTo(D.waitLayer));
-  setTimeout(()=>{ D.map.invalidateSize(); D.map.fitBounds(L.latLngBounds(r.stops.map(s=>[s.lat,s.lng])),{padding:[30,30],maxZoom:16,animate:false}); },50);
+  r.stops.forEach(s=>D.stopL.add(s.lat,s.lng,stopHtml(s,r.color),{z:2}));
+  setTimeout(()=>{ D.map.resize(); D.map.fit(r.stops.map(s=>[s.lat,s.lng]),{top:40,left:30,right:30,bottom:30}); },50);
   if(D.unWait) D.unWait();
-  if(!D.waitMarkers) D.waitMarkers=L.layerGroup().addTo(D.map);
-  const waitMarkers=D.waitMarkers;
   D.unWait = onValue(ref(db,`wait/${D.route}`), s=>{
-    waitMarkers.clearLayers(); let n=0; const now=serverNow();
-    s.forEach(c=>{ const v=c.val(); if(v && typeof v.lat==="number" && now-(v.ts||0)<WAIT_MS){ n++;
-      L.marker([v.lat,v.lng],{icon:L.divIcon({className:"",html:'<div class="waitmk"></div>',iconSize:[18,18],iconAnchor:[9,9]}),interactive:false}).addTo(waitMarkers); } });
+    D.waitL.clear(); let n=0; const now=serverNow();
+    s.forEach(c=>{ const v=c.val(); if(v && typeof v.lat==="number" && now-(v.ts||0)<WAIT_MS){ n++; D.waitL.add(v.lat,v.lng,'<div class="waitmk"></div>',{z:5}); } });
     $("liveWait").innerHTML=n+"<small> 명</small>";
   }, ()=>{ $("liveWait").textContent="-"; });
 }
 function moveMe(lat,lng){
   if(!D.map) return;
   const html=pillHtml(D.route,{bus:D.bus,to:D.to});
-  const icon=L.divIcon({className:"",html,iconSize:null,iconAnchor:[20,15]});
-  if(!D.me){ D.me=L.marker([lat,lng],{icon,zIndexOffset:1000,interactive:false}).addTo(D.map); D.me._html=html; }
-  else { D.me.setLatLng([lat,lng]); if(D.me._html!==html){ D.me.setIcon(icon); D.me._html=html; } }
-  if(!D.map._userMoved) D.map.setView([lat,lng], Math.max(D.map.getZoom()||15,15), {animate:false});
+  if(!D.me){ D.me=D.meL.add(lat,lng,html,{z:10}); D.me._html=html; D.map.center(lat,lng); }
+  else { D.me.move(lat,lng); if(D.me._html!==html){ D.me.html(html); D.me._html=html; } if(!D.userMoved) D.map.center(lat,lng,true); }
 }
 
 function drvShow(which){ ["drvPin","drvSetup","drvLive"].forEach(id=>$(id).classList.toggle("hide",id!==which)); }
@@ -871,22 +957,23 @@ function busesFor(route){
   if(c && typeof c==="object"){ const l=Object.entries(c).map(([no,v])=>({no:+no, memo:(v&&v.memo)||""})).filter(x=>x.no>=1&&x.no<=9).sort((a,b)=>a.no-b.no); if(l.length) return l; }
   return Array.from({length:ROUTES[route].buses},(_,i)=>({no:i+1,memo:""}));
 }
+// 관리자가 배정한 차량만 보여 주고 운행합니다 (다른 호차는 고를 수 없음)
 function drawDrvSetup(){
-  $("drvRoute").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.route===D.route));
-  const list=busesFor(D.route); if(!list.some(x=>x.no===D.bus)) D.bus=list[0].no;
-  $("drvBus").classList.toggle("four", list.length>=4);
-  $("drvBus").innerHTML=list.map(x=>`<button data-b="${x.no}" class="${D.bus===x.no?'on':''}">${x.no}호차${x.memo?`<small>${esc(x.memo)}</small>`:''}</button>`).join("");
-  $("drvAssigned").textContent = D.assigned ? `기본 배정: ${ROUTES[D.assigned.route]?.name||""} ${D.assigned.bus}호차` : "";
+  const ok = ROUTES[D.route] && D.bus>=1;
+  $("asgCard").classList.toggle("hide",!ok); $("asgNone").classList.toggle("hide",ok);
+  $("startBtn").disabled=!ok;
+  if(ok){
+    $("asgBus").textContent=`${D.bus}호차`; $("asgRoute").textContent=ROUTES[D.route].name;
+    $("asgRoute").style.color = D.route==="park" ? "#5EEAD4" : "#93C5FD";
+    const memo=busesFor(D.route).find(x=>x.no===D.bus)?.memo||""; $("asgMemo").textContent=memo;
+  }
 }
-$("drvRoute").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; D.route=b.dataset.route; storage.set("drvRoute",D.route); drawDrvSetup(); });
-$("drvBus").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; D.bus=+b.dataset.b; storage.set("drvBus",D.bus); drawDrvSetup(); });
-
 $("pinBtn").onclick=async()=>{
   const pin=$("pinInput").value.trim(); $("pinErr").textContent="";
   if(!/^\d{4,8}$/.test(pin)){ $("pinErr").textContent="숫자 4~8자리를 입력해 주세요."; return; }
   $("pinBtn").disabled=true;
   try{ await authReady; await set(ref(db,"drivers/"+uid),{pin, at:serverTimestamp()}); await loadMe(); drvShow("drvSetup"); drawDrvSetup(); }
-  catch(e){ $("pinErr").textContent="운행 번호가 맞지 않습니다. 셔틀 담당자에게 확인해 주세요."; }
+  catch(e){ $("pinErr").textContent="인증번호가 맞지 않습니다. 셔틀 담당자에게 확인해 주세요."; }
   $("pinBtn").disabled=false;
 };
 
@@ -923,7 +1010,7 @@ $("startBtn").onclick=async()=>{
     D.busRef=ref(db,`live/${D.route}/${D.bus}`);
     const cur=(await get(D.busRef)).val();
     if(cur && cur.uid!==uid && serverNow()-(cur.ts||0) < STALE_MS){
-      $("startErr").textContent=`지금 다른 휴대폰에서 ${D.bus}호차가 운행 중입니다. 다른 호차 번호를 골라 주세요.`;
+      $("startErr").textContent=`지금 다른 휴대폰에서 ${ROUTES[D.route].name} ${D.bus}호차가 운행 중입니다. 셔틀 담당자에게 확인해 주세요.`;
       $("startBtn").disabled=false; return;
     }
     await onDisconnect(D.busRef).remove();
@@ -934,8 +1021,8 @@ $("startBtn").onclick=async()=>{
     D.leg=1; D.legFrom=null; D.atT=null; D.trip=`${D.sid}_1`; D.to=""; D.guess=null;
     await set(ref(db,logPath("legs",1)),{from:"운행 시작", t:serverTimestamp()});
   }catch(e){
-    $("startErr").textContent="운행 권한이 없습니다. 운행 번호를 다시 입력해 주세요.";
-    $("startBtn").disabled=false; drvShow("drvPin"); return;
+    $("startErr").textContent="이 차량을 운행할 권한이 없습니다. 배정이 바뀌었을 수 있으니 셔틀 담당자에게 확인해 주세요.";
+    $("startBtn").disabled=false; return;
   }
   D.on=true; D.count=0; D.lastSent=0;
   $("liveTitle").textContent=`${D.bus}호차`;
@@ -960,10 +1047,10 @@ async function stopDriving(){
   try{ await update(ref(db,logPath()),{end:serverTimestamp(), sent:D.count, legs_n:D.leg}); }catch(_){}
   if(D.unBoard){ D.unBoard(); D.unBoard=null; } if(D.unWait){ D.unWait(); D.unWait=null; }
   $("dst").classList.add("hide");
+  try{ applyPin((await get(ref(db,"pins/"+D.pin))).val()); }catch(_){}
   drvShow("drvSetup"); drawDrvSetup();
 }
 $("stopBtn").onclick=()=>$("modal").classList.add("show");
-$("swapBtn").onclick=()=>{ if(confirm("지금 운행을 마치고 노선·호차를 다시 고를까요?")) stopDriving(); };
 $("mNo").onclick=()=>$("modal").classList.remove("show");
 $("mYes").onclick=()=>{ $("modal").classList.remove("show"); stopDriving(); };
 document.addEventListener("visibilitychange",()=>{
@@ -979,21 +1066,39 @@ async function startDriver(){
   $("appleIcon").href="apple-touch-icon-driver.png"; document.querySelector('link[rel="icon"]').href="icon-driver-192.png";
   await authReady;
   onValue(ref(db,"config/buses"), s=>{ CFG_BUSES=s.val(); if(!$("drvSetup").classList.contains("hide")) drawDrvSetup(); }, ()=>{});
-  try{ if(await loadMe()){ drvShow("drvSetup"); drawDrvSetup(); } else drvShow("drvPin"); }
-  catch(_){ drvShow("drvPin"); }
+  const code=codeFromLink();
+  try{
+    let ok=await loadMe();
+    // 새 문자로 다른 인증번호를 받았으면 그 번호로 다시 등록
+    if(code && code!==D.pin){ try{ await set(ref(db,"drivers/"+uid),{pin:code, at:serverTimestamp()}); ok=await loadMe(); }catch(_){ if(!ok){ $("pinInput").value=code; $("pinErr").textContent="인증번호가 맞지 않습니다. 셔틀 담당자에게 확인해 주세요."; } } }
+    if(ok){ drvShow("drvSetup"); drawDrvSetup(); } else { if(code) $("pinInput").value=code; drvShow("drvPin"); }
+  }catch(_){ if(code) $("pinInput").value=code; drvShow("drvPin"); }
 }
-// 이 휴대폰에 등록된 운행 번호와 기사님 이름 확인 (번호가 지워졌으면 다시 입력)
+// 이 휴대폰에 등록된 인증번호와 기사님 이름·배정 확인 (번호가 지워졌으면 다시 입력)
 async function loadMe(){
   const me=(await get(ref(db,"drivers/"+uid))).val(); if(!me||!me.pin) return false;
   const p=(await get(ref(db,"pins/"+me.pin))).val();
-  if(!p){ $("pinErr").textContent="운행 번호가 바뀌었습니다. 새 번호를 입력해 주세요."; return false; }
-  D.pin=me.pin; D.name = (p && typeof p==="object" && p.name) ? p.name : "";
-  // 관리자가 정한 기본 노선·호차가 있으면 처음에 그걸로 골라 둠
-  if(p && typeof p==="object" && ROUTES[p.route] && +p.bus>=1){ D.assigned={route:p.route,bus:+p.bus}; D.route=p.route; D.bus=+p.bus; } else D.assigned=null;
-  $("drvHello").textContent = D.name ? `${D.name} 기사님` : "기사님, 안녕하세요";
+  if(!p){ $("pinErr").textContent="인증번호가 바뀌었습니다. 문자로 받으신 새 인증번호를 입력해 주세요."; return false; }
+  D.pin=me.pin; applyPin(p);
+  // 배정이 바뀌면 화면에 바로 반영 (운행 중에는 이번 운행을 마친 뒤 반영)
+  if(D.unPin) D.unPin();
+  D.unPin=onValue(ref(db,"pins/"+D.pin), s=>{ const v=s.val();
+    if(!v){ if(!D.on){ $("pinErr").textContent="인증번호가 바뀌었습니다. 문자로 받으신 새 인증번호를 입력해 주세요."; drvShow("drvPin"); } return; }
+    applyPin(v); if(!D.on && !$("drvSetup").classList.contains("hide")) drawDrvSetup(); }, ()=>{});
   return true;
 }
-
+function applyPin(p){
+  const o = p && typeof p==="object" ? p : {};
+  D.name=o.name||"";
+  $("drvHello").textContent = D.name ? `${D.name} 기사님` : "기사님, 안녕하세요";
+  if(!D.on){ D.route = ROUTES[o.route] ? o.route : null; D.bus = +o.bus>=1 ? +o.bus : null; }
+}
+// 문자로 받은 주소(…/driver.html#c=인증번호)로 들어오면 인증번호를 자동으로 넣어 둠
+function codeFromLink(){
+  const m=location.hash.match(/c=(\d{4,8})/); if(!m) return null;
+  try{ history.replaceState(null,"",location.pathname); }catch(_){}
+  return m[1];
+}
 
 // ================= 시작 =================
 if("serviceWorker" in navigator){ navigator.serviceWorker.register("sw.js").catch(()=>{}); }

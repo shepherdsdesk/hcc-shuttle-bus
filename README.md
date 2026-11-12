@@ -6,6 +6,7 @@
 - **성도님용**: https://shepherdsdesk.github.io/hcc-shuttle-bus/
 - **기사님용**: https://shepherdsdesk.github.io/hcc-shuttle-bus/driver.html (운행 번호 필요)
 - **관리자용**: https://shepherdsdesk.github.io/hcc-shuttle-bus/admin.html (관리자로 등록된 구글 계정)
+- **TV 현황판**: https://shepherdsdesk.github.io/hcc-shuttle-bus/tv.html (가로·세로 자동, `?route=yatap` 또는 `?route=park`로 한 노선만)
 
 만든 사람 AI목양지원센터 · 이세진 목사 · 문의 contact@mokyangdesk.com
 
@@ -32,6 +33,9 @@
 
 ## 기사님(드라이버) 사용 방법
 
+관리자가 기사님마다 차량(호차)을 배정하고, ‘문자로 배차’로 드라이버 앱 주소와 인증번호를 보냅니다. 기사님 화면에는 **배정된 차량 하나만** 보이며, 다른 호차로는 위치를 보낼 수 없습니다(보안 규칙으로 막음).
+
+
 1. 기사님 주소를 열고 셔틀 담당자에게 받은 **운행 번호**를 입력합니다. (휴대폰마다 처음 한 번만)
 2. 노선과 호차를 고르고 **운행 시작**을 누릅니다. 관리자가 기본 배정을 정해 두면 처음부터 그 호차가 골라져 있습니다. 위치 사용을 물으면 **허용**.
 3. 화면을 켜 둔 채 거치대에 꽂고 충전기를 연결합니다. 위치가 5초마다 자동으로 올라갑니다.
@@ -55,6 +59,7 @@
 | 파일 | 내용 |
 |---|---|
 | `index.html` | 성도님 화면 (주소 끝에 `#driver`를 붙이면 드라이버 화면으로 이동) |
+| `tv.html` | TV 운행 현황판 (로비·주차장 안내 데스크용) |
 | `driver.html` | 드라이버(기사님) 화면 — index.html과 같은 앱, 홈 화면 아이콘만 드라이버용 |
 | `admin.html` | 관리자 페이지 |
 | `sw.js` | 홈 화면 설치 · 알림 표시 |
@@ -65,3 +70,7 @@
 
 정류장 좌표, 시간표, 노선 이름은 `index.html` 위쪽의 `ROUTES`, `SUN`, `WEEK`에서 바꿀 수 있습니다.
 시간표 출처: 할렐루야교회 홈페이지 셔틀버스 안내. 지도 © OpenStreetMap 기여자.
+
+## 지도
+
+관리자 페이지 ‘공지 · 시간표’ 탭의 **지도 설정**에 카카오 JavaScript 키를 넣으면 모든 화면이 카카오맵으로 바뀝니다. 키가 없거나 불러오지 못하면 OpenStreetMap으로 표시합니다.
