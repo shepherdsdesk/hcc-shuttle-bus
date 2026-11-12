@@ -7,7 +7,7 @@
 <meta name="description" content="할렐루야교회 셔틀버스(야탑역 · 파킹엔젤스)가 지금 어디쯤 오는지 실시간으로 알려 드립니다.">
 <meta name="theme-color" content="#1B2B5C">
 <link rel="manifest" id="manifestLink" href="manifest.webmanifest">
-<script>if(location.hash==="#driver"){document.getElementById("manifestLink").href="manifest-driver.webmanifest";}</script>
+<script>if(location.hash==="#driver"){location.replace("driver.html");}</script>
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" id="appleIcon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -165,6 +165,9 @@
   .modal .row2{display:flex;gap:8px}
   .modal .row2 button{flex:1}
   .cnt{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px}
+  .cnt.pick{grid-template-columns:repeat(2,1fr)}
+  .cnt.pick button{font-size:18px;padding:14px 0;line-height:1.3}
+  .cnt.pick small{display:block;font-size:12.5px;color:var(--sub);font-weight:700}
   .cnt button{border:2px solid var(--line);background:#fff;border-radius:12px;padding:14px 0;font-size:20px;font-weight:900;cursor:pointer;color:var(--ink)}
 
   /* ---------- 기사님 (어두운 화면) ---------- */
@@ -184,6 +187,8 @@
   .dpick{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   .dpick.four{grid-template-columns:repeat(4,1fr)}
   .dpick button{border:2px solid #24304A;background:#131C2E;color:#E2E8F0;border-radius:16px;padding:18px 4px;font-size:18px;font-weight:900;cursor:pointer}
+  .dpick button small{display:block;font-size:12px;color:#94A3B8;font-weight:700;margin-top:2px}
+  .dpick button.on small{color:#BFDBFE}
   .dpick button.on{border-color:#93C5FD;background:#1E3A8A;color:#fff}
   .dbig{width:100%;border:0;border-radius:20px;padding:24px;font-size:24px;font-weight:900;cursor:pointer;color:#fff}
   .dbig.go{background:#16A34A}
@@ -288,6 +293,7 @@
         </div>
         <div class="dlbl">② 호차</div>
         <div class="dpick four" id="drvBus"></div>
+        <div style="font-size:13px;color:#93C5FD;padding:0 4px" id="drvAssigned"></div>
         <button class="dbig go" id="startBtn" style="margin-top:8px">운행 시작</button>
         <div class="derr" id="startErr"></div>
         <div class="dwarn"><b style="color:#fff">운행 중에는 화면을 켜 둔 채</b> 거치대에 꽂아 주세요. 다른 앱으로 넘어가거나 화면이 꺼지면 위치 보내기가 멈춥니다. 충전기를 꼭 연결해 주세요.<br>처음 시작할 때 ‘위치 사용’을 물으면 <b style="color:#fff">허용</b>을 눌러 주세요.</div>
@@ -311,6 +317,7 @@
         <div class="dmeta"><span id="liveSent">-</span><span>GPS <b id="liveAcc">-</b></span><span>화면 <b id="liveWake">-</b></span><span>전송 <b id="liveCount">0회</b></span></div>
         <div style="font-size:12.5px;color:#94A3B8;padding:0 4px">주황 점 = 길에서 기다리는 성도님 · 정차한 뒤 확인해 주세요</div>
         <button class="dbig stop" id="stopBtn">운행 종료</button>
+        <button id="swapBtn" style="border:1.5px solid #24304A;background:transparent;color:#CBD5E1;border-radius:14px;padding:13px;font-size:15px;font-weight:700;cursor:pointer">노선 · 호차 바꾸기</button>
       </div>
     </div>
   </section>
@@ -318,6 +325,7 @@
 
 <div class="toast" id="toast"><div style="font-size:22px">🚌</div><div><b id="toastT"></b><span id="toastS"></span></div><button id="toastX" aria-label="닫기">×</button></div>
 <div class="modal" id="modal"><div class="box"><p>운행을 종료할까요?<br><span style="font-weight:500;font-size:13.5px;color:#94A3B8">성도님 화면에서 이 버스가 사라집니다.</span></p><div class="row2"><button class="btn ghost" id="mNo">계속 운행</button><button class="btn" id="mYes" style="background:#DC2626;color:#fff">종료</button></div></div></div>
+<div class="modal" id="busModal"><div class="box"><p>몇 호차에 타셨나요?</p><div class="cnt pick" id="busBtns"></div><div class="row2"><button class="btn ghost" id="busNo">취소</button></div></div></div>
 <div class="modal" id="cntModal"><div class="box"><p id="cntTitle">몇 분이 함께 타셨나요?</p><div class="cnt" id="cntBtns"><button data-n="1">1</button><button data-n="2">2</button><button data-n="3">3</button><button data-n="4">4</button><button data-n="5">5</button></div><div class="row2"><button class="btn ghost" id="cntNo">취소</button></div></div></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -407,7 +415,7 @@ const authReady = new Promise(res=>{ onAuthStateChanged(auth,u=>{ if(u){ uid=u.u
 signInAnonymously(auth).catch(e=>{ console.error(e); toast("연결에 문제가 있어요","잠시 후 다시 열어 주세요."); });
 
 
-const isDriverPage = location.hash==="#driver";
+const isDriverPage = /driver\.html$/.test(location.pathname);
 
 // =====================================================================
 //                              성도님 화면
@@ -596,7 +604,7 @@ function checkAlerts(){
 // ---------- 탑승 · 기다림 ----------
 function waitingNow(){ const w=S.myWait; return w && (serverNow()-w.ts) < WAIT_MS ? w : null; }
 function drawRide(){
-  const r=S.route, list=liveBuses(r).filter(b=>!b.old && b.trip), cls=r==="park"?"teal":"navy";
+  const r=S.route, cls=r==="park"?"teal":"navy";
   const mb=S.myBoard;
   const boarded = mb && mb.route===r && S.live[r]?.[mb.bus]?.trip===mb.trip;
   let h="";
@@ -604,15 +612,10 @@ function drawRide(){
     h=`<div class="state ok">✓ ${mb.bus}호차에 타셨어요 · ${mb.n}명<button data-act="unboard">취소</button></div>`;
   } else {
     const w=waitingNow();
-    const boardBtns = list.length
-      ? list.map(b=>`<button class="btn ${cls}" data-act="board" data-bus="${b.bus}">${b.bus}호차 탑승했어요${b.to?`<small>${esc(b.to)}행</small>`:''}</button>`).join("")
-      : `<button class="btn ${cls}" disabled>버스 탑승했어요<small>운행 중인 버스가 있으면 눌러 주세요</small></button>`;
     if(w && w.route===r){
-      h=`<div class="ridebtns" style="grid-template-columns:1fr">${boardBtns}</div><div class="state wt">🙋 기다리는 중 · 기사님 화면에 표시돼요<button data-act="unwait">취소</button></div>`;
-    } else if(list.length>1){
-      h=`<div class="ridebtns">${boardBtns}</div><button class="btn wait" data-act="wait">여기서 기다려요<small>지금 위치를 기사님께 알려요 · 15분 뒤 자동 해제</small></button>`;
+      h=`<button class="btn ${cls}" data-act="board">버스 탑승했어요</button><div class="state wt">🙋 기다리는 중 · 기사님께 알렸어요<button data-act="unwait">취소</button></div>`;
     } else {
-      h=`<div class="ridebtns">${boardBtns}<button class="btn wait" data-act="wait">여기서 기다려요<small>기사님께 위치 알림</small></button></div>`;
+      h=`<div class="ridebtns"><button class="btn ${cls}" data-act="board">버스 탑승했어요</button><button class="btn wait" data-act="wait">여기서 기다려요</button></div>`;
     }
   }
   setH($("ride"),h);
@@ -620,6 +623,7 @@ function drawRide(){
   if(w && w.route===r && !boarded) L.marker([w.lat,w.lng],{icon:L.divIcon({className:"",html:'<div class="memk"></div>',iconSize:[16,16],iconAnchor:[8,8]}),interactive:false}).addTo(meLayer);
   if(S.myWait && !w){ clearWait(); }
 }
+function openCount(bus){ S.pickBus=bus; $("cntTitle").textContent=`${bus}호차 · 몇 분이 함께 타셨나요?`; $("cntModal").classList.add("show"); }
 async function clearWait(){
   const w=S.myWait; S.myWait=null; storage.set("myWait","null");
   if(w){ try{ await authReady; await remove(ref(db,`wait/${w.route}/${uid}`)); }catch(_){} }
@@ -627,7 +631,14 @@ async function clearWait(){
 $("ride").addEventListener("click", async e=>{
   const b=e.target.closest("[data-act]"); if(!b) return;
   const act=b.dataset.act;
-  if(act==="board"){ S.pickBus=+b.dataset.bus; $("cntTitle").textContent=`${S.pickBus}호차 · 몇 분이 함께 타셨나요?`; $("cntModal").classList.add("show"); }
+  if(act==="board"){
+    const list=liveBuses(S.route).filter(x=>!x.old && x.trip);
+    if(!list.length){ toast("지금 운행 중인 버스가 없어요","버스에 타신 뒤 다시 눌러 주세요."); return; }
+    if(list.length===1){ openCount(list[0].bus); return; }
+    // 여러 대 운행 중이면 탄 버스를 먼저 고름 (가까운 순)
+    $("busBtns").innerHTML=list.map(x=>`<button data-bus="${x.bus}">${x.bus}호차${x.to?`<small>${esc(x.to)}행</small>`:''}</button>`).join("");
+    $("busModal").classList.add("show");
+  }
   if(act==="unboard"){
     const mb=S.myBoard; S.myBoard=null; storage.set("myBoard","null"); $("ride")._h=null; drawRide();
     try{ await remove(ref(db,`board/${mb.date}/${mb.route}/${mb.bus}/${mb.trip}/${uid}`)); }catch(_){}
@@ -648,6 +659,8 @@ $("ride").addEventListener("click", async e=>{
   if(act==="unwait"){ await clearWait(); $("ride")._h=null; drawRide(); }
 });
 $("cntNo").onclick=()=>$("cntModal").classList.remove("show");
+$("busNo").onclick=()=>$("busModal").classList.remove("show");
+$("busBtns").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; $("busModal").classList.remove("show"); openCount(+b.dataset.bus); });
 $("cntBtns").addEventListener("click", async e=>{
   const b=e.target.closest("button"); if(!b) return;
   const n=+b.dataset.n, r=S.route, bus=S.pickBus; $("cntModal").classList.remove("show");
@@ -852,10 +865,19 @@ function moveMe(lat,lng){
 }
 
 function drvShow(which){ ["drvPin","drvSetup","drvLive"].forEach(id=>$(id).classList.toggle("hide",id!==which)); }
+// 노선별 차량 목록: 관리자가 정한 것(config/buses), 없으면 1~4호차
+let CFG_BUSES=null;
+function busesFor(route){
+  const c=CFG_BUSES?.[route];
+  if(c && typeof c==="object"){ const l=Object.entries(c).map(([no,v])=>({no:+no, memo:(v&&v.memo)||""})).filter(x=>x.no>=1&&x.no<=9).sort((a,b)=>a.no-b.no); if(l.length) return l; }
+  return Array.from({length:ROUTES[route].buses},(_,i)=>({no:i+1,memo:""}));
+}
 function drawDrvSetup(){
   $("drvRoute").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.route===D.route));
-  const n=ROUTES[D.route].buses; if(D.bus>n) D.bus=1;
-  $("drvBus").innerHTML=Array.from({length:n},(_,i)=>i+1).map(i=>`<button data-b="${i}" class="${D.bus===i?'on':''}">${i}호차</button>`).join("");
+  const list=busesFor(D.route); if(!list.some(x=>x.no===D.bus)) D.bus=list[0].no;
+  $("drvBus").classList.toggle("four", list.length>=4);
+  $("drvBus").innerHTML=list.map(x=>`<button data-b="${x.no}" class="${D.bus===x.no?'on':''}">${x.no}호차${x.memo?`<small>${esc(x.memo)}</small>`:''}</button>`).join("");
+  $("drvAssigned").textContent = D.assigned ? `기본 배정: ${ROUTES[D.assigned.route]?.name||""} ${D.assigned.bus}호차` : "";
 }
 $("drvRoute").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; D.route=b.dataset.route; storage.set("drvRoute",D.route); drawDrvSetup(); });
 $("drvBus").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; D.bus=+b.dataset.b; storage.set("drvBus",D.bus); drawDrvSetup(); });
@@ -942,6 +964,7 @@ async function stopDriving(){
   drvShow("drvSetup"); drawDrvSetup();
 }
 $("stopBtn").onclick=()=>$("modal").classList.add("show");
+$("swapBtn").onclick=()=>{ if(confirm("지금 운행을 마치고 노선·호차를 다시 고를까요?")) stopDriving(); };
 $("mNo").onclick=()=>$("modal").classList.remove("show");
 $("mYes").onclick=()=>{ $("modal").classList.remove("show"); stopDriving(); };
 document.addEventListener("visibilitychange",()=>{
@@ -956,6 +979,7 @@ async function startDriver(){
   document.querySelector('meta[name="theme-color"]').content="#0B1220";
   $("appleIcon").href="apple-touch-icon-driver.png"; document.querySelector('link[rel="icon"]').href="icon-driver-192.png";
   await authReady;
+  onValue(ref(db,"config/buses"), s=>{ CFG_BUSES=s.val(); if(!$("drvSetup").classList.contains("hide")) drawDrvSetup(); }, ()=>{});
   try{ if(await loadMe()){ drvShow("drvSetup"); drawDrvSetup(); } else drvShow("drvPin"); }
   catch(_){ drvShow("drvPin"); }
 }
@@ -965,6 +989,8 @@ async function loadMe(){
   const p=(await get(ref(db,"pins/"+me.pin))).val();
   if(!p){ $("pinErr").textContent="운행 번호가 바뀌었습니다. 새 번호를 입력해 주세요."; return false; }
   D.pin=me.pin; D.name = (p && typeof p==="object" && p.name) ? p.name : "";
+  // 관리자가 정한 기본 노선·호차가 있으면 처음에 그걸로 골라 둠
+  if(p && typeof p==="object" && ROUTES[p.route] && +p.bus>=1){ D.assigned={route:p.route,bus:+p.bus}; D.route=p.route; D.bus=+p.bus; } else D.assigned=null;
   $("drvHello").textContent = D.name ? `${D.name} 기사님` : "기사님, 안녕하세요";
   return true;
 }
@@ -973,7 +999,7 @@ async function loadMe(){
 // ================= 시작 =================
 if("serviceWorker" in navigator){ navigator.serviceWorker.register("sw.js").catch(()=>{}); }
 if(isDriverPage) startDriver(); else startSaint();
-window.addEventListener("hashchange",()=>{ if((location.hash==="#driver")!==isDriverPage) location.reload(); else if(!isDriverPage) showView(); });
+window.addEventListener("hashchange",()=>{ if(location.hash==="#driver") location.replace("driver.html"); else if(!isDriverPage) showView(); });
 </script>
 </body>
 </html>
