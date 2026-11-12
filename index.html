@@ -98,6 +98,8 @@
   .stopcard .eta.soon{color:var(--red)}
   .stopcard .eta.sch b{font-size:20px;color:var(--sub)}
   .stopcard .eta.none b{font-size:15px;color:#94A3B8;font-weight:700}
+  .voicebtn{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font:inherit;font-size:12.5px;font-weight:700;color:#5B6478;cursor:pointer}
+  .voicebtn.on{background:#EEF2FF;border-color:#C7D2FE;color:#1B2B5C}
   .bell{width:44px;height:44px;border-radius:12px;border:1.5px solid var(--line);background:#fff;display:grid;place-items:center;flex:none;cursor:pointer;color:#5B6478}
   .bell.on{background:#FFF4E0;border-color:#FFF4E0;color:#B45309}
   .bell svg{width:20px;height:20px}
@@ -235,8 +237,8 @@
       <div id="map"></div>
       <div class="overlay">
         <div class="hdr">
-          <div class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" aria-hidden="true"><rect x="4" y="3" width="16" height="14" rx="3"/><path d="M4 11h16M8 21v-4M16 21v-4"/></svg></div>
-          <div><h1>HCC 셔틀버스</h1><small>할렐루야교회 셔틀 실시간 안내</small></div>
+          <div class="logo" id="brandLogo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" aria-hidden="true"><rect x="4" y="3" width="16" height="14" rx="3"/><path d="M4 11h16M8 21v-4M16 21v-4"/></svg></div>
+          <div><h1 id="brandTitle">HCC 셔틀버스</h1><small id="brandSub">할렐루야교회 셔틀 실시간 안내</small></div>
           <span class="live" id="conn"><i></i><span>연결 중</span></span>
         </div>
         <div class="news hide" id="news"></div>
@@ -252,7 +254,7 @@
       <div class="grab"></div>
       <div class="notice hide" id="notice"></div>
       <div id="stops" style="display:flex;flex-direction:column;gap:10px"></div>
-      <div class="hint">정류장을 누르면 맨 위 도착 시간이 그 정류장으로 바뀌어요</div>
+      <div class="hint" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="flex:1;min-width:200px">정류장을 누르면 맨 위 도착 시간이 그 정류장으로 바뀌어요</span><button type="button" id="voiceBtn" class="voicebtn" aria-pressed="true">🔊 소리 알림 켜짐</button></div>
       <div id="ride" style="display:flex;flex-direction:column;gap:10px"></div>
       <div class="card">
         <h2>다가오는 출발 시간 <small id="upNow"></small></h2>
@@ -288,7 +290,7 @@
     <div class="d">
       <div class="dh">
         <div class="dlogo"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/><path d="M12 14.5V21M9.6 11.2 3.4 9.6M14.4 11.2l6.2-1.6"/></svg></div>
-        <div><b id="drvHello">기사님, 안녕하세요</b><small>HCC 셔틀버스 · 드라이버 화면</small></div>
+        <div><b id="drvHello">기사님, 안녕하세요</b><small id="drvBrand">HCC 셔틀버스 · 드라이버 화면</small></div>
         <span class="dst hide" id="dst"><i></i><span id="liveState">전송 중</span></span>
       </div>
 
@@ -792,6 +794,7 @@ $("stops").addEventListener("click", async ev=>{
     const k=b.dataset.key; S.alerts[k]=!S.alerts[k]; if(!S.alerts[k]) delete S.alerts[k];
     storage.set("alerts",JSON.stringify(S.alerts));
     if(S.alerts[k]){
+      speak("알림을 켰어요. 셔틀버스가 가까워지면 알려 드릴게요");   // 아이폰은 손가락으로 누른 순간에 첫 소리를 내야 이후에도 소리가 납니다
       try{ if("Notification" in window && Notification.permission==="default"){ await Notification.requestPermission(); } }catch(_){}
       toast("알림을 켰어요","버스가 이 정류장 근처(약 2~3분 거리)에 오면 알려 드려요. 이 화면을 열어 두세요.");
     }
@@ -803,8 +806,16 @@ $("stops").addEventListener("click", async ev=>{
 $("stops").addEventListener("keydown",ev=>{ if((ev.key==="Enter"||ev.key===" ") && ev.target.classList.contains("stopcard")){ ev.preventDefault(); ev.target.click(); } });
 
 // ---------- 알림 ----------
-async function notify(title,body){
-  toast(title,body);
+// ---------- 소리 알림 (휴대폰이 직접 읽어 줌) ----------
+let VOICE = (storage.get("voice")||"1")==="1";
+function koVoice(){ try{ const v=speechSynthesis.getVoices(); return v.find(x=>/ko(-|_)KR/i.test(x.lang))||v.find(x=>/^ko/i.test(x.lang))||null; }catch(_){ return null; } }
+function speak(text,force){
+  if((!VOICE && !force) || !("speechSynthesis" in window)) return;
+  try{ const u=new SpeechSynthesisUtterance(text); u.lang="ko-KR"; u.rate=0.95; u.pitch=1; const v=koVoice(); if(v) u.voice=v; speechSynthesis.speak(u); }catch(_){}
+}
+function drawVoiceBtn(){ const b=$("voiceBtn"); if(!b) return; b.classList.toggle("on",VOICE); b.setAttribute("aria-pressed",String(VOICE)); b.textContent= VOICE?"🔊 소리 알림 켜짐":"🔇 소리 알림 꺼짐"; if(!("speechSynthesis" in window)) b.style.display="none"; }
+async function notify(title,body,say){
+  toast(title,body); if(say) speak(say);
   try{ navigator.vibrate && navigator.vibrate([250,120,250]); }catch(_){}
   try{
     if("Notification" in window && Notification.permission==="granted" && navigator.serviceWorker){
@@ -822,11 +833,11 @@ function checkAlerts(){
       if(de>NEAR_M*1.8){ delete S.notified[nk]; delete S.notified[nk+":arr"]; return; }
       const x=busRel(route,stop,b,S.prev); if(!x || x.waiting) return;
       if(x.arrived){
-        if(!S.notified[nk+":arr"]){ S.notified[nk+":arr"]=1; S.notified[nk]=1; notify(`${b.bus}호차가 도착했어요`, `${stop.name}에 버스가 와 있어요 · ${ROUTES[route].name}`); }
+        if(!S.notified[nk+":arr"]){ S.notified[nk+":arr"]=1; S.notified[nk]=1; notify(`${b.bus}호차가 도착했어요`, `${stop.name}에 버스가 와 있어요 · ${ROUTES[route].name}`, "셔틀버스가 도착했습니다"); }
       } else if(de<=NEAR_M && !S.notified[nk]){
         S.notified[nk]=1;
         const m=Math.max(1,Math.ceil(de*ROAD_FACTOR/BUS_SPEED_M_PER_MIN));
-        notify(`${b.bus}호차가 곧 도착해요`, `${stop.name}까지 약 ${m}분 (${km(de)}) · ${ROUTES[route].name}`);
+        notify(`${b.bus}호차가 곧 도착해요`, `${stop.name}까지 약 ${m}분 (${km(de)}) · ${ROUTES[route].name}`, "셔틀버스 곧 도착합니다");
       }
     });
   });
@@ -1030,11 +1041,28 @@ function drawNews(cfg){
   if(first && typeof fitMap==="function" && map) setTimeout(fitMap,50);
 }
 window.addEventListener("resize",()=>{ if(!newsCfg) return; newsSig=""; drawNews(newsCfg); });
+// ---------- 교회 이름 · 로고 (관리자 › 기본 설정, config/brand) ----------
+const BRAND_DEF={short:"HCC",church:"할렐루야교회"};
+function brandOf(c){ const b=(c&&c.brand)||{}; return {short:String(b.short||BRAND_DEF.short).trim(), church:String(b.church||BRAND_DEF.church).trim(), logo:typeof b.logo==="string"&&b.logo.indexOf("data:image/")===0?b.logo:"", bg:b.logoBg||"white"}; }
+function paintLogo(el,B,pad){
+  if(!el) return; if(!el._def) el._def=el.innerHTML;
+  if(B.logo){ el.innerHTML=`<img src="${B.logo}" alt="" style="width:100%;height:100%;object-fit:contain;display:block">`; el.style.background = B.bg==="navy"?"#1B2B5C":B.bg==="none"?"transparent":"#FFFFFF"; el.style.padding=pad; el.style.boxSizing="border-box"; }
+  else { el.innerHTML=el._def; el.style.background=""; el.style.padding=""; }
+}
+function applyBrand(c){
+  const B=brandOf(c), app=B.short+" 셔틀버스";
+  if(document.body.classList.contains("drv")){ $("drvBrand").textContent=app+" · 드라이버 화면"; document.title="셔틀 드라이버 · "+app; return; }
+  $("brandTitle").textContent=app; $("brandSub").textContent=B.church+" 셔틀 실시간 안내"; document.title=app+" · "+B.church+" 셔틀 실시간 안내";
+  paintLogo($("brandLogo"),B,"3px");
+}
 async function startSaint(){
+  drawVoiceBtn();
+  $("voiceBtn").onclick=()=>{ VOICE=!VOICE; storage.set("voice",VOICE?"1":"0"); drawVoiceBtn(); if(VOICE) speak("소리 알림을 켰어요",true); else { try{ speechSynthesis.cancel(); }catch(_){} } };
+  try{ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged=()=>{}; }catch(_){}
   await initMap(); selectRoute(S.route); setupInstall(); showView();
   S.cameFromMain = location.hash!=="#times";
   onValue(ref(db,"live"), s=>{ const v=s.val()||{}; S.live={yatap:v.yatap||{}, park:v.park||{}}; refreshSaint(); });
-  onValue(ref(db,"config"), s=>{ const c=s.val()||{};
+  onValue(ref(db,"config"), s=>{ const c=s.val()||{}; applyBrand(c);
     PARK_TIMES = parseTimes(c.parkTimes); TIMES = c.times||{};
     if(applyStops(c.stops) && stopLayer){ drawStopsOnMap(); }
     if(applyPaths(c.paths) && map) drawPaths();
@@ -1298,6 +1326,7 @@ async function startDriver(){
   document.querySelector('meta[name="theme-color"]').content="#0B1220";
   $("appleIcon").href="apple-touch-icon-driver.png"; document.querySelector('link[rel="icon"]').href="icon-driver-192.png";
   await authReady;
+  onValue(ref(db,"config/brand"), s=>applyBrand({brand:s.val()}), ()=>{});
   onValue(ref(db,"config/stops"), s=>{ if(applyStops(s.val()) && D.map && D.stopL){ D.stopL.clear(); ROUTES[D.route||"yatap"].stops.forEach(x=>D.stopL.add(x.lat,x.lng,stopHtml(x,ROUTES[D.route||"yatap"].color),{z:2})); } }, ()=>{});
   onValue(ref(db,"config/buses"), s=>{ CFG_BUSES=s.val(); if(!$("drvSetup").classList.contains("hide")) drawDrvSetup(); }, ()=>{});
   const code=codeFromLink();

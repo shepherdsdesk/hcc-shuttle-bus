@@ -198,8 +198,8 @@
 <div class="tv">
   <header>
     <div class="hdbg" aria-hidden="true"><div class="ph" id="hdPhoto"></div></div>
-    <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" aria-hidden="true"><rect x="4" y="3" width="16" height="14" rx="3"/><path d="M4 11h16M8 21v-4M16 21v-4"/></svg></div>
-    <div><h1>HCC 셔틀버스 운행 현황</h1><small>할렐루야교회 셔틀 실시간 안내</small></div>
+    <div class="logo" id="brandLogo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" aria-hidden="true"><rect x="4" y="3" width="16" height="14" rx="3"/><path d="M4 11h16M8 21v-4M16 21v-4"/></svg></div>
+    <div><h1 id="brandTitle">HCC 셔틀버스 운행 현황</h1><small id="brandSub">할렐루야교회 셔틀 실시간 안내</small></div>
     <span class="live" id="conn"><i></i><span>연결 중</span></span>
     <div class="hright">
       <div class="hdeco" id="hdDeco" aria-hidden="true"></div>
@@ -556,6 +556,15 @@ function applyTheme(){
   setFx(THEME_CFG.fx===false ? "" : (FX_OF[id]||""), T.dark);
   if(id!==THEME_ID){ THEME_ID=id; if(typeof drawStopMarks==="function") drawStopMarks(); if(typeof drawTvPaths==="function") drawTvPaths(); $("boards")._h=null; $("times")._h=null; }
 }
+// ---------- 교회 이름 · 로고 (관리자 › 기본 설정, config/brand) ----------
+const BRAND_DEF={short:"HCC",church:"할렐루야교회"};
+function brandOf(c){ const b=(c&&c.brand)||{}; return {short:String(b.short||BRAND_DEF.short).trim(), church:String(b.church||BRAND_DEF.church).trim(), logo:typeof b.logo==="string"&&b.logo.indexOf("data:image/")===0?b.logo:"", bg:b.logoBg||"white"}; }
+function paintLogo(el,B,pad){
+  if(!el) return; if(!el._def) el._def=el.innerHTML;
+  if(B.logo){ el.innerHTML=`<img src="${B.logo}" alt="" style="width:100%;height:100%;object-fit:contain;display:block">`; el.style.background = B.bg==="navy"?"#1B2B5C":B.bg==="none"?"transparent":"#FFFFFF"; el.style.padding=pad; el.style.boxSizing="border-box"; }
+  else { el.innerHTML=el._def; el.style.background=""; el.style.padding=""; }
+}
+function applyBrand(c){ const B=brandOf(c); $("brandTitle").textContent=B.short+" 셔틀버스 운행 현황"; $("brandSub").textContent=B.church+" 셔틀 실시간 안내"; document.title=B.short+" 셔틀버스 · 운행 현황판"; paintLogo($("brandLogo"),B,".6vmin"); }
 // ---------- 계절 효과 ----------
 const hexA=(h,a)=>{ const n=parseInt(h.slice(1),16); return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`; };
 const FX_OF={spring:"petal",easter:"petal",summer:"wind",pentecost:"wind",autumn:"leaf",thanks:"leaf",winter:"snow",advent:"snow",christmas:"snow"};
@@ -852,7 +861,7 @@ try{
   applyTheme(); loadWx(); setInterval(loadWx, 30*60e3);
   await initMap(); drawTvPaths();
   onValue(ref(db,"live"), s=>{ const v=s.val()||{}; LIVE={yatap:v.yatap||{},park:v.park||{}}; drawMap(); drawBoards(); });
-  onValue(ref(db,"config"), s=>{ const c=s.val()||{};
+  onValue(ref(db,"config"), s=>{ const c=s.val()||{}; applyBrand(c);
     if(applyStops(c.stops)) drawStopMarks();
     NEWS_CFG=c.news||null; drawTicker();
     THEME_CFG=c.tvTheme||{}; watchPhoto(); applyTheme();

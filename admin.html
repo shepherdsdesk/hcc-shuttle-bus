@@ -64,6 +64,14 @@
   .nwrow input[type=date]{width:auto;margin:0;padding:6px 8px}
   .nwrow .star{border:1px solid var(--line);background:#fff;color:var(--sub);border-radius:8px;height:34px;padding:0 10px;font-size:13px;font-weight:700;cursor:pointer}
   .nwrow .star.on{background:#FFF4E0;border-color:#F5B53F;color:#B45309}
+  .bset{display:flex;gap:28px;flex-wrap:wrap}
+  .bform{flex:1;min-width:300px;display:flex;flex-direction:column;gap:6px}
+  .bform label{font-size:13px;font-weight:700;color:var(--ink);margin-top:6px}
+  .bform input{margin:0}
+  .bprev{flex:1;min-width:300px}
+  .bphone{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:10px 12px;max-width:360px;box-shadow:0 2px 10px rgba(15,23,42,.08)}
+  .bphone b{display:block;font-size:17px;color:#14213D}.bphone small{font-size:12px;color:#5B6478}
+  .blogo{width:34px;height:34px;border-radius:10px;background:#1B2B5C;display:grid;place-items:center;flex:none;overflow:hidden}
   .wxalert{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#EFF6FF;border:1px solid #BFDBFE;color:#1E3A8A;border-radius:14px;padding:12px 16px;margin:0 0 16px;font-size:15px;font-weight:600}
   .wxalert .btn{padding:7px 12px;font-size:13px}
   .nwrow .x{border:0;background:#FEE2E2;color:#B91C1C;border-radius:8px;width:34px;height:34px;font-size:18px;cursor:pointer}
@@ -203,7 +211,7 @@
   <!-- 관리자 화면 -->
   <div id="main" class="layout hide">
     <nav class="side">
-      <div class="brand"><div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg></div><div><b>HCC 셔틀 관리</b><small>관리자 페이지</small></div></div>
+      <div class="brand"><div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg></div><div><b class="sideBrand">HCC 셔틀 관리</b><small>관리자 페이지</small></div></div>
       <div id="tabs">
         <button data-tab="now" class="on">운행 현황<span class="lv"><i></i>실시간</span></button>
         <button data-tab="drivers">기사님 관리</button>
@@ -213,6 +221,7 @@
         <button data-tab="tv">TV 화면</button>
         <button data-tab="stats">통계</button>
         <button data-tab="admins">관리자</button>
+        <button data-tab="brand">기본 설정</button>
       </div>
       <div class="who" id="who"></div>
     </nav>
@@ -415,6 +424,40 @@
         </div>
         <p class="muted" style="margin:8px 0 0">가로로 긴 사진(예: 교회 외관, 절기 현수막, 행사 사진)이 잘 어울립니다. 글씨가 잘 보이도록 사진 양 끝은 자동으로 흐리게 처리됩니다. 올리면 TV용 크기로 줄여서 저장합니다.
           · 미리보기: <a href="tv.html" target="_blank" rel="noopener" id="thOpen">TV 화면 새 창으로 열기</a></p>
+      </div>
+    </section>
+
+    <!-- 기본 설정 -->
+    <section id="tab-brand" class="hide">
+      <div class="card">
+        <h2>교회 이름 · 로고 <small>성도님 · 드라이버 · TV · 관리자 화면에 함께 바뀝니다</small></h2>
+        <div class="bset">
+          <div class="bform">
+            <label for="bShort">셔틀 이름 앞 글자 <span class="muted">(예: HCC → ‘HCC 셔틀버스’)</span></label>
+            <input id="bShort" maxlength="12" placeholder="HCC">
+            <label for="bChurch">교회 이름</label>
+            <input id="bChurch" maxlength="24" placeholder="할렐루야교회">
+            <label>로고</label>
+            <div class="row" style="flex-wrap:wrap;gap:8px">
+              <label class="btn ghost" style="margin:0">로고 올리기<input type="file" id="bFile" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden></label>
+              <button class="btn ghost" id="bReset">기본 버스 로고로</button>
+              <select id="bBg" style="width:auto;margin:0"><option value="white">로고 배경: 흰색</option><option value="navy">로고 배경: 남색</option><option value="none">로고 배경: 없음</option></select>
+            </div>
+            <div class="row" style="margin-top:14px"><button class="btn" id="bSave">저장</button><span class="muted" id="bState"></span></div>
+          </div>
+          <div class="bprev">
+            <p class="muted" style="margin:0 0 8px">미리보기</p>
+            <div class="bphone"><div class="blogo" id="bpLogo"></div><div><b id="bpTitle">HCC 셔틀버스</b><small id="bpSub">할렐루야교회 셔틀 실시간 안내</small></div></div>
+            <p class="muted" style="margin:14px 0 6px">로고 파일 내려받기 <span>(나중에 다시 올릴 때 쓰세요)</span></p>
+            <div class="row" style="flex-wrap:wrap;gap:8px">
+              <a class="btn ghost" href="hcc-shuttle-default-logo.png" download>기본 버스 로고</a>
+              <a class="btn ghost" href="hcc-logo-square.png" download>교회 마크 (투명)</a>
+              <a class="btn ghost" href="hcc-logo-square-white.png" download>교회 마크 (흰 바탕)</a>
+              <a class="btn ghost" href="hcc-logo-wide.png" download>교회 가로 로고</a>
+            </div>
+          </div>
+        </div>
+        <p class="muted" style="margin:14px 0 0">정사각형에 가까운 로고가 잘 맞습니다. 올리면 256×256 크기로 줄여 저장합니다. 휴대폰 홈 화면 아이콘과 이름은 GitHub의 아이콘 파일로 정해져 있어서, 바꾸려면 파일을 바꿔 올려야 합니다.</p>
       </div>
     </section>
 
@@ -648,13 +691,13 @@ onAuthStateChanged(auth, async u=>{
 });
 
 // ---------- 탭 ----------
-const TITLES={now:"운행 현황",drivers:"기사님 관리",notice:"공지 · 교회 소식",times:"시간표",stops:"정류장 · 노선",tv:"TV 화면",stats:"통계",admins:"관리자"};
+const TITLES={now:"운행 현황",drivers:"기사님 관리",notice:"공지 · 교회 소식",times:"시간표",stops:"정류장 · 노선",tv:"TV 화면",stats:"통계",admins:"관리자",brand:"기본 설정"};
 function nowSub(){ const d=new Date(now()+9*3600e3); return `${d.getUTCMonth()+1}월 ${d.getUTCDate()}일 ${["주일","월요일","화요일","수요일","목요일","금요일","토요일"][d.getUTCDay()]} · ${d.getUTCHours()}:${String(d.getUTCMinutes()).padStart(2,"0")} 기준`; }
 let curTab="now";
 $("tabs").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return;
   curTab=b.dataset.tab;
   document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("on",x===b));
-  ["now","drivers","notice","times","stops","tv","stats","admins"].forEach(t=>$("tab-"+t).classList.toggle("hide",t!==curTab));
+  ["now","drivers","notice","times","stops","tv","stats","admins","brand"].forEach(t=>$("tab-"+t).classList.toggle("hide",t!==curTab));
   $("pageTitle").textContent=TITLES[curTab]; $("pageSub").textContent= curTab==="now"? nowSub() : "";
   $("rf").classList.toggle("hide", !(curTab==="now"||curTab==="stats"));
   if(curTab==="now" && map) setTimeout(()=>{ map.resize(); fitRF(); },50);
@@ -874,6 +917,35 @@ document.addEventListener("click",async e=>{
     try{ await remove(ref(db,`config/paths/${r}/${k}`)); await remove(ref(db,`config/pathInfo/${r}/${k}`)); toast("지웠습니다"); }catch(_){ toast("지우지 못했습니다"); } }
 });
 
+// ---------- 교회 이름 · 로고 (관리자 › 기본 설정, config/brand) ----------
+const BRAND_DEF={short:"HCC",church:"할렐루야교회"};
+function brandOf(c){ const b=(c&&c.brand)||{}; return {short:String(b.short||BRAND_DEF.short).trim(), church:String(b.church||BRAND_DEF.church).trim(), logo:typeof b.logo==="string"&&b.logo.indexOf("data:image/")===0?b.logo:"", bg:b.logoBg||"white"}; }
+function paintLogo(el,B,pad){
+  if(!el) return; if(!el._def) el._def=el.innerHTML;
+  if(B.logo){ el.innerHTML=`<img src="${B.logo}" alt="" style="width:100%;height:100%;object-fit:contain;display:block">`; el.style.background = B.bg==="navy"?"#1B2B5C":B.bg==="none"?"transparent":"#FFFFFF"; el.style.padding=pad; el.style.boxSizing="border-box"; }
+  else { el.innerHTML=el._def; el.style.background=""; el.style.padding=""; }
+}
+const BD={pend:null, filled:false};
+function bVals(){ const B=brandOf(A.config); return {short:$("bShort").value.trim()||BRAND_DEF.short, church:$("bChurch").value.trim()||BRAND_DEF.church, logo: BD.pend!==null?BD.pend:B.logo, logoBg:$("bBg").value}; }
+function drawBrandPrev(){ const v=bVals(); $("bpTitle").textContent=v.short+" 셔틀버스"; $("bpSub").textContent=v.church+" 셔틀 실시간 안내"; paintLogo($("bpLogo"),{logo:v.logo,bg:v.logoBg},"3px"); }
+function drawBrand(){
+  const B=brandOf(A.config);
+  document.querySelectorAll(".sideBrand").forEach(x=>x.textContent=B.short+" 셔틀 관리"); document.title=B.short+" 셔틀버스 · 관리자";
+  if(!BD.filled && $("bShort")){ $("bShort").value=(A.config.brand||{}).short||""; $("bChurch").value=(A.config.brand||{}).church||""; $("bBg").value=B.bg; BD.filled=true; }
+  if($("bpLogo")){ if(!$("bpLogo")._def) $("bpLogo")._def='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="4" y="3" width="16" height="14" rx="3"/><path d="M4 11h16M8 21v-4M16 21v-4"/></svg>'; drawBrandPrev(); }
+}
+["bShort","bChurch","bBg"].forEach(id=>$(id).addEventListener("input",()=>{ drawBrandPrev(); $("bState").textContent="저장 전"; }));
+$("bFile").onchange=async e=>{ const f=e.target.files[0]; e.target.value=""; if(!f) return;
+  try{ const url=URL.createObjectURL(f), img=await new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=url; });
+    const N=256, cv=document.createElement("canvas"); cv.width=N; cv.height=N; const g=cv.getContext("2d");
+    const w=img.naturalWidth||N, h=img.naturalHeight||N, k=Math.min(N/w,N/h); g.drawImage(img,(N-w*k)/2,(N-h*k)/2,w*k,h*k); URL.revokeObjectURL(url);
+    let d=cv.toDataURL("image/png"); if(d.length>120000) d=cv.toDataURL("image/webp",.85);
+    if(d.length>150000){ toast("로고 파일이 너무 큽니다. 더 단순한 이미지를 골라 주세요"); return; }
+    BD.pend=d; drawBrandPrev(); $("bState").textContent="저장 전 · ‘저장’을 눌러 주세요"; }catch(_){ toast("이미지를 읽지 못했습니다"); } };
+$("bReset").onclick=()=>{ BD.pend=""; drawBrandPrev(); $("bState").textContent="저장 전 · ‘저장’을 눌러 주세요"; };
+$("bSave").onclick=async()=>{ const v=bVals();
+  try{ await set(ref(db,"config/brand"),{short:v.short, church:v.church, logo:v.logo||null, logoBg:v.logoBg}); BD.pend=null; $("bState").textContent="저장했습니다"; toast("저장했습니다. 모든 화면에 바로 바뀝니다"); }catch(_){ toast("저장하지 못했습니다"); } };
+
 // ---------- 오늘 비·눈 예보 알림 (Open-Meteo) ----------
 async function checkRain(){
   const box=$("wxAlert"), day=todayKST(); let shut=null; try{ shut=localStorage.getItem("wxAlertOff"); }catch(_){}
@@ -1057,7 +1129,7 @@ async function assign(pin,val){
 const driverUrl=pin=> location.origin + location.pathname.replace(/[^/]*$/,"") + "driver.html#c=" + pin;
 function smsText(pin){
   const v=A.pins[pin]||{}, car = v.route&&v.bus ? `${ROUTES[v.route].name} ${v.bus}호차` : "셔틀";
-  return `[HCC 셔틀버스] ${v.name||""} 기사님, ${car} 운행을 부탁드립니다.\n\n드라이버 앱: ${driverUrl(pin)}\n인증번호: ${pin}\n\n주소를 누르면 인증번호가 자동으로 들어갑니다. 운행 중에는 화면을 켜 두시고, 마치면 ‘운행 종료’를 눌러 주세요. 감사합니다.`;
+  return `[${brandOf(A.config).short} 셔틀버스] ${v.name||""} 기사님, ${car} 운행을 부탁드립니다.\n\n드라이버 앱: ${driverUrl(pin)}\n인증번호: ${pin}\n\n주소를 누르면 인증번호가 자동으로 들어갑니다. 운행 중에는 화면을 켜 두시고, 마치면 ‘운행 종료’를 눌러 주세요. 감사합니다.`;
 }
 let smsPin=null;
 function openSms(pin){
@@ -1131,12 +1203,12 @@ function loadXLSX(){ return window.XLSX ? Promise.resolve(window.XLSX) : new Pro
 function sheetOf(X,rows){ const ws=X.utils.aoa_to_sheet(rows); ws["!cols"]=[{wch:16},{wch:16},{wch:24},{wch:12},{wch:14}]; return ws; }
 $("xTpl").onclick=async()=>{ try{ const X=await loadXLSX(); const wb=X.utils.book_new();
   X.utils.book_append_sheet(wb, sheetOf(X,[XCOLS]), "기사님");
-  X.utils.book_append_sheet(wb, X.utils.aoa_to_sheet([["HCC 셔틀버스 기사님 등록 양식 안내"],[""],["1. '기사님' 시트 둘째 줄부터 한 분씩 적어 주세요."],["2. 이름은 꼭 적어 주세요. 연락처·메모는 비워도 됩니다."],["3. 운행번호는 비워 두면 자동으로 만들어집니다. 직접 정하려면 숫자 4~8자리."],["4. 다 적은 뒤 관리자 페이지 → 기사님 → '엑셀 올리기'를 누르세요."],[""],["예시) 이름: 홍길동 집사 / 연락처: 010-1234-5678 / 메모: 주일 2부 야탑역 / 운행번호: (비움)"]]), "안내");
-  X.writeFile(wb,"HCC셔틀_기사님_등록양식.xlsx"); }catch(e){ toast(e.message); } };
+  X.utils.book_append_sheet(wb, X.utils.aoa_to_sheet([[brandOf(A.config).short+" 셔틀버스 기사님 등록 양식 안내"],[""],["1. '기사님' 시트 둘째 줄부터 한 분씩 적어 주세요."],["2. 이름은 꼭 적어 주세요. 연락처·메모는 비워도 됩니다."],["3. 운행번호는 비워 두면 자동으로 만들어집니다. 직접 정하려면 숫자 4~8자리."],["4. 다 적은 뒤 관리자 페이지 → 기사님 → '엑셀 올리기'를 누르세요."],[""],["예시) 이름: 홍길동 집사 / 연락처: 010-1234-5678 / 메모: 주일 2부 야탑역 / 운행번호: (비움)"]]), "안내");
+  X.writeFile(wb,brandOf(A.config).short+"셔틀_기사님_등록양식.xlsx"); }catch(e){ toast(e.message); } };
 $("xExport").onclick=async()=>{ try{ const X=await loadXLSX(); const wb=X.utils.book_new();
   const list=Object.entries(A.pins).map(([pin,v])=>({pin,...(v&&typeof v==="object"?v:{})})).sort((a,b)=>(a.name||"").localeCompare(b.name||"","ko"));
   X.utils.book_append_sheet(wb, sheetOf(X,[[...XCOLS,"등록된 휴대폰"],...list.map(d=>[d.name||"",d.phone||"",d.memo||"",d.pin,devicesOf(d.pin)+"대"])]), "기사님");
-  X.writeFile(wb,`HCC셔틀_기사님목록_${kstDate(now())}.xlsx`); }catch(e){ toast(e.message); } };
+  X.writeFile(wb,`${brandOf(A.config).short}셔틀_기사님목록_${kstDate(now())}.xlsx`); }catch(e){ toast(e.message); } };
 const normPhone=v=>{ let d=String(v||"").replace(/[^0-9]/g,""); if(/^1\d{8,9}$/.test(d)) d="0"+d;
   if(/^01\d{8,9}$/.test(d)) return d.length===11? `${d.slice(0,3)}-${d.slice(3,7)}-${d.slice(7)}` : `${d.slice(0,3)}-${d.slice(3,6)}-${d.slice(6)}`; return String(v||"").trim(); };
 let xPlan=null;
@@ -1245,7 +1317,7 @@ function fillConfig(){
   const c=A.config;
   drawTpls(); drawVehicles();
   if(applyStops(c.stops)){ drawMainStops(); }
-  drawNewsAdmin(); drawThemeAdmin(); drawPathAdmin();
+  drawNewsAdmin(); drawThemeAdmin(); drawPathAdmin(); drawBrand();
   drawStopEdit();
   if(!configFilled){ $("kKey").value=c.kakaoKey||""; $("nText").value=c.notice?.text||""; $("nOn").checked=!!c.notice?.on; $("pTimes").value=c.parkTimes||""; configFilled=true; loadTimeKey(); previewNotice(); }
   else loadTimeKey(true);
