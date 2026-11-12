@@ -68,6 +68,19 @@
   .nwchips{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
   .nwchips button{border:1px solid var(--line);background:#F8F9FC;border-radius:999px;padding:6px 11px;font-size:13px;cursor:pointer;color:var(--ink)}
   .nwchips button:hover{border-color:var(--navy)}
+  .thgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:8px 0 4px}
+  .thg{font-size:12.5px;font-weight:800;color:var(--sub);margin:10px 0 2px}
+  .th{border:2px solid var(--line);border-radius:12px;padding:0;overflow:hidden;cursor:pointer;background:#fff;text-align:left;color:var(--ink);font:inherit}
+  .th.on{border-color:#F59E0B;box-shadow:0 0 0 3px rgba(245,158,11,.25)}
+  .th .pv{height:58px;position:relative;display:flex;align-items:center;gap:6px;padding:0 10px}
+  .th .pv i{width:22px;height:22px;border-radius:6px;flex:none}
+  .th .pv b{font-size:11px;font-weight:800}
+  .th .pv .dc{position:absolute;right:4px;top:6px;bottom:6px;width:62%;opacity:.7}
+  .th .pv .dc svg{width:100%;height:100%;display:block}
+  .th span{display:block;padding:6px 10px;font-size:13px;font-weight:700}
+  .th span em{font-style:normal;color:var(--sub);font-weight:600;font-size:12px;margin-left:4px}
+  .phbox{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:6px}
+  .phprev{width:320px;height:64px;border-radius:10px;border:1px solid var(--line);background:#F1F5F9 center/cover no-repeat;display:grid;place-items:center;color:var(--sub);font-size:12.5px}
   #stopMap{height:380px;border-radius:14px;overflow:hidden;z-index:0;margin-top:10px}
   .serow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 10px;border-radius:12px;border:1px solid var(--line);margin-bottom:6px}
   .serow.on{border-color:#D97706;background:#FFFBEB}
@@ -289,6 +302,24 @@
           <button class="btn ghost" id="tAdd">지금 문구를 ‘내 예문’으로 저장</button>
           <span class="muted">자주 쓰는 문구를 저장해 두면 ‘내 예문’에서 바로 고를 수 있습니다.</span>
         </div>
+      </div>
+      <div class="card">
+        <h2>TV 화면 꾸미기 <small>색 테마 · 절기 장식 · 사진. 저장하면 TV에 바로 바뀝니다</small></h2>
+        <div class="thgrid" id="thAuto"></div>
+        <div id="thList"></div>
+        <div class="row" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line)">
+          <label style="display:flex;align-items:center;gap:6px;margin:0;font-size:14px;color:var(--ink)"><input type="checkbox" id="thDeco" style="width:auto;margin:0"> 기본 장식 보이기 <span class="muted">(절기·계절 테마에 촛불·별·백합 같은 그림)</span></label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <label style="display:flex;align-items:center;gap:6px;margin:0;font-size:14px;color:var(--ink)"><input type="checkbox" id="thPhoto" style="width:auto;margin:0"> 사진 보이기 <span class="muted">(TV 맨 위 제목 띠에 은은하게 깔립니다)</span></label>
+        </div>
+        <div class="phbox">
+          <div class="phprev" id="phPrev">사진 없음</div>
+          <label class="btn ghost" style="margin:0">사진 고르기<input type="file" id="phFile" accept="image/*" hidden></label>
+          <button class="btn ghost" id="phDel">사진 지우기</button>
+        </div>
+        <p class="muted" style="margin:8px 0 0">가로로 긴 사진(예: 교회 외관, 절기 현수막, 행사 사진)이 잘 어울립니다. 글씨가 잘 보이도록 사진 양 끝은 자동으로 흐리게 처리됩니다. 올리면 TV용 크기로 줄여서 저장합니다.
+          · 미리보기: <a href="tv.html" target="_blank" rel="noopener" id="thOpen">TV 화면 새 창으로 열기</a></p>
       </div>
       <div class="card">
         <h2>교회 소식 자막 <small>TV 현황판 아래에 뉴스 자막처럼 흐르고, 성도님 화면에도 ‘교회 소식’으로 작게 보입니다</small></h2>
@@ -613,6 +644,97 @@ document.addEventListener("change",async e=>{ const row=e.target.closest("[data-
     else if(e.target.matches("[data-nwtext]")){ const v=e.target.value.trim(); if(!v){ toast("내용이 비었습니다. 지우려면 ×를 눌러 주세요"); drawNewsAdmin(); return; } await set(ref(db,p+"/text"),v); toast("고쳤습니다"); }
     else if(e.target.matches("[data-nwuntil]")) await set(ref(db,p+"/until"),e.target.value||null);
   }catch(_){ toast("저장하지 못했습니다"); } });
+
+// ==== THEME START ====  (TV 화면 테마 — tv.html과 admin.html에 똑같이 들어갑니다)
+// v: 배경 bg · 카드 card · 선 line · 글자 ink · 흐린 글자 sub · 강조 acc · 칩 chip · 장식색 deco
+const TV_THEMES = {
+  base:     {name:"기본 (남색)",     group:"색", dark:true,  v:{bg:"#0B1220",card:"#131C2E",line:"#1F2A40",ink:"#F8FAFC",sub:"#94A3B8",acc:"#1B2B5C",chip:"#1E293B",deco:"#93C5FD"}},
+  ivory:    {name:"아이보리",        group:"색", dark:false, v:{bg:"#F6F1E7",card:"#FFFCF6",line:"#E6DCCB",ink:"#1F2937",sub:"#6B6255",acc:"#1B2B5C",chip:"#EFE7D8",deco:"#B08D57"}},
+  white:    {name:"흰색",            group:"색", dark:false, v:{bg:"#EEF2F7",card:"#FFFFFF",line:"#DCE3EC",ink:"#0F172A",sub:"#5B6478",acc:"#1B2B5C",chip:"#E8EDF4",deco:"#94A3B8"}},
+  advent:   {name:"대림절",          group:"절기", dark:true, v:{bg:"#150D26",card:"#211538",line:"#33245A",ink:"#F5F3FF",sub:"#B4A7D6",acc:"#5B21B6",chip:"#2E1F4D",deco:"#F5C542"}},
+  christmas:{name:"성탄절",          group:"절기", dark:true, v:{bg:"#0C1C15",card:"#12281E",line:"#1F3D2E",ink:"#FEFCF3",sub:"#A7C4B5",acc:"#B91C1C",chip:"#1A3527",deco:"#F5C542"}},
+  lent:     {name:"사순절",          group:"절기", dark:true, v:{bg:"#16121C",card:"#201A29",line:"#322941",ink:"#F4F1F8",sub:"#A99CB9",acc:"#4C2F73",chip:"#2A2236",deco:"#A78BCA"}},
+  easter:   {name:"부활절",          group:"절기", dark:false,v:{bg:"#FBF7EC",card:"#FFFFFF",line:"#EFE4C8",ink:"#1F2937",sub:"#6B6255",acc:"#9A6B00",chip:"#F6EED9",deco:"#D4A017"}},
+  pentecost:{name:"성령강림절",      group:"절기", dark:true, v:{bg:"#1C0C0C",card:"#291212",line:"#45201E",ink:"#FFF7ED",sub:"#D6A99F",acc:"#C2261D",chip:"#3A1B18",deco:"#FB923C"}},
+  thanks:   {name:"추수감사절",      group:"절기", dark:true, v:{bg:"#1B130B",card:"#271B10",line:"#3F2D1A",ink:"#FFF8EE",sub:"#C9B293",acc:"#B4530F",chip:"#36261A",deco:"#E8A23A"}},
+  spring:   {name:"봄",              group:"계절", dark:false,v:{bg:"#FBF3F5",card:"#FFFFFF",line:"#F1DCE3",ink:"#1F2937",sub:"#6B5B63",acc:"#BE3B6A",chip:"#F8E8EE",deco:"#E879A1"}},
+  summer:   {name:"여름",            group:"계절", dark:false,v:{bg:"#EEF7FC",card:"#FFFFFF",line:"#D3E8F3",ink:"#0F172A",sub:"#4F6676",acc:"#0369A1",chip:"#E2F0F8",deco:"#38BDF8"}},
+  autumn:   {name:"가을",            group:"계절", dark:true, v:{bg:"#1A120D",card:"#261A12",line:"#3D2A1C",ink:"#FFF7ED",sub:"#C8AE95",acc:"#A4410E",chip:"#35251A",deco:"#F59E0B"}},
+  winter:   {name:"겨울",            group:"계절", dark:true, v:{bg:"#0C1522",card:"#132033",line:"#203450",ink:"#F0F9FF",sub:"#9FB6CC",acc:"#1E5A8C",chip:"#1B2C44",deco:"#BAE6FD"}}
+};
+// 날짜(한국 날짜 문자열 YYYY-MM-DD)로 절기·계절 테마 고르기
+function easterDate(y){ const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),da=((h+l-7*m+114)%31)+1; return Date.UTC(y,mo-1,da); }
+function autoThemeFor(ymd){
+  const [y,mo,da]=ymd.split("-").map(Number), t=Date.UTC(y,mo-1,da), D=864e5;
+  const xmas=Date.UTC(y,11,25), back=new Date(xmas).getUTCDay()||7, advent1=xmas-back*D-21*D;
+  if((mo===12 && da>=24) || (mo===1 && da<=6)) return "christmas";
+  if(t>=advent1 && t<xmas) return "advent";
+  const E=easterDate(y);
+  if(t>=E-46*D && t<E) return "lent";
+  if(t>=E && t<E+49*D) return "easter";
+  if(t>=E+49*D && t<=E+55*D) return "pentecost";
+  // 추수감사주일: 11월 셋째 주일, 그 2주 전부터
+  const n1=new Date(Date.UTC(y,10,1)).getUTCDay(), sun3=Date.UTC(y,10,1+((7-n1)%7)+14);
+  if(t>=sun3-13*D && t<=sun3) return "thanks";
+  return mo>=3&&mo<=5?"spring":mo>=6&&mo<=8?"summer":mo>=9&&mo<=11?"autumn":"winter";
+}
+// ==== THEME END ====
+// 테마별 기본 장식 (제목 띠 오른쪽에 은은하게)
+const TV_DECO = (()=>{
+  const star=(x,y,r)=>{ let p=""; for(let i=0;i<10;i++){ const a=-Math.PI/2+i*Math.PI/5, rr=i%2?r*.42:r; p+=(i?"L":"M")+(x+rr*Math.cos(a)).toFixed(1)+" "+(y+rr*Math.sin(a)).toFixed(1); } return `<path d="${p}Z"/>`; };
+  const flake=(x,y,r)=>{ let s=""; for(let i=0;i<6;i++){ const a=i*Math.PI/3, X=x+r*Math.cos(a), Y=y+r*Math.sin(a); s+=`M${x} ${y}L${X.toFixed(1)} ${Y.toFixed(1)}`; } return `<path d="${s}" fill="none" stroke-width="3" stroke-linecap="round"/>`; };
+  const blossom=(x,y,r)=>{ let s=""; for(let i=0;i<5;i++){ const a=-Math.PI/2+i*2*Math.PI/5; s+=`<circle cx="${(x+r*.62*Math.cos(a)).toFixed(1)}" cy="${(y+r*.62*Math.sin(a)).toFixed(1)}" r="${(r*.5).toFixed(1)}"/>`; } return s+`<circle cx="${x}" cy="${y}" r="${(r*.28).toFixed(1)}" fill-opacity=".5"/>`; };
+  const leaf=(x,y,r,rot)=>`<g transform="translate(${x} ${y}) rotate(${rot})"><path d="M0 ${-r}C${r*.8} ${-r*.4} ${r*.8} ${r*.4} 0 ${r}C${-r*.8} ${r*.4} ${-r*.8} ${-r*.4} 0 ${-r}Z"/><path d="M0 ${-r}V${r}" fill="none" stroke-width="2" stroke-opacity=".5"/></g>`;
+  const flame=(x,y,h)=>`<path d="M${x} ${y}c${-h*.35} ${-h*.3} ${-h*.3} ${-h*.65} 0 ${-h}c${h*.05} ${h*.3} ${h*.35} ${h*.4} ${h*.3} ${h*.7}c0 ${h*.2} ${-h*.15} ${h*.3} ${-h*.3} ${h*.3}Z"/>`;
+  const candle=(x,h,lit,pink)=>`<rect x="${x-7}" y="${92-h}" width="14" height="${h}" rx="3" ${pink?'fill-opacity=".55"':''}/>`+(lit?flame(x,86-h,22):"");
+  const wheat=(x,h,rot)=>{ let s=`<g transform="translate(${x} 96) rotate(${rot})"><path d="M0 0V${-h}" fill="none" stroke-width="3"/>`; for(let i=0;i<5;i++){ const y=-h+6+i*9; s+=`<ellipse cx="-5" cy="${y}" rx="4" ry="8" transform="rotate(-25 -5 ${y})"/><ellipse cx="5" cy="${y}" rx="4" ry="8" transform="rotate(25 5 ${y})"/>`; } return s+`</g>`; };
+  const svg=b=>`<svg viewBox="0 0 400 100" preserveAspectRatio="xMaxYMid meet" fill="currentColor" stroke="currentColor" stroke-width="0">${b}</svg>`;
+  return {
+    advent: svg([candle(250,46,1,0),candle(285,52,1,0),candle(320,46,1,1),candle(355,52,0,0)].join("")+`<path d="M230 94H375" stroke-width="5" fill="none" stroke-linecap="round"/>`+star(180,30,9)+star(130,58,6)),
+    christmas: svg(star(320,42,34)+star(250,24,9)+star(215,64,7)+star(380,74,8)+`<circle cx="160" cy="70" r="7"/><circle cx="172" cy="78" r="7"/><circle cx="150" cy="80" r="7"/>`),
+    lent: svg(`<path d="M330 14V96M306 36H354" stroke-width="7" fill="none" stroke-linecap="round"/><ellipse cx="250" cy="70" rx="38" ry="12" fill="none" stroke-width="3" stroke-dasharray="6 5"/>`),
+    easter: svg(`<path d="M220 96a110 110 0 0 1 220 0Z" fill-opacity=".25"/>`+Array.from({length:9},(_,i)=>{ const a=Math.PI+(i+1)*Math.PI/10; return `<path d="M${330+70*Math.cos(a)} ${96+70*Math.sin(a)}L${330+104*Math.cos(a)} ${96+104*Math.sin(a)}" stroke-width="4" stroke-linecap="round"/>`; }).join("")+`<path d="M330 30V96M310 48H350" stroke-width="7" fill="none" stroke-linecap="round"/>`),
+    pentecost: svg(flame(250,92,56)+flame(300,92,80)+flame(350,92,60)+flame(200,92,34)),
+    thanks: svg(wheat(300,80,-12)+wheat(325,88,0)+wheat(350,78,14)+`<circle cx="230" cy="62" r="9"/><circle cx="248" cy="62" r="9"/><circle cx="239" cy="77" r="9"/><circle cx="221" cy="77" r="9"/><circle cx="257" cy="77" r="9"/><circle cx="239" cy="92" r="8"/>`),
+    spring: svg(blossom(330,40,26)+blossom(260,70,18)+blossom(380,80,14)+blossom(200,30,12)),
+    summer: svg(`<circle cx="330" cy="38" r="22"/>`+Array.from({length:8},(_,i)=>{ const a=i*Math.PI/4; return `<path d="M${330+30*Math.cos(a)} ${38+30*Math.sin(a)}L${330+40*Math.cos(a)} ${38+40*Math.sin(a)}" stroke-width="4" stroke-linecap="round"/>`; }).join("")+`<path d="M170 86q20-14 40 0t40 0 40 0 40 0 40 0" fill="none" stroke-width="5" stroke-linecap="round"/>`),
+    autumn: svg(leaf(330,44,26,30)+leaf(270,66,18,-40)+leaf(375,78,14,70)+leaf(210,34,12,-10)),
+    winter: svg(flake(330,44,30)+flake(260,70,16)+flake(380,78,12)+flake(205,32,12)),
+    base:"", ivory:"", white:""
+  };
+})();
+// ---------- TV 화면 꾸미기 ----------
+let PHOTO_ADMIN=null, phWatch=false;
+function thCard(id,on,extra){ const T=TV_THEMES[id], v=T.v;
+  return `<button type="button" class="th${on?' on':''}" data-th="${id}"><div class="pv" style="background:${v.bg};color:${v.ink}"><i style="background:${v.acc}"></i><b style="color:${v.ink}">셔틀</b><div class="dc" style="color:${v.deco}">${TV_DECO[id]||""}</div></div><span>${extra||T.name}</span></button>`; }
+function drawThemeAdmin(){
+  if(!$("thList")) return;
+  const c=A.config.tvTheme||{}, mode=TV_THEMES[c.mode]?c.mode:"auto", now=autoThemeFor(todayKST());
+  $("thAuto").innerHTML=`<button type="button" class="th${mode==="auto"?' on':''}" data-th="auto"><div class="pv" style="background:${TV_THEMES[now].v.bg};color:${TV_THEMES[now].v.ink}"><i style="background:${TV_THEMES[now].v.acc}"></i><b>자동</b><div class="dc" style="color:${TV_THEMES[now].v.deco}">${TV_DECO[now]||""}</div></div><span>절기·계절 자동 <em>지금: ${TV_THEMES[now].name}</em></span></button>`;
+  const groups={}; Object.keys(TV_THEMES).forEach(id=>{ (groups[TV_THEMES[id].group]=groups[TV_THEMES[id].group]||[]).push(id); });
+  $("thList").innerHTML=Object.entries(groups).map(([g,ids])=>`<div class="thg">${g}${g==="색"?" — 절기와 상관없이 늘 이 색으로":""}</div><div class="thgrid">${ids.map(id=>thCard(id,mode===id)).join("")}</div>`).join("");
+  $("thDeco").checked = c.deco!==false; $("thPhoto").checked = !!c.photo;
+  if(!phWatch){ phWatch=true; onValue(ref(db,"tvmedia/photo"), s=>{ const v=s.val(); PHOTO_ADMIN=(v&&v.data)||null; const p=$("phPrev"); p.style.backgroundImage=PHOTO_ADMIN?`url("${PHOTO_ADMIN}")`:"none"; p.textContent=PHOTO_ADMIN?"":"사진 없음"; }, ()=>{}); }
+}
+async function saveTheme(patch){ try{ await update(ref(db,"config/tvTheme"),patch); toast("TV 화면에 바로 반영됩니다"); }catch(_){ toast("저장하지 못했습니다"); } }
+document.addEventListener("click",e=>{ const b=e.target.closest("[data-th]"); if(!b) return; saveTheme({mode:b.dataset.th}); });
+$("thDeco").onchange=()=>saveTheme({deco:$("thDeco").checked});
+$("thPhoto").onchange=()=>{ if($("thPhoto").checked && !PHOTO_ADMIN){ toast("먼저 ‘사진 고르기’로 사진을 올려 주세요"); $("thPhoto").checked=false; return; } saveTheme({photo:$("thPhoto").checked}); };
+// 사진을 TV용 크기(가로 최대 1600px, JPEG)로 줄여서 저장
+$("phFile").onchange=async e=>{ const f=e.target.files[0]; e.target.value=""; if(!f) return;
+  try{
+    const url=URL.createObjectURL(f), img=await new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=url; });
+    let w=Math.min(1600,img.naturalWidth), h=Math.round(img.naturalHeight*w/img.naturalWidth);
+    if(h>900){ h=900; w=Math.round(img.naturalWidth*h/img.naturalHeight); }
+    const cv=document.createElement("canvas"); cv.width=w; cv.height=h; cv.getContext("2d").drawImage(img,0,0,w,h); URL.revokeObjectURL(url);
+    let q=.8, data=cv.toDataURL("image/jpeg",q); while(data.length>600000 && q>.4){ q-=.1; data=cv.toDataURL("image/jpeg",q); }
+    if(data.length>650000){ toast("사진이 너무 큽니다. 다른 사진을 골라 주세요"); return; }
+    await set(ref(db,"tvmedia/photo"),{data, ts:Date.now()});
+    await update(ref(db,"config/tvTheme"),{photo:true});
+    toast("사진을 올렸습니다. TV 제목 띠에 바로 보입니다");
+  }catch(_){ toast("사진을 올리지 못했습니다. 데이터베이스 규칙을 새로 게시했는지 확인해 주세요"); } };
+$("phDel").onclick=async()=>{ if(!PHOTO_ADMIN){ toast("올린 사진이 없습니다"); return; } if(!confirm("사진을 지울까요?")) return;
+  try{ await remove(ref(db,"tvmedia/photo")); await update(ref(db,"config/tvTheme"),{photo:false}); toast("지웠습니다"); }catch(_){ toast("지우지 못했습니다"); } };
 
 // ---------- 정류장 그리기 (운행 현황 지도) ----------
 let mainStopL, mainCircles=[];
@@ -965,7 +1087,7 @@ function fillConfig(){
   const c=A.config;
   drawTpls(); drawVehicles();
   if(applyStops(c.stops)){ drawMainStops(); }
-  drawNewsAdmin();
+  drawNewsAdmin(); drawThemeAdmin();
   drawStopEdit();
   if(!configFilled){ $("kKey").value=c.kakaoKey||""; $("nText").value=c.notice?.text||""; $("nOn").checked=!!c.notice?.on; $("pTimes").value=c.parkTimes||""; configFilled=true; loadTimeKey(); previewNotice(); }
   else loadTimeKey(true);

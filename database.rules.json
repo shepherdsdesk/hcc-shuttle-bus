@@ -73,6 +73,13 @@
     "config": {
       ".read": true,
       ".write": "(auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())"
+    },
+    "tvmedia": {
+      ".read": true,
+      ".write": "(auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
+      "photo": {
+        ".validate": "!newData.exists() || (newData.child('data').isString() && newData.child('data').val().beginsWith('data:image/') && newData.child('data').val().length < 700000)"
+      }
     }
   }
 }
