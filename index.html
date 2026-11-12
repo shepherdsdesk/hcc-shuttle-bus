@@ -598,7 +598,7 @@ function liveBuses(route){
   Object.entries(S.live[route]||{}).forEach(([bus,v])=>{
     if(!v || typeof v.lat!=="number") return;
     const age = now-(v.ts||0); if(age>GONE_MS) return;
-    out.push({bus:+bus, lat:v.lat, lng:v.lng, age, old: age>STALE_MS, trip:v.trip||null, to:v.to||""});
+    out.push({bus:+bus, lat:v.lat, lng:v.lng, age, old: age>STALE_MS, trip:v.trip||null, to:v.to||"", spd:typeof v.spd==="number"?v.spd:null, hd:typeof v.hd==="number"?v.hd:null});
   });
   return out.sort((a,b)=>a.bus-b.bus);
 }
@@ -638,19 +638,37 @@ function nextScheduled(route,stopId){
 // 이 정류장에서 타는 버스가 가는 곳 (종점·경유지)
 function stopDest(route,stopId){ return ({yatap:{church:"교회", byc:"야탑역"}, park:{church:"교회", cdong:"C동", dmv:"교회"}})[route]?.[stopId]||null; }
 function rideDir(route,stopId){ return ({yatap:{byc:"교회 가는 버스", church:"야탑역 가는 버스"}, park:{cdong:"교회 가는 버스", dmv:"교회 가는 버스", church:"C동 가는 버스"}})[route]?.[stopId]||""; }
+// ---------- 이 버스가 이 정류장으로 오는 버스인가? ----------
+// · 행선지(to)가 반대인 버스는 빼기. 단, 종점 안에 '멈춰 있는' 버스는 다음 운행을 기다리는 버스라 보여 줌
+// · 원 안에 들어와도 빠르게 달리고 있으면(반대편 도로를 지나가는 경우 등) '도착'으로 보지 않음
+// · 행선지를 모르면 달리는 방향(hd)이 정류장 쪽인지 확인
+const SLOW_KMH = 12;
+const RTERM = { yatap:["byc","church"], park:["cdong","church"] };
+function bearingTo(a,b){ const t=Math.PI/180, y=Math.sin((b.lng-a.lng)*t)*Math.cos(b.lat*t), x=Math.cos(a.lat*t)*Math.sin(b.lat*t)-Math.sin(a.lat*t)*Math.cos(b.lat*t)*Math.cos((b.lng-a.lng)*t); return (Math.atan2(y,x)/t+360)%360; }
+function angDiff(a,b){ const d=Math.abs(a-b)%360; return d>180?360-d:d; }
+function busRel(route,stop,b,prev){
+  const d=dist(b,stop), r=stopR(stop), de=Math.max(0,d-r), dest=stopDest(route,stop.id);
+  const moving = typeof b.spd==="number" && b.spd>SLOW_KMH, inside = d<=r;
+  const match = !b.to || !dest || b.to===dest;
+  if(!match){
+    if(inside && !moving && RTERM[route].includes(stop.id)) return {d,de:0,arrived:true,eta:0,waiting:true};
+    return null;
+  }
+  if(!b.to && moving && typeof b.hd==="number" && !inside && angDiff(bearingTo(b,stop),b.hd)>100) return null;
+  const key=route+b.bus+stop.id, p=prev[key];
+  const approaching = (inside&&!moving) || p==null || d < p.d-10 || (p.approaching && d <= p.d+10);
+  if(p==null || Math.abs(d-p.d)>10) prev[key]={d,approaching};
+  if(!approaching) return null;
+  const arrived = inside && !moving;
+  return {d,de,arrived,eta: arrived?0:de*ROAD_FACTOR/BUS_SPEED_M_PER_MIN};
+}
 // 실시간 도착 예상: 이 정류장 쪽으로 다가오는 버스 중 가장 가까운 것
 function liveEta(route,stop){
   let best=null;
   liveBuses(route).forEach(b=>{
     if(b.old) return;
-    const d=dist(b,stop), r=stopR(stop), arrived=d<=r, de=Math.max(0,d-r);
-    if(!arrived && b.to && stopDest(route,stop.id) && stopDest(route,stop.id)!==b.to && de>150) return;
-    const key=route+b.bus+stop.id; const p=S.prev[key];
-    const approaching = arrived || de<150 || p==null || d < p.d - 15 || (p.approaching && d <= p.d + 15);
-    if(p==null || Math.abs(d-p.d)>15) S.prev[key]={d,approaching};
-    if(!approaching) return;
-    const eta = arrived ? 0 : de*ROAD_FACTOR/BUS_SPEED_M_PER_MIN;
-    if(!best || eta<best.eta) best={bus:b.bus,d:de,eta,to:b.to,arrived};
+    const x=busRel(route,stop,b,S.prev); if(!x) return;
+    if(!best || x.eta<best.eta) best={bus:b.bus,d:x.de,eta:x.eta,to:b.to,arrived:x.arrived};
   });
   return best;
 }
@@ -727,18 +745,16 @@ function checkAlerts(){
     const [route,stopId]=key.split(":"); const stop=ROUTES[route]?.stops.find(s=>s.id===stopId); if(!stop) return;
     liveBuses(route).forEach(b=>{
       if(b.old) return;
-      if(b.to && stopDest(route,stopId) && stopDest(route,stopId)!==b.to) return;
       const d=dist(b,stop), r=stopR(stop), de=Math.max(0,d-r); const nk=key+":"+b.bus;
-      if(d<=r){
+      if(de>NEAR_M*1.8){ delete S.notified[nk]; delete S.notified[nk+":arr"]; return; }
+      const x=busRel(route,stop,b,S.prev); if(!x || x.waiting) return;
+      if(x.arrived){
         if(!S.notified[nk+":arr"]){ S.notified[nk+":arr"]=1; S.notified[nk]=1; notify(`${b.bus}호차가 도착했어요`, `${stop.name}에 버스가 와 있어요 · ${ROUTES[route].name}`); }
       } else if(de<=NEAR_M && !S.notified[nk]){
-        const p=S.prev[route+b.bus+stopId];
-        if(p && p.approaching===false && de>150) return;
         S.notified[nk]=1;
         const m=Math.max(1,Math.ceil(de*ROAD_FACTOR/BUS_SPEED_M_PER_MIN));
         notify(`${b.bus}호차가 곧 도착해요`, `${stop.name}까지 약 ${m}분 (${km(de)}) · ${ROUTES[route].name}`);
       }
-      if(de>NEAR_M*1.8){ delete S.notified[nk]; delete S.notified[nk+":arr"]; }
     });
   });
 }
@@ -981,7 +997,7 @@ function newLeg(stop){
   D.lastSent=0; // 회차·방향이 바뀌면 바로 알림
 }
 // 종점(정류장 80m 안)에 들어오면 새 회차, 150m 밖으로 나가면 출발 시각 기록
-function legCheck(lat,lng){
+function legCheck(lat,lng,spd){
   const stops=ROUTES[D.route].stops.filter(s=>TERMINALS[D.route].includes(s.id));
   let near=null; stops.forEach(s=>{ const d=dist({lat,lng},s); if(!near||d<near.d) near={s,d}; });
   if(!near) return;
@@ -998,9 +1014,16 @@ function legCheck(lat,lng){
     else D.guess={lat,lng};
   }
   const IN=s=>Math.max(80,stopR(s));
-  if(near.d<IN(near.s)){ if(D.legFrom!==near.s.id) newLeg(near.s); D.atT=near.s.id; }
-  else if(D.atT){ const t=ROUTES[D.route].stops.find(s=>s.id===D.atT);
-    if(dist({lat,lng},t)>IN(t)+70){ update(ref(db,logPath("legs",D.leg)),{dep:serverTimestamp()}).catch(()=>{}); D.atT=null; } }
+  if(near.d<IN(near.s)){
+    // 종점 근처를 그냥 지나가는 경우(반대편 도로 등)는 도착이 아님: 천천히 가거나 25초 넘게 머물러야 도착
+    if(!D.inT || D.inT.id!==near.s.id) D.inT={id:near.s.id,t:Date.now()};
+    const stopped = (typeof spd==="number" && spd<=SLOW_KMH) || Date.now()-D.inT.t>=25000;
+    if(stopped){ if(D.legFrom!==near.s.id) newLeg(near.s); D.atT=near.s.id; }
+  } else {
+    D.inT=null;
+    if(D.atT){ const t=ROUTES[D.route].stops.find(s=>s.id===D.atT);
+      if(dist({lat,lng},t)>IN(t)+70){ update(ref(db,logPath("legs",D.leg)),{dep:serverTimestamp()}).catch(()=>{}); D.atT=null; } }
+  }
 }
 async function initDrvMap(){
   if(!D.map){
@@ -1087,16 +1110,31 @@ async function keepAwake(){
 setInterval(()=>{ if(D.on && document.visibilityState==="visible"){ if(!(D.wake&&!D.wake.released) || (D.nsv&&D.nsv.paused)) keepAwake(); } },20000);
 function liveState(text,bad){ $("liveState").textContent=text; $("dst").classList.remove("hide"); $("dst").classList.toggle("bad",!!bad); $("liveBox").classList.toggle("bad",!!bad); }
 
+// 휴대폰이 속도·방향을 안 알려 주면 직전 위치와 비교해 계산
+function motion(p){
+  const c=p.coords, now=p.timestamp||Date.now(), cur={lat:c.latitude,lng:c.longitude,t:now};
+  let spd = c.speed==null||isNaN(c.speed) ? null : c.speed*3.6, hd = c.heading==null||isNaN(c.heading) ? null : c.heading;
+  const m=D.mPrev;
+  if(m && now-m.t>=3000){
+    const dd=dist(m,cur), dt=(now-m.t)/1000;
+    if(spd==null && dt<60) spd=dd/dt*3.6;
+    if(hd==null && dd>=15) hd=bearingTo(m,cur);
+    D.mPrev=cur;
+  } else if(!m) D.mPrev=cur;
+  if(hd==null && D.mHd!=null && spd!=null && spd>SLOW_KMH) hd=D.mHd;
+  if(hd!=null) D.mHd=hd;
+  return {spd: spd==null?null:Math.round(spd), hd: hd==null?null:Math.round(hd)};
+}
 async function sendPos(p){
-  D.last=p;
-  try{ legCheck(p.coords.latitude,p.coords.longitude); moveMe(p.coords.latitude,p.coords.longitude); }catch(_){}
+  D.last=p; const mv=motion(p);
+  try{ legCheck(p.coords.latitude,p.coords.longitude,mv.spd); moveMe(p.coords.latitude,p.coords.longitude); }catch(_){}
   if($("dst").classList.contains("bad")) liveState("전송 중",false);
   const now=Date.now(); if(now-D.lastSent < SEND_EVERY_MS - 300) return;
   D.lastSent=now;
   const c=p.coords;
   try{
     await set(D.busRef,{lat:+c.latitude.toFixed(6), lng:+c.longitude.toFixed(6), acc:Math.round(c.accuracy||0),
-      spd: c.speed==null?null:Math.round(c.speed*3.6), hd: c.heading==null||isNaN(c.heading)?null:Math.round(c.heading),
+      spd: mv.spd, hd: mv.hd,
       ts:serverTimestamp(), uid, trip:D.trip, to:D.to||""});
     D.count++; $("liveCount").textContent=D.count+"회";
     $("liveAcc").textContent= c.accuracy ? `약 ${Math.round(c.accuracy)}m` : "-";

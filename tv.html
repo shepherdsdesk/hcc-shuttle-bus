@@ -530,7 +530,7 @@ function liveBuses(route){
   const now=serverNow(), out=[];
   Object.entries(LIVE[route]||{}).forEach(([bus,v])=>{
     if(!v||typeof v.lat!=="number") return; const age=now-(v.ts||0); if(age>GONE_MS) return;
-    out.push({bus:+bus,lat:v.lat,lng:v.lng,age,old:age>STALE_MS,to:v.to||""});
+    out.push({bus:+bus,lat:v.lat,lng:v.lng,age,old:age>STALE_MS,to:v.to||"",spd:typeof v.spd==="number"?v.spd:null,hd:typeof v.hd==="number"?v.hd:null});
   });
   return out.sort((a,b)=>a.bus-b.bus);
 }
@@ -544,17 +544,35 @@ function scheduleFor(route,stopId,day){
 }
 function stopDest(route,id){ return (({yatap:{church:"교회",byc:"야탑역"},park:{church:"교회",cdong:"C동",dmv:"교회"}})[route]||{})[id]||null; }
 function rideDir(route,id){ return (({yatap:{byc:"교회 가는 버스",church:"야탑역 가는 버스"},park:{cdong:"교회 가는 버스",dmv:"교회 가는 버스",church:"C동 가는 버스"}})[route]||{})[id]||""; }
+// ---------- 이 버스가 이 정류장으로 오는 버스인가? ----------
+// · 행선지(to)가 반대인 버스는 빼기. 단, 종점 안에 '멈춰 있는' 버스는 다음 운행을 기다리는 버스라 보여 줌
+// · 원 안에 들어와도 빠르게 달리고 있으면(반대편 도로를 지나가는 경우 등) '도착'으로 보지 않음
+// · 행선지를 모르면 달리는 방향(hd)이 정류장 쪽인지 확인
+const SLOW_KMH = 12;
+const RTERM = { yatap:["byc","church"], park:["cdong","church"] };
+function bearingTo(a,b){ const t=Math.PI/180, y=Math.sin((b.lng-a.lng)*t)*Math.cos(b.lat*t), x=Math.cos(a.lat*t)*Math.sin(b.lat*t)-Math.sin(a.lat*t)*Math.cos(b.lat*t)*Math.cos((b.lng-a.lng)*t); return (Math.atan2(y,x)/t+360)%360; }
+function angDiff(a,b){ const d=Math.abs(a-b)%360; return d>180?360-d:d; }
+function busRel(route,stop,b,prev){
+  const d=dist(b,stop), r=stopR(stop), de=Math.max(0,d-r), dest=stopDest(route,stop.id);
+  const moving = typeof b.spd==="number" && b.spd>SLOW_KMH, inside = d<=r;
+  const match = !b.to || !dest || b.to===dest;
+  if(!match){
+    if(inside && !moving && RTERM[route].includes(stop.id)) return {d,de:0,arrived:true,eta:0,waiting:true};
+    return null;
+  }
+  if(!b.to && moving && typeof b.hd==="number" && !inside && angDiff(bearingTo(b,stop),b.hd)>100) return null;
+  const key=route+b.bus+stop.id, p=prev[key];
+  const approaching = (inside&&!moving) || p==null || d < p.d-10 || (p.approaching && d <= p.d+10);
+  if(p==null || Math.abs(d-p.d)>10) prev[key]={d,approaching};
+  if(!approaching) return null;
+  const arrived = inside && !moving;
+  return {d,de,arrived,eta: arrived?0:de*ROAD_FACTOR/BUS_SPEED_M_PER_MIN};
+}
 function liveEta(route,stop){
   let best=null;
   liveBuses(route).forEach(b=>{
-    if(b.old) return; const d=dist(b,stop), r=stopR(stop), arrived=d<=r, de=Math.max(0,d-r);
-    if(!arrived && b.to && stopDest(route,stop.id) && stopDest(route,stop.id)!==b.to && de>150) return;
-    const key=route+b.bus+stop.id, p=prev[key];
-    const approaching = arrived || de<150 || p==null || d < p.d-15 || (p.approaching && d <= p.d+15);
-    if(p==null || Math.abs(d-p.d)>15) prev[key]={d,approaching};
-    if(!approaching) return;
-    const eta=arrived?0:de*ROAD_FACTOR/BUS_SPEED_M_PER_MIN;
-    if(!best || eta<best.eta) best={bus:b.bus,d:de,eta,arrived};
+    if(b.old) return; const x=busRel(route,stop,b,prev); if(!x) return;
+    if(!best || x.eta<best.eta) best={bus:b.bus,d:x.de,eta:x.eta,arrived:x.arrived};
   });
   return best;
 }
