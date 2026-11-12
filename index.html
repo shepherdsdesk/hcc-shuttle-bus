@@ -238,6 +238,51 @@
 .dlist li span{font-size:26px;width:34px;text-align:center;flex:none}
 .dlist b{color:#fff}
 body{word-break:keep-all;overflow-wrap:break-word}
+/* ===== 기사님 화면: 기기·화면마다 맞춤 ===== */
+body.drv .app{max-width:none}
+@media (min-width:600px) and (orientation:portrait){ body.drv .d{max-width:900px;margin:0 auto} }
+.d{min-height:100vh;min-height:100dvh}
+/* 운행 중: 한 화면에 꼭 맞게 (지도가 남는 공간을 채우고, 운행 종료 버튼은 항상 보이게) */
+body.drv.drun{overflow:hidden}
+body.drun .d{height:100vh;height:100dvh;min-height:0;overflow:hidden}
+body.drun #drvLive{min-height:0}
+body.drun #drvMap{flex:1 1 auto;height:auto;min-height:150px}
+body.drun #stopBtn{margin-top:0;flex:none}
+/* 낮은 화면(작은 휴대폰·가로 휴대폰): 조금 촘촘하게 */
+@media (max-height:700px){
+  body.drun .d{gap:10px;padding-top:calc(10px + env(safe-area-inset-top));padding-bottom:calc(10px + env(safe-area-inset-bottom))}
+  body.drun #drvLive{gap:10px!important}
+  body.drun #liveBox{padding:12px 16px}
+  body.drun #liveTitle{font-size:40px!important}
+  body.drun #liveDir{font-size:22px!important}
+  body.drun .dtile{padding:10px 14px}
+  body.drun .dtile b{font-size:28px}
+  body.drun #stopBtn{padding:16px;font-size:21px}
+  body.drun .dhint{display:none}
+}
+/* 태블릿: 글씨와 버튼을 크게, 가운데 정렬 */
+@media (min-width:600px) and (min-height:600px){
+  .d{padding-left:28px;padding-right:28px;gap:18px}
+  .dh b{font-size:20px} .dh small{font-size:14px} .dlogo{width:46px;height:46px;border-radius:13px}
+  .dst{font-size:16px}
+  #drvPin,#drvSetup{width:100%;max-width:640px;margin:0 auto}
+  .dbig{font-size:30px;padding:30px;border-radius:24px}
+  .dpin{font-size:40px}
+  .dlist li{font-size:20px} .dlist li span{font-size:30px;width:40px}
+  #asgBus{font-size:68px!important} #asgRoute{font-size:26px!important}
+  #liveTitle{font-size:76px!important} #liveDir{font-size:36px!important} #liveFrom{font-size:19px!important} #liveRoute{font-size:17px!important}
+  .dtile span{font-size:16px} .dtile b{font-size:46px} .dtile b small{font-size:20px}
+  .dmeta{font-size:15px} .dhint{font-size:15px!important}
+}
+/* 가로 화면(태블릿 가로, 휴대폰 가로): 왼쪽 정보 + 오른쪽 큰 지도 */
+@media (orientation:landscape) and (min-width:640px){
+  body.drun #drvLive{display:grid!important;grid-template-columns:minmax(300px,40%) 1fr;
+    grid-template-rows:auto auto auto auto 1fr;grid-template-areas:"box map" "tiles map" "meta map" "hint map" "stop map";column-gap:16px}
+  body.drun #liveBox{grid-area:box} body.drun .dtiles{grid-area:tiles} body.drun .dmeta{grid-area:meta}
+  body.drun .dhint{grid-area:hint} body.drun #drvMap{grid-area:map;height:100%;min-height:0}
+  body.drun #stopBtn{grid-area:stop;align-self:end}
+  #drvSetup{max-width:760px}
+}
 </style>
 </head>
 <body>
@@ -351,7 +396,7 @@ body{word-break:keep-all;overflow-wrap:break-word}
         </div>
         <div id="drvMap"></div>
         <div class="dmeta"><span id="liveSent">-</span><span>GPS <b id="liveAcc">-</b></span><span>화면 <b id="liveWake">-</b></span><span>전송 <b id="liveCount">0회</b></span></div>
-        <div style="font-size:12.5px;color:#94A3B8;padding:0 4px">주황 점 = 길에서 기다리는 성도님 · 정차한 뒤 확인해 주세요</div>
+        <div class="dhint" style="font-size:12.5px;color:#94A3B8;padding:0 4px">주황 점 = 길에서 기다리는 성도님 · 정차한 뒤 확인해 주세요</div>
         <button class="dbig stop" id="stopBtn">운행 종료</button>
       </div>
     </div>
@@ -1201,7 +1246,12 @@ function moveMe(lat,lng){
   else { D.me.move(lat,lng); if(D.me._html!==html){ D.me.html(html); D.me._html=html; } if(!D.userMoved) D.map.center(lat,lng,true); }
 }
 
-function drvShow(which){ ["drvPin","drvSetup","drvLive"].forEach(id=>$(id).classList.toggle("hide",id!==which)); }
+function drvShow(which){ ["drvPin","drvSetup","drvLive"].forEach(id=>$(id).classList.toggle("hide",id!==which));
+  document.body.classList.toggle("drun",which==="drvLive"); drvFit(); }
+// 기기 화면 크기·방향이 바뀌면 지도 크기를 다시 맞춤 (태블릿 회전, 주소창 접힘 등)
+function drvFit(){ if(D.map) setTimeout(()=>{ try{ D.map.resize(); }catch(_){} },120); }
+window.addEventListener("resize",()=>{ if(document.body.classList.contains("drun")) drvFit(); });
+window.addEventListener("orientationchange",()=>setTimeout(drvFit,300));
 // 노선별 차량 목록: 관리자가 정한 것(config/buses), 없으면 1~4호차
 let CFG_BUSES=null;
 function busesFor(route){
