@@ -1010,16 +1010,17 @@ function setupInstall(){
 // ---------- 교회 소식 (관리자 → config/news) ----------
 const todayKST = () => new Date((typeof serverNow==="function"?serverNow():Date.now())+9*3600e3).toISOString().slice(0,10);
 function activeNews(cfg){ const t=todayKST();
-  return Object.entries(cfg||{}).map(([id,v])=>Object.assign({id},v)).filter(n=>n && n.text && n.on!==false && (!n.from||n.from<=t) && (!n.until||n.until>=t)).sort((a,b)=>(a.ts||0)-(b.ts||0)); }
+  return Object.entries(cfg||{}).map(([id,v])=>Object.assign({id},v)).filter(n=>n && n.text && n.on!==false && (!n.from||n.from<=t) && (!n.until||n.until>=t)).sort((a,b)=>((b.star?1:0)-(a.star?1:0))||((a.ts||0)-(b.ts||0))); }
 let newsOpen=false, newsSig="", newsCfg=null;
 function drawNews(cfg){
   newsCfg=cfg;
   const list=activeNews(cfg), el=$("news"); el.classList.toggle("hide",!list.length);
   if(!list.length){ newsSig=""; if(typeof fitMap==="function" && map) setTimeout(fitMap,50); return; }
-  const sig=list.map(n=>n.text).join("\u0001")+"|"+newsOpen; if(sig===newsSig) return; const first=!newsSig; newsSig=sig;
+  const sig=list.map(n=>(n.star?"*":"")+n.text).join("\u0001")+"|"+newsOpen; if(sig===newsSig) return; const first=!newsSig; newsSig=sig;
   el.classList.toggle("open",newsOpen);
-  const one=list.map(n=>`<span>${esc(n.text)}</span>`).join("");
-  el.innerHTML=`<button type="button" aria-expanded="${newsOpen}" aria-label="교회 소식 ${list.length}개 펼치기"><span class="tg">교회 소식</span><span class="vw"><span class="tr">${one}</span></span><svg class="ar" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button><ul>${list.map(n=>`<li>${esc(n.text)}</li>`).join("")}</ul>`;
+  const imp='<b style="font-size:11px;font-weight:800;color:#fff;background:#D97706;border-radius:5px;padding:1px 5px;margin-right:5px">중요</b>';
+  const one=list.map(n=>`<span>${n.star?imp:""}${esc(n.text)}</span>`).join("");
+  el.innerHTML=`<button type="button" aria-expanded="${newsOpen}" aria-label="교회 소식 ${list.length}개 펼치기"><span class="tg">교회 소식</span><span class="vw"><span class="tr">${one}</span></span><svg class="ar" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button><ul>${list.map(n=>`<li>${n.star?imp:""}${esc(n.text)}</li>`).join("")}</ul>`;
   // 한 바퀴를 두 벌 이어 붙여 끊김 없이 흐르게 (초당 약 45px)
   const tr=el.querySelector(".tr"), vw=el.querySelector(".vw"); let reps=1; const w=tr.scrollWidth||1;
   while(w*reps<vw.clientWidth && reps<8) reps++;

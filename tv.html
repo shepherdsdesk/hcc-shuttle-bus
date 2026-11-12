@@ -32,7 +32,7 @@
   .main{display:grid;grid-template-columns:1.25fr 1fr .8fr;grid-template-areas:"map boards times";gap:1.6vmin;min-height:0}
   .mapbox{grid-area:map}.boards{grid-area:boards}.times{grid-area:times}
   /* 시간표 */
-  .times{background:var(--card);border:.2vmin solid var(--line);border-radius:2vmin;padding:1.2vmin 1.8vmin;display:flex;flex-direction:column;gap:1vmin;overflow:hidden;min-height:0}
+  .times{background:var(--cardA,var(--card));border:.2vmin solid var(--line);border-radius:2vmin;padding:1.2vmin 1.8vmin;display:flex;flex-direction:column;gap:1vmin;overflow:hidden;min-height:0}
   .times>h2{margin:0;display:flex;align-items:baseline;gap:1vmin;font-size:2.7vmin;font-weight:900}
   .times>h2 small{margin-left:auto;font-size:1.8vmin;color:var(--sub);font-weight:700}
   .ttr{display:flex;flex-direction:column;gap:.6vmin;padding-top:.9vmin;border-top:.15vmin solid var(--line)}
@@ -63,7 +63,7 @@
   .legend span{display:inline-flex;align-items:center;gap:.7vmin}
   .legend i{width:1.6vmin;height:1.6vmin;border-radius:.4vmin;display:inline-block}
   .boards{display:flex;flex-direction:column;gap:1.6vmin;min-height:0}
-  .rt{flex:1;min-height:0;background:var(--card);border:.2vmin solid var(--line);border-radius:2vmin;padding:1.2vmin 1.8vmin;display:flex;flex-direction:column;gap:.4vmin;overflow:hidden}
+  .rt{flex:1;min-height:0;background:var(--cardA,var(--card));border:.2vmin solid var(--line);border-radius:2vmin;padding:1.2vmin 1.8vmin;display:flex;flex-direction:column;gap:.4vmin;overflow:hidden}
   .rt h2{margin:0 0 .3vmin;display:flex;align-items:center;gap:1.2vmin;font-size:2.7vmin;font-weight:900}
   .rt h2 .sw{width:2vmin;height:2vmin;border-radius:.5vmin}
   .rt h2 small{margin-left:auto;font-size:1.9vmin;color:var(--sub);font-weight:700}
@@ -117,7 +117,7 @@
   /* 제목 띠 (장식 · 사진) */
   header{position:relative}
   header>*:not(.hdbg){position:relative;z-index:1}
-  .hdbg{display:none;position:absolute;inset:0;border-radius:2vmin;overflow:hidden;z-index:0;background:var(--card);border:.2vmin solid var(--line)}
+  .hdbg{display:none;position:absolute;inset:0;border-radius:2vmin;overflow:hidden;z-index:0;background:var(--cardA,var(--card));border:.2vmin solid var(--line)}
   body.band header{padding:1.2vmin 1.8vmin}
   body.band .hdbg{display:block}
   .hdbg .ph{position:absolute;inset:0;background-size:cover;background-position:center}
@@ -140,11 +140,44 @@
   body.light .stopmk{background:#fff}
   body.light .stoplab{background:rgba(255,255,255,.95);color:#0F172A}
   body.light .pill{border-color:#fff}
-  body.light .pill.out{background:#fff!important}
+  body.light .pill.out{background:#fff!important;color:#14213D!important}
   body.light .eta.soon b{color:#DC2626}
   body.light .notice{background:#FFF7E6;border-color:#F3C77A;color:#92400E}
   body.light .ctl{background:rgba(255,255,255,.95)}
   body.light .chips .none,body.light .eta.none b{color:#94A3B8}
+  /* 자막 빛줄기 · 강조 */
+  .ticker{position:relative}
+  .ticker .shine{position:absolute;top:0;bottom:0;left:0;width:22%;pointer-events:none;background:linear-gradient(105deg,transparent 0%,var(--shine,rgba(255,255,255,.35)) 50%,transparent 100%);opacity:0;transform:translateX(-120%);animation:shine 7s ease-in-out infinite;will-change:transform}
+  @keyframes shine{0%{transform:translateX(-120%);opacity:0}3%{opacity:1}16%{transform:translateX(560%);opacity:1}17%,100%{transform:translateX(560%);opacity:0}}
+  .ticker .tag i{animation:dotp 7s ease-in-out infinite}
+  @keyframes dotp{0%,1%{transform:scale(1);box-shadow:none}5%{transform:scale(1.7);box-shadow:0 0 1.4vmin var(--deco)}11%,100%{transform:scale(1);box-shadow:none}}
+  .tk-track span.hi{color:#FCD34D}
+  body.light .tk-track span.hi{color:#B45309}
+  .tk-track b.imp{display:inline-block;font-size:1.8vmin;font-weight:900;color:#0B1220;background:#F59E0B;border-radius:.6vmin;padding:.2vmin .9vmin;margin-right:1.2vmin;vertical-align:.3vmin}
+  /* 날씨 */
+  .hright{margin-left:auto;display:flex;align-items:center;gap:2.4vmin}
+  .hright .clock{margin-left:0}
+  .wx{display:flex;align-items:center;gap:1.2vmin;white-space:nowrap}
+  .wx .wi{width:5.2vmin;height:5.2vmin;flex:none}
+  .wx .wi svg{width:100%;height:100%;display:block}
+  .wx b{display:block;font-size:4.2vmin;font-weight:900;line-height:1;font-variant-numeric:tabular-nums}
+  .wx .wt{display:flex;flex-direction:column;gap:.3vmin}
+  .wx .wd{font-size:1.75vmin;color:var(--sub);font-weight:700}
+  .wx .wd i{font-style:normal;color:var(--ink)}
+  .wx .pm{display:inline-block;border-radius:.6vmin;padding:0 .7vmin;font-weight:800;color:#0B1220}
+  body.portrait .wx .wd.d2{display:none}
+  body.portrait .wx b{font-size:3.6vmin}
+  /* 계절 효과: 카드 뒤에서만 */
+  .fx{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .tv{position:relative;z-index:1}
+  .fx .f{position:absolute;top:-10vh;animation:fxfall linear infinite}
+  .fx .f>span{display:block;animation:fxsway ease-in-out infinite alternate}
+  .fx .f svg{display:block;width:100%;height:100%}
+  @keyframes fxfall{from{transform:translateY(-10vh)}to{transform:translateY(120vh)}}
+  @keyframes fxsway{from{transform:translateX(calc(var(--sw) * -1)) rotate(calc(var(--rt) * -1))}to{transform:translateX(var(--sw)) rotate(var(--rt))}}
+  .fx .w{position:absolute;left:0;animation:fxwind linear infinite;opacity:0}
+  @keyframes fxwind{0%{transform:translateX(-40vw);opacity:0}15%{opacity:1}85%{opacity:1}100%{transform:translateX(120vw);opacity:0}}
+  @media (prefers-reduced-motion:reduce){ .fx{display:none} .ticker .shine,.ticker .tag i{animation:none} }
   .hide{display:none!important}
   .toast{display:none}
   /* 세로 화면 */
@@ -161,14 +194,18 @@
 </style>
 </head>
 <body>
+<div class="fx" id="fx" aria-hidden="true"></div>
 <div class="tv">
   <header>
     <div class="hdbg" aria-hidden="true"><div class="ph" id="hdPhoto"></div></div>
     <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" aria-hidden="true"><rect x="4" y="3" width="16" height="14" rx="3"/><path d="M4 11h16M8 21v-4M16 21v-4"/></svg></div>
     <div><h1>HCC 셔틀버스 운행 현황</h1><small>할렐루야교회 셔틀 실시간 안내</small></div>
     <span class="live" id="conn"><i></i><span>연결 중</span></span>
-    <div class="hdeco" id="hdDeco" aria-hidden="true"></div>
-    <div class="clock"><b id="clk">--:--</b><span id="clkDate"></span></div>
+    <div class="hright">
+      <div class="hdeco" id="hdDeco" aria-hidden="true"></div>
+      <div class="wx hide" id="wx" aria-label="오늘 날씨"><span class="wi" id="wxI"></span><div class="wt"><b id="wxT">--°</b><span class="wd" id="wxD"></span><span class="wd d2" id="wxE"></span></div></div>
+      <div class="clock"><b id="clk">--:--</b><span id="clkDate"></span></div>
+    </div>
   </header>
   <div class="notice hide" id="notice"></div>
   <div class="main">
@@ -178,7 +215,7 @@
     <div class="boards" id="boards"></div>
     <section class="times" id="times"></section>
   </div>
-  <div class="ticker hide" id="ticker"><div class="tag"><i></i>교회 소식</div><div class="tk-view"><div class="tk-track" id="tkTrack"></div></div></div>
+  <div class="ticker hide" id="ticker"><div class="tag"><i></i>교회 소식</div><div class="tk-view"><div class="tk-track" id="tkTrack"></div></div><i class="shine"></i></div>
   <footer>
     <div class="qr" id="qr" aria-hidden="true"></div>
     <div class="ftxt"><b>휴대폰으로도 확인하세요</b><span>QR을 찍으면 내 정류장 도착 알림까지 받을 수 있어요</span><span class="site">AI목양지원센터 · mokyangdesk.com</span></div>
@@ -512,7 +549,68 @@ function applyTheme(){
   $("hdDeco").innerHTML = showDeco ? TV_DECO[id] : "";
   $("hdPhoto").style.backgroundImage = showPhoto ? `url("${PHOTO_URL}")` : "none";
   b.classList.toggle("band", showDeco||showPhoto);
+  r.setProperty("--shine", T.dark ? hexA(v.deco,.42) : "rgba(245,181,63,.5)");
+  // 계절 효과가 카드 너머로 은은하게 비치도록 카드를 살짝 투명하게
+  const fxOn = THEME_CFG.fx!==false && !!FX_OF[id];
+  r.setProperty("--cardA", fxOn ? hexA(v.card, T.dark?.8:.78) : v.card);
+  setFx(THEME_CFG.fx===false ? "" : (FX_OF[id]||""), T.dark);
   if(id!==THEME_ID){ THEME_ID=id; if(typeof drawStopMarks==="function") drawStopMarks(); if(typeof drawTvPaths==="function") drawTvPaths(); $("boards")._h=null; $("times")._h=null; }
+}
+// ---------- 계절 효과 ----------
+const hexA=(h,a)=>{ const n=parseInt(h.slice(1),16); return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`; };
+const FX_OF={spring:"petal",easter:"petal",summer:"wind",pentecost:"wind",autumn:"leaf",thanks:"leaf",winter:"snow",advent:"snow",christmas:"snow"};
+let FX_NOW="";
+function setFx(kind,dark){
+  const key=kind+(dark?"d":"l"); if(key===FX_NOW) return; FX_NOW=key;
+  const box=$("fx"); box.innerHTML=""; if(!kind) return;
+  const R=(a,b)=>a+Math.random()*(b-a);
+  const petal=c=>`<svg viewBox="0 0 20 20"><path d="M10 1C14.5 5 15.5 11.5 10 19C4.5 11.5 5.5 5 10 1Z" fill="${c}"/></svg>`;
+  const leaf=c=>`<svg viewBox="0 0 24 24"><path d="M12 2C18 6 19 14 12 22C5 14 6 6 12 2Z" fill="${c}"/><path d="M12 4V21" stroke="rgba(0,0,0,.25)" stroke-width="1.2"/></svg>`;
+  let h="";
+  if(kind==="wind"){
+    for(let i=0;i<7;i++){ const top=R(8,92), w=R(16,30), dur=R(9,15), del=-R(0,15), c=dark?"rgba(186,230,253,.35)":"rgba(56,189,248,.35)";
+      h+=`<div class="w" style="top:${top}vh;width:${w}vmin;height:3vmin;animation-duration:${dur}s;animation-delay:${del}s"><svg viewBox="0 0 120 12" preserveAspectRatio="none" style="width:100%;height:100%"><path d="M0 6 Q15 0 30 6 T60 6 T90 6 T120 6" fill="none" stroke="${c}" stroke-width="2.2" stroke-linecap="round"/></svg></div>`; }
+  } else {
+    const n = kind==="snow"?28:kind==="petal"?18:14;
+    for(let i=0;i<n;i++){
+      const left=R(0,100), size = kind==="snow"?R(.8,1.8):kind==="petal"?R(1.8,3):R(2.4,3.8), dur=R(kind==="snow"?12:14, kind==="snow"?22:26), del=-R(0,26), sw=R(2,6), rt=kind==="snow"?0:R(25,80), swd=R(2.5,5);
+      let inner;
+      if(kind==="snow") inner=`<div style="width:100%;height:100%;border-radius:50%;background:rgba(255,255,255,.85);box-shadow:0 0 .8vmin rgba(255,255,255,.7)"></div>`;
+      else if(kind==="petal") inner=petal(["#F9A8C9","#FBCFE0","#F472B6"][i%3]);
+      else inner=leaf(["#D97706","#B45309","#DC2626","#CA8A04"][i%4]);
+      h+=`<div class="f" style="left:${left}vw;width:${size}vmin;height:${size}vmin;opacity:${kind==="snow"?R(.65,.95):R(.7,.95)};animation-duration:${dur}s;animation-delay:${del}s"><span style="width:100%;height:100%;--sw:${sw}vmin;--rt:${rt}deg;animation-duration:${swd}s">${inner}</span></div>`;
+    }
+  }
+  box.innerHTML=h;
+}
+// ---------- 오늘 날씨 (Open-Meteo, 키 없이 무료) ----------
+const WX_AT={lat:37.4099,lng:127.1559};
+const WX_ICON={
+  sun:'<svg viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5" fill="#FBBF24"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>',
+  part:'<svg viewBox="0 0 24 24"><circle cx="8.5" cy="8.5" r="4" fill="#FBBF24"/><path d="M7 19h10.5a3.5 3.5 0 0 0 .3-7 5 5 0 0 0-9.6 1.2A3 3 0 0 0 7 19z" fill="#CBD5E1"/></svg>',
+  cloud:'<svg viewBox="0 0 24 24"><path d="M6 19h12a4 4 0 0 0 .4-8 6 6 0 0 0-11.6 1.6A3.3 3.3 0 0 0 6 19z" fill="#94A3B8"/></svg>',
+  rain:'<svg viewBox="0 0 24 24"><path d="M6 15h12a4 4 0 0 0 .4-8 6 6 0 0 0-11.6 1.6A3.3 3.3 0 0 0 6 15z" fill="#94A3B8"/><path d="M8 18l-1 3M12 18l-1 3M16 18l-1 3" stroke="#38BDF8" stroke-width="2" stroke-linecap="round"/></svg>',
+  snow:'<svg viewBox="0 0 24 24"><path d="M6 15h12a4 4 0 0 0 .4-8 6 6 0 0 0-11.6 1.6A3.3 3.3 0 0 0 6 15z" fill="#94A3B8"/><circle cx="8" cy="19.5" r="1.3" fill="#E0F2FE"/><circle cx="12" cy="21" r="1.3" fill="#E0F2FE"/><circle cx="16" cy="19.5" r="1.3" fill="#E0F2FE"/></svg>',
+  fog:'<svg viewBox="0 0 24 24" stroke="#94A3B8" stroke-width="2.2" stroke-linecap="round"><path d="M4 8h16M3 12h18M5 16h14M7 20h10"/></svg>',
+  storm:'<svg viewBox="0 0 24 24"><path d="M6 14h12a4 4 0 0 0 .4-8 6 6 0 0 0-11.6 1.6A3.3 3.3 0 0 0 6 14z" fill="#64748B"/><path d="M12.5 14l-3 5h3l-2 4" stroke="#FBBF24" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'};
+function wxKind(c){ if(c===0) return ["sun","맑음"]; if(c<=2) return ["part","구름 조금"]; if(c===3) return ["cloud","흐림"]; if(c===45||c===48) return ["fog","안개"];
+  if(c>=51&&c<=57) return ["rain","이슬비"]; if(c>=61&&c<=67) return ["rain","비"]; if(c>=71&&c<=77) return ["snow","눈"]; if(c>=80&&c<=82) return ["rain","소나기"];
+  if(c>=85&&c<=86) return ["snow","눈"]; if(c>=95) return ["storm","뇌우"]; return ["cloud","흐림"]; }
+function pmGrade(pm10,pm25){ const g=(v,a)=>v==null?-1:v<=a[0]?0:v<=a[1]?1:v<=a[2]?2:3; const k=Math.max(g(pm10,[30,80,150]),g(pm25,[15,35,75])); return k<0?null:[["좋음","#60A5FA"],["보통","#4ADE80"],["나쁨","#FB923C"],["매우 나쁨","#F87171"]][k]; }
+async function loadWx(){
+  try{
+    const u=`https://api.open-meteo.com/v1/forecast?latitude=${WX_AT.lat}&longitude=${WX_AT.lng}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Asia%2FSeoul&forecast_days=1`;
+    const a=`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${WX_AT.lat}&longitude=${WX_AT.lng}&current=pm10,pm2_5&timezone=Asia%2FSeoul`;
+    const [w,q]=await Promise.all([fetch(u).then(r=>r.json()), fetch(a).then(r=>r.json()).catch(()=>null)]);
+    const cur=w.current||{}, d=w.daily||{}; if(typeof cur.temperature_2m!=="number") throw 0;
+    const [ik,txt]=wxKind(cur.weather_code);
+    $("wxI").innerHTML=WX_ICON[ik]; $("wxT").textContent=Math.round(cur.temperature_2m)+"°";
+    const hi=d.temperature_2m_max&&d.temperature_2m_max[0], lo=d.temperature_2m_min&&d.temperature_2m_min[0], pp=d.precipitation_probability_max&&d.precipitation_probability_max[0];
+    $("wxD").innerHTML=`<i>${txt}</i>${hi!=null?` · 최고 ${Math.round(hi)}° 최저 ${Math.round(lo)}°`:""}`;
+    const pg=q&&q.current?pmGrade(q.current.pm10,q.current.pm2_5):null;
+    $("wxE").innerHTML=[pp!=null?`비 올 확률 ${pp}%`:"", pg?`미세먼지 <span class="pm" style="background:${pg[1]}">${pg[0]}</span>`:""].filter(Boolean).join(" · ");
+    $("wx").classList.remove("hide");
+  }catch(_){ $("wx").classList.add("hide"); }
 }
 function watchPhoto(){
   const want=!!THEME_CFG.photo;
@@ -636,13 +734,13 @@ function liveEta(route,stop){
 // ---------- 교회 소식 (관리자 → config/news) ----------
 const todayKST = () => new Date((typeof serverNow==="function"?serverNow():Date.now())+9*3600e3).toISOString().slice(0,10);
 function activeNews(cfg){ const t=todayKST();
-  return Object.entries(cfg||{}).map(([id,v])=>Object.assign({id},v)).filter(n=>n && n.text && n.on!==false && (!n.from||n.from<=t) && (!n.until||n.until>=t)).sort((a,b)=>(a.ts||0)-(b.ts||0)); }
+  return Object.entries(cfg||{}).map(([id,v])=>Object.assign({id},v)).filter(n=>n && n.text && n.on!==false && (!n.from||n.from<=t) && (!n.until||n.until>=t)).sort((a,b)=>((b.star?1:0)-(a.star?1:0))||((a.ts||0)-(b.ts||0))); }
 let NEWS_CFG=null, tkSig="";
 function drawTicker(){
   const list=activeNews(NEWS_CFG), box=$("ticker"), tr=$("tkTrack");
   box.classList.toggle("hide",!list.length); if(!list.length){ tkSig=""; return; }
-  const sig=list.map(n=>n.text).join("\u0001")+"|"+innerWidth; if(sig===tkSig) return; tkSig=sig;
-  const one=list.map(n=>`<span>${esc(n.text)}</span>`).join("");
+  const sig=list.map(n=>(n.star?"*":"")+n.text).join("\u0001")+"|"+innerWidth; if(sig===tkSig) return; tkSig=sig;
+  const one=list.map(n=>`<span class="${n.star?"hi":""}">${n.star?'<b class="imp">중요</b>':""}${esc(n.text)}</span>`).join("");
   tr.innerHTML=one; const w=tr.scrollWidth, view=tr.parentNode.clientWidth;
   // 한 바퀴가 화면보다 짧으면 반복해서 채움 → 두 벌을 이어 붙여 끊김 없이 흐르게
   let reps=1; while(w*reps<view && reps<8) reps++;
@@ -751,7 +849,7 @@ try{
 
 // ---------- 시작 ----------
 (async()=>{
-  applyTheme();
+  applyTheme(); loadWx(); setInterval(loadWx, 30*60e3);
   await initMap(); drawTvPaths();
   onValue(ref(db,"live"), s=>{ const v=s.val()||{}; LIVE={yatap:v.yatap||{},park:v.park||{}}; drawMap(); drawBoards(); });
   onValue(ref(db,"config"), s=>{ const c=s.val()||{};
