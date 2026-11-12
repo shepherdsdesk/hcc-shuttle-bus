@@ -322,7 +322,7 @@ body.portrait.rest.noposter .restbox.nv.nw{grid-template-rows:auto 1fr;grid-temp
 body.portrait.rest .rb-head{flex-direction:row;align-items:center;gap:2vmin}
 body.portrait.rest .rb-top{flex:1.1}
 body.portrait.rest .rb-list{flex:1}
-body.portrait.rest.noposter .wtiles{grid-template-columns:repeat(3,1fr)}
+body.portrait.rest.noposter .wtiles{grid-template-columns:repeat(4,1fr)}
 /* 포스터와 함께 (세로): 포스터 아래 [안내 | 바뀌는 칸] */
 body.portrait.rest:not(.noposter) .restbox{display:grid;grid-template-columns:1fr;grid-template-rows:auto auto;grid-template-areas:"head" "more";padding:1.6vmin 2vmin}
 body.portrait.rest:not(.noposter) .rb-more{grid-area:more;min-height:24vmin}
@@ -360,6 +360,15 @@ body.rest.noposter:not(.portrait) .restbox{grid-template-rows:auto auto auto;ali
 .rb-verse .motto{font-size:2vmin;font-weight:800;color:var(--deco);display:flex;align-items:baseline;gap:.8vmin;flex-wrap:wrap}
 .rb-verse .motto b{font-size:2.3vmin;color:var(--ink)}
 .rb-verse .motto small{color:var(--sub);font-weight:700}
+.wt.wk2{background:transparent;border-style:dashed}
+.wt.wk2 .n{color:var(--sub)}
+.wt .n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.rest:not(.noposter):not(.portrait) .wtiles{grid-template-columns:repeat(4,minmax(0,1fr));gap:.8vmin}
+body.rest:not(.noposter):not(.portrait) .wt{padding:.8vmin .4vmin}
+body.rest:not(.noposter):not(.portrait) .wt .t{font-size:3vmin}
+body.rest:not(.noposter):not(.portrait) .wt .n{font-size:1.6vmin}
+body.rest:not(.noposter):not(.portrait) .wt .ap,body.rest:not(.noposter):not(.portrait) .wt .pl{font-size:1.35vmin}
+body.portrait.rest:not(.noposter) .wtiles{grid-template-columns:repeat(4,minmax(0,1fr))!important}
 </style>
 </head>
 <body>
@@ -1135,12 +1144,20 @@ function weekHtml(){
       return all.length ? `<span class="c${d===day?' today':''}"><b>${hhmm(Math.min(...all))}</b><small>~${hhmm(Math.max(...all))}</small></span>` : `<span class="c off${d===day?' today':''}"><b>쉼</b></span>`; }).join(""); });
   return h+`</div></div>`;
 }
-function worshipHtml(lines){
-  return `<div class="rb-sec rb-wor"><h3>⛪ 주일 예배 안내</h3><div class="wtiles">`+lines.map(line=>{
-    const p=line.split(/\s*[·|]\s*/), name=p[0]||"", rest=p.slice(1);
-    let ti=rest.findIndex(x=>/\d{1,2}:\d{2}/.test(x)), ap="", t="", place=[];
-    if(ti>=0){ const m=rest[ti].match(/(오전|오후)?\s*(\d{1,2}:\d{2})/); ap=m[1]||""; t=m[2]; place=rest.filter((_,k)=>k!==ti); } else place=rest;
-    return `<div class="wt"><span class="n">${esc(name)}</span>${ap?`<span class="ap">${ap}</span>`:""}${t?`<span class="t">${t}</span>`:""}${place.length?`<span class="pl">${esc(place.join(" · "))}</span>`:""}</div>`; }).join("")+`</div></div>`;
+// 예배 안내: 관리자가 칸으로 정한 목록(worshipList) · 예전 글 방식도 읽음
+function worshipItems(){
+  const L=REST_CFG.worshipList;
+  const arr = Array.isArray(L) ? L : (L && typeof L==="object" ? Object.values(L) : null);
+  if(arr) return arr.filter(x=>x && (x.n||x.t)).map(x=>{ let ap="", t=""; if(/^\d{1,2}:\d{2}$/.test(x.t||"")){ const [h,m]=x.t.split(":").map(Number); ap=h<12?"오전":"오후"; t=((h%12)||12)+":"+String(m).padStart(2,"0"); }
+    return {n:x.n||"", d:x.d||"주일", ap, t, p:x.p||""}; });
+  return String(REST_CFG.worship||"").split(/\n/).map(x=>x.trim()).filter(Boolean).map(line=>{ const q=line.split(/\s*[·|]\s*/); let ap="",t="",p=[];
+    q.slice(1).forEach(x=>{ const m=x.match(/(오전|오후)?\s*(\d{1,2}:\d{2})/); if(m&&!t){ ap=m[1]||""; t=m[2]; } else p.push(x); }); return {n:q[0]||"",d:"주일",ap,t,p:p.join(" · ")}; });
+}
+function worshipHtml(items){
+  const allSun=items.every(x=>x.d==="주일");
+  return `<div class="rb-sec rb-wor"><h3>⛪ ${allSun?"주일 예배 안내":"예배 안내"}</h3><div class="wtiles">`+items.map(x=>{
+    const day = x.d==="주일" ? (allSun?"":"주일") : x.d.replace(" (월-금)"," 월-금").replace(/^([월화수목금토])$/,"$1요일");
+    return `<div class="wt${x.d==="주일"?"":" wk2"}"><span class="n">${esc(x.n)}</span><span class="ap">${esc([day,x.ap].filter(Boolean).join(" "))}</span>${x.t?`<span class="t">${x.t}</span>`:""}${x.p?`<span class="pl">${esc(x.p)}</span>`:""}</div>`; }).join("")+`</div></div>`;
 }
 function drawRest(){
   const memo = REST_WHY==="manual" ? String(REST_CFG.dates[todayStr()]||"").trim() : "";
@@ -1157,7 +1174,7 @@ function drawRest(){
   h+=`</div></div><div class="rb-more">`;
   const V=pickVerse(), v=V?V.t:"";
   if(V) h+=`<div class="rb-sec rb-verse">${REST_CFG.motto?`<div class="motto">✝️ <b>${esc(REST_CFG.motto)}</b>${V.kind!=="motto"&&REST_CFG.mottoRef?` <small>${esc(REST_CFG.mottoRef)}</small>`:""}</div>`:""}<h3>📖 ${V.label}</h3><p>${esc(V.t).replace(/\n/g,"<br>")}</p>${V.r?`<cite>${esc(V.r)}</cite>`:""}</div>`;
-  const w=String(REST_CFG.worship||"").split(/\n/).map(x=>x.trim()).filter(Boolean);
+  const w=worshipItems();
   if(w.length) h+=worshipHtml(w);
   h+=weekHtml()+`</div>`;
   const box=$("restBox"); box.classList.toggle("nv",!V); box.classList.toggle("nw",!w.length);
@@ -1228,7 +1245,7 @@ try{
   onValue(ref(db,"live"), s=>{ const v=s.val()||{}; LIVE={yatap:v.yatap||{},park:v.park||{}}; applyRT(); drawMap(); drawBoards(); });
   onValue(ref(db,"config"), s=>{ const c=s.val()||{}; applyBrand(c); WAIT_CFG=c.waitCfg||{};
     TV_ROUTES=["auto","both","yatap","park"].includes(c.tvRoutes)?c.tvRoutes:"auto";
-    const tr=c.tvRest||{}; REST_CFG={afterEnd: tr.afterEnd!==false, beforeFirst: tr.beforeFirst!==false, dates: tr.dates||{}, verse: tr.verse||"", verseRef: tr.verseRef||"", worship: tr.worship||"", motto: tr.motto||"", mottoRef: tr.mottoRef||"", mottoVerse: tr.mottoVerse||"", verses: tr.verses||"", verseMode: tr.verseMode||"", verseEvery: tr.verseEvery||"day"};
+    const tr=c.tvRest||{}; REST_CFG={afterEnd: tr.afterEnd!==false, beforeFirst: tr.beforeFirst!==false, dates: tr.dates||{}, verse: tr.verse||"", verseRef: tr.verseRef||"", worship: tr.worship||"", worshipList: tr.worshipList||null, motto: tr.motto||"", mottoRef: tr.mottoRef||"", mottoVerse: tr.mottoVerse||"", verses: tr.verses||"", verseMode: tr.verseMode||"", verseEvery: tr.verseEvery||"day"};
     const pc=c.tvPosters||{}; POSTER_CFG={when:["rest","always","off"].includes(pc.when)?pc.when:"rest", sec:pc.sec||8}; POSTER_META=c.tvPosterList||{};
     applyRT();
     if(applyStops(c.stops)) drawStopMarks();
