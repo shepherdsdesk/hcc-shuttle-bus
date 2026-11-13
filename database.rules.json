@@ -146,6 +146,9 @@
       },
       "tvLook": {
         ".write": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && (root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff' || root.child('admins').child(auth.token.email.replace('.', ',')).child('perm').child('tv').val() === true))"
+      },
+      "tvVideo": {
+        ".write": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && (root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff' || root.child('admins').child(auth.token.email.replace('.', ',')).child('perm').child('tv').val() === true))"
       }
     },
     "tvmedia": {

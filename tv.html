@@ -411,6 +411,58 @@ body.w-normal *{font-weight:600!important}
 body.w-normal h1,body.w-normal h2,body.w-normal .clock b,body.w-normal .eta b,body.w-normal .chips b,body.w-normal .nx b,body.w-normal .wtile .t,body.w-normal .rb-next b,body.w-normal .restbox h2,body.w-normal .wx b,body.w-normal .hmotto span{font-weight:750!important}
 body.w-light *{font-weight:400!important}
 body.w-light h1,body.w-light h2,body.w-light .clock b,body.w-light .eta b,body.w-light .chips b,body.w-light .nx b,body.w-light .wtile .t,body.w-light .rb-next b,body.w-light .restbox h2,body.w-light .wx b,body.w-light .hmotto span,body.w-light .stop .nm b,body.w-light .rt h2{font-weight:600!important}
+/* ---------- 유튜브 영상 (포스터 자리) ---------- */
+.poster .pvid{position:absolute;inset:2.6vmin;display:none}
+body.vid .poster .pvid{display:block}
+body.vid .poster .pslides,body.vid .poster .pdots{display:none}
+.poster .pvin{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.poster .pvin iframe{border:0;display:block;background:#000;border-radius:1.2vmin;box-shadow:0 1.4vmin 3.6vmin rgba(0,0,0,.35),0 0 0 .3vmin rgba(255,255,255,.18)}
+body.light .poster .pvin iframe{box-shadow:0 1.4vmin 3.2vmin rgba(60,40,10,.22),0 0 0 .35vmin rgba(255,255,255,.9)}
+.poster .vwait{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.6vmin;color:var(--ink);font-weight:700;font-size:2.2vmin;pointer-events:none}
+.poster .vwait span{background:var(--cardA,var(--card));padding:.8vmin 1.8vmin;border-radius:99px;box-shadow:0 .4vmin 1.4vmin rgba(0,0,0,.12)}
+.poster .vwait i{width:4.6vmin;height:4.6vmin;border-radius:50%;border:.5vmin solid currentColor;border-right-color:transparent;animation:vspin 1s linear infinite;opacity:.75}
+@keyframes vspin{to{transform:rotate(360deg)}}
+body.vplay .poster .vwait{display:none}
+.poster .vlive{position:absolute;top:-1.4vmin;left:50%;transform:translateX(-50%);display:none;align-items:center;gap:.8vmin;background:rgba(15,15,20,.78);color:#fff;font-size:1.7vmin;font-weight:700;letter-spacing:.06em;padding:.5vmin 1.4vmin;border-radius:99px;z-index:3}
+.poster .vlive i{width:1.1vmin;height:1.1vmin;border-radius:50%;background:#EF4444;box-shadow:0 0 0 .4vmin rgba(239,68,68,.3);animation:vblink 1.6s ease-in-out infinite}
+@keyframes vblink{50%{opacity:.35}}
+body.vplay.vlivenow .poster .vlive{display:inline-flex}
+body.vid.pside.mx-poster:not(.rest):not(.portrait) .main{grid-template-columns:1.12fr .95fr 1.15fr}
+body.portrait.vid.pside:not(.mx-split):not(.rest) .poster{min-height:47vmin}
+/* ---------- 아이콘 · 제목 표시 (세련된 선 아이콘) ---------- */
+.svi{width:1em;height:1em;flex:none;display:inline-block;vertical-align:-.14em}
+.icb{flex:none;display:inline-grid;place-items:center;width:4.2vmin;height:4.2vmin;border-radius:1.2vmin;background:var(--chip);color:var(--navy,var(--ink));box-shadow:inset 0 0 0 .15vmin var(--line)}
+.icb .svi{width:2.5vmin;height:2.5vmin}
+.icb.sm{width:3.4vmin;height:3.4vmin;border-radius:1vmin}
+.icb.sm .svi{width:2vmin;height:2vmin}
+.times>h2,.nextbox h2{display:flex;align-items:center;gap:1.2vmin}
+.nextbox h2 small{align-self:center}
+.rtag{flex:none;display:inline-grid;place-items:center;width:3.8vmin;height:3.8vmin;border-radius:1.1vmin;background:var(--rc);color:#fff;box-shadow:0 .5vmin 1.2vmin -.3vmin var(--rc)}
+.rtag .svi{width:2.4vmin;height:2.4vmin}
+body.one .rt h2 .rtag{width:4.4vmin;height:4.4vmin}
+body.one .rt h2 .rtag .svi{width:2.8vmin;height:2.8vmin}
+.ttr h3 i.rbar{width:.7vmin!important;height:2.4vmin!important;border-radius:99vmin!important}
+.rb-sec h3{display:flex;align-items:center;gap:1vmin}
+.rb-ic{display:inline-grid;place-items:center;width:1.5em;height:1.5em;border-radius:.4em;background:var(--chip);color:var(--navy,var(--ink));box-shadow:inset 0 0 0 .15vmin var(--line)}
+.rb-ic .svi{width:.85em;height:.85em}
+.stop .nm .wc{display:inline-flex!important;align-items:center;gap:.4vmin}
+.stop .nm .wc .svi{width:1.15em;height:1.15em}
+.notice .ntic{flex:none;display:inline-grid;place-items:center;width:4.4vmin;height:4.4vmin;border-radius:1.2vmin;background:rgba(252,211,77,.16)}
+.notice .ntic .svi{width:2.8vmin;height:2.8vmin}
+body.light .notice .ntic{background:rgba(217,119,6,.12)}
+.motto .svi{vertical-align:-.12em}
+.rb-r i,.wk .rn i{width:.6vmin!important;height:1.9vmin!important;border-radius:99vmin!important}
+.legend i{border-radius:50%!important;width:1.4vmin!important;height:1.4vmin!important}
+/* 공지가 떠 있는 쉬는 날(포스터 없음): 칸을 조금 줄여 넘치지 않게 */
+body.rest.noposter.hasnotice:not(.portrait) .restbox h2{font-size:3vmin}
+body.rest.noposter.hasnotice:not(.portrait) .rb-ic{font-size:4.6vmin}
+body.rest.noposter.hasnotice:not(.portrait) .rb-next b{font-size:2.9vmin}
+body.rest.noposter.hasnotice:not(.portrait) .wtile .t{font-size:3vmin}
+body.rest.noposter.hasnotice:not(.portrait) .wtile{padding:.5vmin .4vmin}
+body.rest.noposter.hasnotice:not(.portrait) .wk .c b{font-size:2.1vmin}
+body.rest.noposter.hasnotice:not(.portrait) .wk .c{padding:.35vmin .1vmin}
+body.rest.noposter.hasnotice:not(.portrait) .rb-sec{padding:.8vmin 1.4vmin;gap:.5vmin}
+body.rest.noposter.hasnotice:not(.portrait) .restbox{gap:1vmin;padding:1.4vmin 2vmin}
 </style>
 </head>
 <body>
@@ -436,7 +488,7 @@ body.w-light h1,body.w-light h2,body.w-light .clock b,body.w-light .eta b,body.w
     <div class="boards" id="boards"></div>
     <section class="times" id="times"></section>
     <section class="nextbox hide" id="nextBox"></section>
-    <section class="poster hide" id="poster" aria-label="교회 행사 안내"><div class="pbg" id="pBg"></div><div class="pbg" id="pBg2"></div><div class="pslides" id="pSlides"></div><div class="pdots" id="pDots"></div></section>
+    <section class="poster hide" id="poster" aria-label="교회 행사 안내"><div class="pbg" id="pBg"></div><div class="pbg" id="pBg2"></div><div class="pslides" id="pSlides"></div><div class="pdots" id="pDots"></div><div class="pvid" id="pVid"><div class="pvin" id="pVidIn"></div><div class="vwait"><i></i><span>예배 영상을 연결하고 있습니다</span></div><span class="vlive"><i></i>실시간</span></div></section>
     <section class="restbox hide" id="restBox"></section>
   </div>
   <div class="ticker hide" id="ticker"><div class="tag"><i></i>교회 소식</div><div class="tk-view"><div class="tk-track" id="tkTrack"></div></div><i class="shine"></i></div>
@@ -877,6 +929,24 @@ function watchPhoto(){
   if(!want && photoUnsub){ photoUnsub(); photoUnsub=null; PHOTO_URL=""; }
 }
 setInterval(applyTheme, 10*60e3); // 날짜가 바뀌면 절기 테마도 바뀜
+
+// ---------- 아이콘 (선 아이콘 한 벌 — 이모지 대신) ----------
+const IC_P={
+  clock:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+  bus:'<rect x="5" y="3.5" width="14" height="14" rx="3"/><path d="M5 11h14M8.5 17.5V20M15.5 17.5V20"/><circle cx="8.6" cy="14.3" r=".9" fill="currentColor"/><circle cx="15.4" cy="14.3" r=".9" fill="currentColor"/><path d="M9 6.5h6"/>',
+  cal:'<rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/><circle cx="8.5" cy="14.5" r=".9" fill="currentColor"/><circle cx="12" cy="14.5" r=".9" fill="currentColor"/><circle cx="15.5" cy="14.5" r=".9" fill="currentColor"/>',
+  church:'<path d="M12 2.8v4.4M10 4.8h4M5 21v-8.5L12 8l7 4.5V21"/><path d="M10 21v-3.6a2 2 0 0 1 4 0V21M3.5 21h17"/>',
+  mega:'<path d="M4 10v4a1 1 0 0 0 1 1h2l6 4V5L7 9H5a1 1 0 0 0-1 1z"/><path d="M17 9.2a4 4 0 0 1 0 5.6M19.5 6.8a7.5 7.5 0 0 1 0 10.4"/>',
+  moon:'<path d="M19.5 14.6A7.8 7.8 0 0 1 9.4 4.5a7.8 7.8 0 1 0 10.1 10.1z"/>',
+  sunrise:'<path d="M5.5 16a6.5 6.5 0 0 1 13 0M2.5 19.5h19M12 3.5v3.2M4.2 8.7l2 1.6M19.8 8.7l-2 1.6"/>',
+  book:'<path d="M12 6.5C10 5 7 4.5 3.5 5v13c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5C17 4.5 14 5 12 6.5zM12 6.5v13"/>',
+  user:'<circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/>',
+  cross:'<path d="M12 3.5v17M7 8.5h10"/>',
+  timetable:'<rect x="3.5" y="4" width="17" height="16" rx="3"/><path d="M3.5 9h17M9 9v11"/><path d="M12.5 13h4.5M12.5 16.5h3"/>'
+};
+const ic=(n,cls)=>`<svg class="svi${cls?" "+cls:""}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC_P[n]||""}</svg>`;
+const badge=(n,cls)=>`<span class="icb${cls?" "+cls:""}">${ic(n)}</span>`;
+const rtag=(color)=>`<span class="rtag" style="--rc:${color}">${ic("bus")}</span>`;
 const esc = s => String(s==null?"":s).replace(/[<>&"]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;"}[c]));
 const hhmm = m => Math.floor(m/60)+":"+String(Math.floor(m)%60).padStart(2,"0");
 const inTxt = m => { m=Math.ceil(m); if(m<1) return "곧"; if(m<60) return m+"분 후"; const h=Math.floor(m/60), r=m%60; return r? `${h}시간 ${r}분 후` : `${h}시간 후`; };
@@ -1053,10 +1123,10 @@ function nextList(route,id,n){
 // 오늘 시간표: 지금 이후 출발 시각만
 function drawTimes(){
   const {day,min}=nowKST(), port=document.body.classList.contains("portrait"), N=port?14:12;
-  let h=`<h2>오늘 운행 시간표<small>${DAYNAME[day]} · 지금 이후 출발</small></h2>`;
+  let h=`<h2>${badge("timetable")}오늘 운행 시간표<small>${DAYNAME[day]} · 지금 이후 출발</small></h2>`;
   RT.forEach(r=>{ const R=ROUTES[r];
     const rows = r==="yatap" ? [["byc","야탑역 BYC 앞 출발 → 교회"],["church","교회 출발 → 야탑역"]] : [["cdong","테크노파크 C동 출발 → 교회"]];
-    h+=`<div class="ttr ${r}"><h3><i style="background:${R.color}"></i>${R.name}</h3><div class="ttls">`;
+    h+=`<div class="ttr ${r}"><h3><i class="rbar" style="background:${R.color}"></i>${R.name}</h3><div class="ttls">`;
     rows.forEach(([id,lab])=>{ const l=nextList(r,id,N);
       const none = r==="park"&&day!==0 ? "주일에만 운행합니다" : scheduleFor(r,id,day).length ? "오늘 운행이 끝났습니다" : "오늘은 운행하지 않습니다";
       h+=`<div class="ttl"><span class="lab">${lab}</span><div class="chips">${l.length? l.map((m,k)=>`<b class="${k===0?'first':''}">${hhmm(m)}</b>`).join("") : `<span class="none">${none}</span>`}</div></div>`; });
@@ -1070,7 +1140,7 @@ function drawBoards(){
   RT.forEach(r=>{
     const R=ROUTES[r], buses=liveBuses(r).filter(b=>!b.old);
     const wc = waitMode(r)==="off" ? {} : waitCounts(WAITC[r], Date.now()+(typeof offset==="number"?offset:0));
-    h+=`<section class="rt ${r}"><h2><i class="sw" style="background:${R.color}"></i>${R.name}<small>${buses.length? buses.length+"대 운행 중" : (r==="park"&&day!==0 ? "주일에만 운행" : "운행 중인 버스 없음")}</small></h2>`;
+    h+=`<section class="rt ${r}"><h2>${rtag(R.color)}${R.name}<small>${buses.length? buses.length+"대 운행 중" : (r==="park"&&day!==0 ? "주일에만 운행" : "운행 중인 버스 없음")}</small></h2>`;
     R.stops.forEach(s=>{
       const le=liveEta(r,s), ns=nextList(r,s.id,1)[0];
       let eta;
@@ -1078,7 +1148,7 @@ function drawBoards(){
       else if(le) eta=`<div class="eta${le.eta<3?' soon':''}"><b>${le.eta<1?'곧 도착':`${Math.ceil(le.eta)}<small>분</small>`}</b><span>${le.bus}호차 · ${km(le.d)}</span></div>`;
       else if(ns!=null) eta=`<div class="eta sch"><b>${hhmm(ns)}</b><span>시간표 · ${inTxt(ns-min)}</span></div>`;
       else eta=`<div class="eta none"><b>운행 없음</b></div>`;
-      h+=`<div class="stop"><div class="nm"><b>${esc(s.name)}</b><span>${rideDir(r,s.id)}${wc[s.id]?` <em class="wc">🙋 기다리는 분 ${wc[s.id]}명 이상</em>`:""}</span></div>${eta}</div>`;
+      h+=`<div class="stop"><div class="nm"><b>${esc(s.name)}</b><span>${rideDir(r,s.id)}${wc[s.id]?` <em class="wc">${ic("user")}기다리는 분 ${wc[s.id]}명 이상</em>`:""}</span></div>${eta}</div>`;
     });
     h+=`</section>`;
   });
@@ -1145,22 +1215,26 @@ function applyMode(){
   const want = POSTER_CFG.when!=="off" && (rest || POSTER_CFG.when==="always");
   watchPosters(want);
   const posters = want ? activePosters() : [];
-  const pal = !rest && one && POSTER_CFG.when==="always" && posters.length>0;
-  const palt = !rest && !one && POSTER_CFG.when==="always" && posters.length>0;   // 두 노선 날: 시간표 칸과 20초씩 번갈아
-  const sig=[one,rest,pal,palt,rest&&!posters.length].join();
+  const vk = vidWanted(); syncVideo(vk); const vidOn=!!vk;
+  if(vidOn!==b.classList.contains("vid")){ b.classList.toggle("vid",vidOn); if(!vidOn){ PS.view=""; } else paintVid(); }
+  const media = vidOn || (POSTER_CFG.when==="always" && posters.length>0);
+  const pal = !rest && one && media;
+  const palt = !rest && !one && media;   // 두 노선 날: 시간표 칸 자리에 (번갈아 · 포스터만 · 함께)
+  const sig=[one,rest,pal,palt,rest&&!posters.length&&!vidOn,vidOn,VID_CFG.mix].join();
   b.classList.toggle("rest",rest); b.classList.toggle("pal",pal); b.classList.toggle("palt",palt); b.classList.toggle("pside",pal||palt);
-  const mx=["alt","poster","split"].includes(POSTER_CFG.mix)?POSTER_CFG.mix:"alt"; ["alt","poster","split"].forEach(k=>b.classList.toggle("mx-"+k,mx===k)); b.classList.toggle("noposter",rest && !posters.length);
+  const mx= vidOn ? (VID_CFG.mix==="split"?"split":"poster") : (["alt","poster","split"].includes(POSTER_CFG.mix)?POSTER_CFG.mix:"alt"); ["alt","poster","split"].forEach(k=>b.classList.toggle("mx-"+k,mx===k)); b.classList.toggle("noposter",rest && !posters.length && !vidOn);
   if(!(pal||palt)) b.classList.remove("pshow");
-  ["poster"].forEach(id=>$(id).classList.toggle("hide",!(rest||pal||palt) || !posters.length));
+  ["poster"].forEach(id=>$(id).classList.toggle("hide",!(rest||pal||palt) || !(posters.length||vidOn)));
   $("restBox").classList.toggle("hide",!rest);
   $("nextBox").classList.toggle("hide",rest || !one);
   drawPosters(posters);
   if(rest) drawRest(); else if(one) drawNext();
-  if(sig!==MODE_SIG){ MODE_SIG=sig; setTimeout(()=>{ try{ if(window.tvFit) tvFit(); }catch(_){} },120); }
+  if(sig!==MODE_SIG){ MODE_SIG=sig; setTimeout(()=>{ try{ if(window.tvFit) tvFit(); }catch(_){} fitVid(); },120); }
+  fitVid();
 }
 function drawNext(){
   const r=RT[0], R=ROUTES[r], {min}=nowKST();
-  let h=`<h2>⏱ 다음 출발<small>${R.name} · 시간표 기준</small></h2><div class="nxs">`;
+  let h=`<h2>${badge("clock")}다음 출발<small>${R.name} · 시간표 기준</small></h2><div class="nxs">`;
   (DEP_ROWS[r]||[]).forEach(([id,lab])=>{ const l=nextList(r,id,2);
     h+= l.length ? `<div class="nx"><span class="lab">${lab}</span><b>${hhmm(l[0])}</b><em>${inTxt(l[0]-min)}</em><small>${l[1]!=null?"그다음 "+hhmm(l[1]):"오늘 마지막 차"}</small></div>`
                  : `<div class="nx done"><span class="lab">${lab}</span><b>운행 끝</b><small>오늘 운행이 끝났습니다</small></div>`; });
@@ -1184,7 +1258,7 @@ function pickVerse(){
 }
 function weekHtml(){
   const {day}=nowKST(), order=[1,2,3,4,5,6,0], short={0:"주일",1:"월",2:"화",3:"수",4:"목",5:"금",6:"토"};
-  let h=`<div class="rb-sec rb-week"><h3>🗓 이번 주 셔틀 운행</h3><div class="wk"><span></span>${order.map(d=>`<span class="dh${d===day?' today':''}">${short[d]}${d===day?' · 오늘':''}</span>`).join("")}`;
+  let h=`<div class="rb-sec rb-week"><h3>${badge("cal","sm")}이번 주 셔틀 운행</h3><div class="wk"><span></span>${order.map(d=>`<span class="dh${d===day?' today':''}">${short[d]}${d===day?' · 오늘':''}</span>`).join("")}`;
   weekRoutes().forEach(r=>{ const R=ROUTES[r];
     h+=`<span class="rn"><i style="background:${R.color}"></i>${R.name}</span>`+order.map(d=>{ const all=[]; (DEP_ROWS[r]||[]).forEach(([id])=>scheduleFor(r,id,d).forEach(x=>all.push(toM(x))));
       return all.length ? `<span class="c${d===day?' today':''}"><b>${hhmm(Math.min(...all))}</b><small>~${hhmm(Math.max(...all))}</small></span>` : `<span class="c off${d===day?' today':''}"><b>쉼</b></span>`; }).join(""); });
@@ -1201,7 +1275,7 @@ function worshipItems(){
 }
 function worshipHtml(items){
   const allSun=items.every(x=>x.d==="주일");
-  return `<div class="rb-sec rb-wor"><h3>⛪ ${allSun?"주일 예배 안내":"예배 안내"}</h3><div class="wtiles">`+items.map(x=>{
+  return `<div class="rb-sec rb-wor"><h3>${badge("church","sm")}${allSun?"주일 예배 안내":"예배 안내"}</h3><div class="wtiles">`+items.map(x=>{
     const day = x.d==="주일" ? (allSun?"":"주일") : x.d.replace(" (월-금)"," 월-금").replace(/^([월화수목금토])$/,"$1요일");
     return `<div class="wtile${x.d==="주일"?"":" wk2"}"><span class="n">${esc(x.n)}</span><span class="ap">${esc([day,x.ap].filter(Boolean).join(" "))}</span>${x.t?`<span class="t">${x.t}</span>`:""}${x.p?`<span class="pl">${esc(x.p)}</span>`:""}</div>`; }).join("")+`</div></div>`;
 }
@@ -1212,14 +1286,14 @@ function drawRest(){
   const title = REST_WHY==="end" ? "오늘 셔틀 운행이 <br>모두 끝났습니다"
               : early ? `오늘 셔틀은 <br>${firsts.length?ampm(firsts[0].m):""}에 시작합니다` : "오늘은 셔틀이 <br>운행하지 않습니다";
   const sub = memo || (REST_WHY==="end" ? "함께해 주셔서 감사합니다" : early ? "첫차 1시간 전부터 실시간 안내가 나옵니다" : "");
-  let h=`<div class="rb-head"><div class="rb-top"><span class="rb-ic" aria-hidden="true">${REST_WHY==="end"?"🙏":early?"🌅":"🚌"}</span><div><h2>${title}</h2>${sub?`<p class="rb-memo">${esc(sub)}</p>`:""}</div></div><div class="rb-list">`;
+  let h=`<div class="rb-head"><div class="rb-top"><span class="rb-ic" aria-hidden="true">${ic(REST_WHY==="end"?"moon":early?"sunrise":"bus")}</span><div><h2>${title}</h2>${sub?`<p class="rb-memo">${esc(sub)}</p>`:""}</div></div><div class="rb-list">`;
   RT.forEach(r=>{ const R=ROUTES[r];
     if(early){ const f=todayFirst(r); h+=`<div class="rb-next"><span class="rb-r"><i style="background:${R.color}"></i>${R.name} 오늘 첫차</span>${f?`<b>${ampm(f.m)}</b><small>${f.lab}</small>`:`<b>오늘은 쉼</b>`}</div>`; return; }
     const n=nextService(r);
     h+=`<div class="rb-next"><span class="rb-r"><i style="background:${R.color}"></i>${R.name} 다음 운행</span>${n?`<b>${n.k===1?"내일 ":""}${n.k>6?n.ds.slice(5).replace("-","/")+" ":""}${DAYNAME[n.d]} <em>${ampm(n.m)} 첫차</em></b><small>${n.lab}</small>`:`<b>시간표 확인</b>`}</div>`; });
   h+=`</div></div><div class="rb-more">`;
   const V=null, v="";   // 말씀 칸은 쓰지 않음 (교회 표어는 맨 위 머리글에)
-  if(V) h+=`<div class="rb-sec rb-verse">${REST_CFG.motto?`<div class="motto">✝️ <b>${esc(REST_CFG.motto)}</b>${V.kind!=="motto"&&REST_CFG.mottoRef?` <small>${esc(REST_CFG.mottoRef)}</small>`:""}</div>`:""}<h3>📖 ${V.label}</h3><p>${esc(V.t).replace(/\n/g,"<br>")}</p>${V.r?`<cite>${esc(V.r)}</cite>`:""}</div>`;
+  if(V) h+=`<div class="rb-sec rb-verse">${REST_CFG.motto?`<div class="motto">${ic("cross")} <b>${esc(REST_CFG.motto)}</b>${V.kind!=="motto"&&REST_CFG.mottoRef?` <small>${esc(REST_CFG.mottoRef)}</small>`:""}</div>`:""}<h3>📖 ${V.label}</h3><p>${esc(V.t).replace(/\n/g,"<br>")}</p>${V.r?`<cite>${esc(V.r)}</cite>`:""}</div>`;
   const w=worshipItems();
   if(w.length) h+=worshipHtml(w);
   h+=weekHtml()+`</div>`;
@@ -1279,6 +1353,7 @@ function posterColor(id){ return new Promise(res=>{ if(PCOL[id]) return res(PCOL
     PCOL[id]=[r/wsum,gg/wsum,b/wsum].map(Math.round); }catch(_){ PCOL[id]=[128,128,128]; } res(PCOL[id]); };
   im.onerror=()=>res([128,128,128]); im.src=src; }); }
 function paintFrame2(a,b){
+  if(document.body.classList.contains("vid")) return;
   Promise.all([posterColor(a),posterColor(b)]).then(([ca,cb])=>{
     const light=document.body.classList.contains("light"), base=light?[255,255,255]:[14,18,28], mix=(c,k)=>c.map((v,i)=>Math.round(v*(1-k)+base[i]*k)), k=light?.5:.55;
     const bg=`radial-gradient(ellipse 80% 75% at 50% 46%, transparent 50%, var(--cardA,var(--card)) 100%), linear-gradient(90deg, rgb(${mix(ca,k)}) 0%, rgb(${mix(ca,k+.15)}) 48%, rgb(${mix(cb,k+.15)}) 52%, rgb(${mix(cb,k)}) 100%)`;
@@ -1286,14 +1361,86 @@ function paintFrame2(a,b){
   });
 }
 function paintFrame(id){
-  if(!id) return;
-  posterColor(id).then(c=>{
+  if(!id || document.body.classList.contains("vid")) return;
+  posterColor(id).then(paintRGB);
+}
+function paintRGB(c){ {
     const light=document.body.classList.contains("light"), mix=(t,k)=>c.map((v,i)=>Math.round(v*(1-k)+t[i]*k));
     const base=light?[255,255,255]:[14,18,28], a=mix(base,light?.5:.55), b=mix(base,light?.76:.78);
     const bg=`radial-gradient(ellipse 75% 70% at 50% 46%, rgb(${a}) 0%, rgb(${b}) 62%, var(--cardA,var(--card)) 100%)`;
     const L=[$("pBg"),$("pBg2")], on=L[PF], off=L[1-PF]; off.style.background=bg; off.style.opacity="1"; on.style.opacity="0"; PF=1-PF;
+  }
+}
+
+// ---------- 유튜브 영상 (관리자 → TV 화면 → 영상) ----------
+//  지금 켜기 / 예배 시간에 자동 · 영상 주소 또는 교회 채널 실시간 · 끝나거나 연결이 안 되면 원래 화면으로
+let VID_CFG={};
+const VS={key:"",player:null,playing:false,timer:null,vid:"",ended:"",failKey:"",failAt:0,col:null,noApi:false,apiP:null};
+const VID_RETRY=3*60e3, VID_WAIT=45e3;
+const WDAY={"주일":[0],"새벽 (월-금)":[1,2,3,4,5],"월":[1],"화":[2],"수":[3],"목":[4],"금":[5],"토":[6]};
+function vidSrcKey(){ const C=VID_CFG; if(C.src==="channel") return /^UC[\w-]{20,24}$/.test(C.ch||"")?"ch:"+C.ch:""; return /^[\w-]{11}$/.test(C.vid||"")?"v:"+C.vid:""; }
+function vidWindow(){
+  const C=VID_CFG, sk=vidSrcKey(); if(!sk || !["now","auto"].includes(C.on)) return "";
+  if(C.on==="now") return "now|"+sk;
+  const {day,min}=nowKST(), before=[0,5,10,15,20,30].includes(+C.before)?+C.before:5, dur=[30,60,90,120,150,180].includes(+C.dur)?+C.dur:90;
+  const pick=C.pick||null, L=Array.isArray(REST_CFG.worshipList)?REST_CFG.worshipList:Object.values(REST_CFG.worshipList||{});
+  for(const w of L){ if(!w||!/^\d{1,2}:\d{2}$/.test(w.t||"")) continue; if(pick && !pick[vidPickKey(w)]) continue; if(!(WDAY[w.d||"주일"]||[]).includes(day)) continue;
+    const t=toM(w.t); if(min>=t-before && min<t+dur) return "auto|"+todayStr()+"|"+w.t+"|"+sk; }
+  return "";
+}
+function vidPickKey(w){ return String((w.n||"")+"_"+(w.d||"")+"_"+(w.t||"")).replace(/[.#$\/\[\]]/g,"_"); }
+function vidWanted(){ const k=vidWindow(); if(!k) return ""; if(VS.ended===k) return ""; if(VS.failKey===k && Date.now()-VS.failAt<VID_RETRY) return ""; return k; }
+function ytApi(){ if(VS.apiP) return VS.apiP;
+  VS.apiP=new Promise(res=>{ if(window.YT&&YT.Player) return res(true); const pv=window.onYouTubeIframeAPIReady; window.onYouTubeIframeAPIReady=()=>{ try{ pv&&pv(); }catch(_){} res(true); };
+    const sc=document.createElement("script"); sc.src="https://www.youtube.com/iframe_api"; sc.onerror=()=>{ VS.noApi=true; res(false); }; document.head.appendChild(sc); setTimeout(()=>{ if(!(window.YT&&YT.Player)){ VS.noApi=true; res(false); } },15000); });
+  return VS.apiP; }
+function syncVideo(key){
+  if(key===VS.key) return;
+  if(VS.player){ try{ VS.player.destroy(); }catch(_){} VS.player=null; }
+  clearTimeout(VS.timer); $("pVidIn").innerHTML=""; VS.playing=false; VS.vid=""; document.body.classList.remove("vplay","vlivenow");
+  VS.key=key; if(!key) return;
+  const C=VID_CFG, ch=C.src==="channel";
+  const p=new URLSearchParams({autoplay:"1",mute:C.sound?"0":"1",playsinline:"1",rel:"0",modestbranding:"1",enablejsapi:"1",origin:location.origin,cc_load_policy:C.cc?"1":"0",cc_lang_pref:"ko",hl:"ko"});
+  if(!ch && C.endAct==="loop"){ p.set("loop","1"); p.set("playlist",C.vid); }
+  const f=document.createElement("iframe"); f.id="ytf"; f.title="예배 영상"; f.allow="autoplay; encrypted-media; picture-in-picture"; f.setAttribute("allowfullscreen","");
+  f.src= ch ? `https://www.youtube.com/embed/live_stream?channel=${encodeURIComponent(C.ch)}&${p}` : `https://www.youtube.com/embed/${C.vid}?${p}`;
+  $("pVidIn").appendChild(f); fitVid();
+  if(!ch){ VS.vid=C.vid; vidColor(); }
+  VS.timer=setTimeout(()=>{ if(VS.key===key && !VS.playing && !VS.noApi) vidFail(key); },VID_WAIT);
+  ytApi().then(ok=>{ if(!ok || VS.key!==key) return;
+    try{ VS.player=new YT.Player(f,{events:{
+      onReady:e=>{ try{ if(C.sound) e.target.unMute(); else e.target.mute(); e.target.playVideo(); }catch(_){}
+        setTimeout(()=>{ try{ if(VS.key===key && e.target.getPlayerState()!==1){ e.target.mute(); e.target.playVideo(); } }catch(_){} },4000); },
+      onStateChange:e=>vidState(key,e.data), onError:()=>vidFail(key) }}); }catch(_){}
   });
 }
+function vidState(key,st){
+  if(key!==VS.key) return;
+  if(st===1){ VS.playing=true; document.body.classList.add("vplay");
+    try{ const d=VS.player.getVideoData()||{}; document.body.classList.toggle("vlivenow",!!d.isLive || VID_CFG.src==="channel"); if(d.video_id && d.video_id!==VS.vid){ VS.vid=d.video_id; vidColor(); } }catch(_){} }
+  if(st===0){ if(VID_CFG.endAct==="loop" && VID_CFG.src!=="channel"){ try{ VS.player.seekTo(0); VS.player.playVideo(); }catch(_){} return; }
+    VS.ended=key; applyMode(); }
+}
+function vidFail(key){ if(key!==VS.key) return; VS.failKey=key; VS.failAt=Date.now(); applyMode(); }
+// 영상 크기: 칸 안에 16:9로 꽉 차게
+function fitVid(){ const box=$("pVidIn"), f=$("ytf"); if(!box||!f) return; const W=box.clientWidth, H=box.clientHeight; if(!W||!H) return;
+  let w=W, h=W*9/16; if(h>H){ h=H; w=H*16/9; } f.style.width=Math.floor(w)+"px"; f.style.height=Math.floor(h)+"px"; }
+window.addEventListener("resize",fitVid); setInterval(fitVid,3000);
+// 액자 색: 영상 썸네일의 대표 색 (관리자가 색을 정하면 그 색)
+function vidColor(){
+  const C=VID_CFG;
+  if(/^#[0-9a-fA-F]{6}$/.test(C.color||"")){ const n=parseInt(C.color.slice(1),16); VS.col=[n>>16&255,n>>8&255,n&255]; paintVid(); return; }
+  if(!VS.vid){ VS.col=null; paintVid(); return; }
+  const im=new Image(); im.crossOrigin="anonymous";
+  im.onload=()=>{ try{ const c=document.createElement("canvas"); c.width=c.height=32; const g=c.getContext("2d"); g.drawImage(im,0,0,32,32); const d=g.getImageData(0,0,32,32).data; let r=0,gg=0,b=0,ws=0;
+    for(let i=0;i<d.length;i+=4){ const R=d[i],G=d[i+1],B=d[i+2], w=1+(Math.max(R,G,B)-Math.min(R,G,B))/40; r+=R*w; gg+=G*w; b+=B*w; ws+=w; } VS.col=[r/ws,gg/ws,b/ws].map(Math.round); }catch(_){ VS.col=null; } paintVid(); };
+  im.onerror=()=>{ VS.col=null; paintVid(); };
+  im.src=`https://i.ytimg.com/vi/${VS.vid}/mqdefault.jpg?t=${Math.floor(Date.now()/3e5)}`;
+}
+function paintVid(){ if(!document.body.classList.contains("vid")) return; const c=VS.col || (document.body.classList.contains("light")?[200,190,175]:[60,70,90]); paintRGB(c); }
+setInterval(()=>{ if(document.body.classList.contains("vplay") && !/^#/.test(VID_CFG.color||"")) vidColor(); },5*60e3);
+// TV 리모컨·화면을 한 번 누르면 소리 켜기 (소리 켜기를 고른 경우)
+["click","keydown","touchstart"].forEach(ev=>document.addEventListener(ev,()=>{ if(VID_CFG.sound && VS.player){ try{ VS.player.unMute(); VS.player.setVolume(100); }catch(_){} } },{passive:true}));
 
 // ---------- 글꼴 · 날씨 · 교회 표어 (관리자 → TV 화면 → 기본) ----------
 const FONT_CSS={gmarket:null, nanumsq:"https://cdn.jsdelivr.net/npm/nanumsquareneo@0.0.5/nanumsquareneo.css", suit:"https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css"};
@@ -1330,14 +1477,15 @@ try{
     const tr=c.tvRest||{}; REST_CFG={afterEnd: tr.afterEnd!==false, beforeFirst: tr.beforeFirst!==false, dates: tr.dates||{}, verse: tr.verse||"", verseRef: tr.verseRef||"", worship: tr.worship||"", worshipList: tr.worshipList||null, motto: tr.motto||"", mottoRef: tr.mottoRef||"", mottoVerse: tr.mottoVerse||"", verses: tr.verses||"", verseMode: tr.verseMode||"", verseEvery: tr.verseEvery||"day"};
     const pc=c.tvPosters||{}; POSTER_CFG={when:["rest","always","off"].includes(pc.when)?pc.when:"rest", sec:pc.sec||8, view:pc.view||"one", mix:pc.mix||"alt"}; PS.view="";
     applyLook(c.tvLook||{}); POSTER_META=c.tvPosterList||{};
+    const nv=c.tvVideo||{}, vsig=JSON.stringify(VID_CFG); VID_CFG=nv; if(JSON.stringify(nv)!==vsig){ VS.key="#"; syncVideo(""); VS.ended=""; VS.failKey=""; }
     applyRT();
     if(applyStops(c.stops)) drawStopMarks();
     NEWS_CFG=c.news||null; drawTicker();
     THEME_CFG=c.tvTheme||{}; watchPhoto(); applyTheme();
     if(applyPaths(c.paths)) drawTvPaths();
     PARK_TIMES=parseTimes(c.parkTimes); TIMES=c.times||{};
-    const n=c.notice, show=n&&n.on&&n.text; $("notice").classList.toggle("hide",!show);
-    if(show) $("notice").innerHTML=`<span aria-hidden="true">📢</span><span>${esc(n.text)}</span>`;
+    const n=c.notice, show=n&&n.on&&n.text; $("notice").classList.toggle("hide",!show); document.body.classList.toggle("hasnotice",!!show);
+    if(show) $("notice").innerHTML=`<span class="ntic">${ic("mega")}</span><span>${esc(n.text)}</span>`;
     $("boards")._h=null; drawBoards(); try{ applyMode(); }catch(_){} });
   setInterval(()=>{ applyRT(); drawMap(); drawBoards(); },4000);
   setInterval(drawTicker,60e3); // 날짜가 바뀌면 지난 소식 내리기
