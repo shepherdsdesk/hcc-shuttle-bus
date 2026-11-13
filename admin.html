@@ -712,6 +712,14 @@
             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span class="muted" style="min-width:40px">평일</span><div class="seg3"><button type="button" data-cell="wk" data-cv="times">운행 시간표</button><button type="button" data-cell="wk" data-cv="worship">예배 안내</button><button type="button" data-cell="wk" data-cv="both">둘 다</button></div></div>
             <ul class="hint"><li>운행하는 날, 지도 옆 칸에 보일 내용입니다</li><li><b>둘 다</b> — 위: 다음 차 / 아래: 오늘 남은 예배</li><li>예배 목록은 ‘예배’ 탭에서 고칩니다</li></ul>
           </div></div>
+        <div class="lkrow" style="align-items:flex-start"><b style="padding-top:8px">칸 안 배치</b>
+          <div style="flex:1;display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span class="muted" style="min-width:52px">정렬</span>
+              <div class="seg3" id="vaSeg"><button type="button" data-va="top">위</button><button type="button" data-va="center">가운데</button><button type="button" data-va="bottom">아래</button><button type="button" data-va="spread">고르게</button></div></div>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span class="muted" style="min-width:52px">줄 간격</span>
+              <div class="fsp" style="width:230px"><span>줄 사이</span><div class="stp"><button type="button" data-vg="-1" aria-label="줄 간격 좁게">−</button><b id="vgLab">보통</b><button type="button" data-vg="1" aria-label="줄 간격 넓게">+</button></div></div></div>
+            <ul class="hint"><li>칸 제목은 늘 맨 위에 그대로 있습니다</li><li><b>고르게</b> — 줄을 칸 높이에 고르게 나눕니다 · <b>위·가운데·아래</b> — 줄은 붙이고 묶음을 그쪽에 둡니다</li></ul>
+          </div></div>
         <div class="lkrow" style="align-items:flex-start"><b style="padding-top:8px">글자 크기</b>
           <div style="flex:1;display:flex;flex-direction:column;gap:10px">
             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span class="muted" style="min-width:64px">전체</span>
@@ -1631,7 +1639,7 @@ async function startAdmin(){
   onValue(ref(db,"waitc"),s=>{A.waitc=s.val()||{}; drawNow();},()=>{});
   onValue(ref(db,"board/"+kstDate(now())),s=>{A.boardToday=s.val()||{}; drawNow();});
   onValue(ref(db,"admins"),s=>{A.admins=s.val()||{}; drawAdmins();});
-  onValue(ref(db,"config"),s=>{A.config=s.val()||{}; fillConfig(); drawWaitCfg(); drawNow(); drawTvRt(); drawPosterAdmin(); drawLook(); drawVideo(); drawFs(); drawCellOpts();});
+  onValue(ref(db,"config"),s=>{A.config=s.val()||{}; fillConfig(); drawWaitCfg(); drawNow(); drawTvRt(); drawPosterAdmin(); drawLook(); drawVideo(); drawFs(); drawCellOpts(); drawVa();});
   setInterval(drawNow,10000);
   initStats(); initTimes();
 }
@@ -1984,6 +1992,16 @@ document.addEventListener("click",e=>{
 });
 document.addEventListener("change",e=>{ const k=e.target.closest("[data-rsk]"); if(!k) return;
   set(ref(db,"config/tvRest/secs/off/"+k.dataset.rsk),k.checked?null:true).then(()=>toast(RS_NAME[k.dataset.rsk][0]+(k.checked?"을(를) 보여 줍니다":"을(를) 숨깁니다"))).catch(()=>toast("저장하지 못했습니다")); });
+
+// ---------- 칸 안 배치 ----------
+function drawVa(){ const L=A.config.tvLook||{}, va=["top","center","bottom","spread"].includes(L.valign)?L.valign:"spread", g=Math.max(-2,Math.min(2,Math.round(+L.vgap||0)));
+  document.querySelectorAll("[data-va]").forEach(b=>b.classList.toggle("on",b.dataset.va===va));
+  $("vgLab").textContent=g===0?"보통":(g>0?"넓게 "+g:"좁게 "+(-g));
+  document.querySelectorAll("[data-vg]").forEach(b=>b.disabled=(+b.dataset.vg<0?g<=-2:g>=2)); }
+document.addEventListener("click",e=>{
+  const a=e.target.closest("[data-va]"); if(a){ saveLook({valign:a.dataset.va},"칸 안 정렬: "+a.textContent); return; }
+  const g=e.target.closest("[data-vg]"); if(g){ const L=A.config.tvLook||{}, v=Math.max(-2,Math.min(2,Math.round(+L.vgap||0)+(+g.dataset.vg))); saveLook({vgap:v||null},"줄 간격: "+(v===0?"보통":(v>0?"넓게 "+v:"좁게 "+(-v)))); }
+});
 // TV 미리 보기 (실제 TV 화면을 작게)
 const PV={lay:"land",mode:"live"};
 // 미리 보기 켜기/끄기 (이 기기에 기억) — 끄면 화면을 불러오지 않아 가볍고, 영상도 미리 보기에서 재생되지 않음

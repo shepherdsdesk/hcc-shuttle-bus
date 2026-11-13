@@ -686,7 +686,7 @@ body.rest.noposter:not(.portrait) .r3row .r3band{zoom:1.15}
 .tl-axis span:last-child{transform:translateX(-100%)}
 .tl-row{flex:1 1 0;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:.6vmin;background:var(--chip);border-radius:1.6vmin;padding:1vmin 1.6vmin;position:relative;overflow:hidden}
 .tl-row::before{content:"";position:absolute;left:0;top:1.2vmin;bottom:1.2vmin;width:.55vmin;border-radius:0 99vmin 99vmin 0;background:var(--rc)}
-.tl-track{position:relative;height:6.4vmin}
+.tl-track{position:relative;height:7.6vmin}
 .tl-line{position:absolute;left:0;right:0;top:2.2vmin;height:.4vmin;border-radius:99vmin;background:var(--line)}
 .tl-now{position:absolute;left:0;top:1.3vmin;width:.4vmin;height:2.2vmin;border-radius:99vmin;background:var(--ink)}
 .tl-dot{position:absolute;top:2.4vmin;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center}
@@ -789,9 +789,35 @@ body:not(.mx-split) .cp{flex:1;gap:1.2vmin;justify-content:flex-start}
 body:not(.mx-split) .cp-row{padding:1.5vmin 1.6vmin}
 body:not(.mx-split) .times.tc-both .wc{gap:1.2vmin;grid-auto-rows:6vmin}
 body:not(.mx-split) .times.tc-both .tc-wor{gap:1.2vmin}
-.rt .stop{flex:1 1 0;min-height:0;max-height:13vmin;padding:.6vmin 0}
+
 .rt h2{margin-bottom:.8vmin}
-body.portrait .rt .stop{padding:.4vmin 0}
+
+
+/* ===== 칸 안 배치 (관리자 → 기본 → 칸 안 배치) ===== */
+:root{--vk:1}
+.stops{flex:1;min-height:0;display:flex;flex-direction:column;gap:calc(var(--vk) * .4vmin)}
+.rt .stops .stop{padding:calc(var(--vk) * .9vmin) 0}
+.rt .stops .stop:first-child{border-top:0}
+.nextbox .nxs{gap:calc(var(--vk) * 1.2vmin)}
+.tb,.tl,.rg{gap:calc(var(--vk) * 1vmin)!important}
+.cp{gap:calc(var(--vk) * .8vmin)!important}
+.cp-row{padding-top:calc(var(--vk) * .9vmin)!important;padding-bottom:calc(var(--vk) * .9vmin)!important}
+.wc{gap:calc(var(--vk) * .8vmin)!important}
+.tc-sec>:not(h2):not(.wch){min-height:0}
+/* 고르게: 줄이 칸 높이에 고르게 퍼짐 (기본) */
+body.va-spread .rt .stops .stop{flex:1 1 0;max-height:13vmin}
+body.va-spread .stops{justify-content:space-evenly}
+/* 위 · 가운데 · 아래: 줄은 제 크기, 묶음 전체를 정렬 */
+body:not(.va-spread) .rt .stops .stop{flex:none;max-height:none}
+body:not(.va-spread) .tb-row,body:not(.va-spread) .tl-row,body:not(.va-spread) .rg-row{flex:none!important}
+body:not(.va-spread) .tb,body:not(.va-spread) .tl,body:not(.va-spread) .rg,body:not(.va-spread) .cp{flex:1}
+body:not(.va-spread) .nextbox .nxs{flex:1;align-content:var(--vac)}
+body.va-top{--vjc:flex-start;--vac:start}
+body.va-center{--vjc:center;--vac:center}
+body.va-bottom{--vjc:flex-end;--vac:end}
+body:not(.va-spread) .stops,body:not(.va-spread) .tb,body:not(.va-spread) .tl,body:not(.va-spread) .rg,body:not(.va-spread) .cp{justify-content:var(--vjc)}
+body:not(.va-spread) .times:not(.tc-both) .tc-sec{justify-content:flex-start}
+body:not(.va-spread) .times.tc-wonly .tc-wor .r3-wg{flex:1;justify-content:var(--vjc);display:flex;flex-direction:column}
 </style>
 </head>
 <body>
@@ -1553,7 +1579,7 @@ function drawBoards(){
   RT.forEach(r=>{
     const R=ROUTES[r], buses=liveBuses(r).filter(b=>!b.old);
     const wc = waitMode(r)==="off" ? {} : waitCounts(WAITC[r], Date.now()+(typeof offset==="number"?offset:0));
-    h+=`<section class="rt ${r}"><h2>${rtag(R.color)}${R.name}<small>${buses.length? buses.length+"대 운행 중" : (r==="park"&&day!==0 ? "주일에만 운행" : "운행 중인 버스 없음")}</small></h2>`;
+    h+=`<section class="rt ${r}"><h2>${rtag(R.color)}${R.name}<small>${buses.length? buses.length+"대 운행 중" : (r==="park"&&day!==0 ? "주일에만 운행" : "운행 중인 버스 없음")}</small></h2><div class="stops">`;
     R.stops.forEach(s=>{
       const le=liveEta(r,s), ns=nextList(r,s.id,1)[0];
       let eta;
@@ -1563,7 +1589,7 @@ function drawBoards(){
       else eta=`<div class="eta none"><b>운행 없음</b></div>`;
       h+=`<div class="stop"><div class="nm"><b>${esc(s.name)}</b><span>${rideDir(r,s.id)}${wc[s.id]?` <em class="wc">${ic("user")}기다리는 분 ${wc[s.id]}명 이상</em>`:""}</span></div>${eta}</div>`;
     });
-    h+=`</section>`;
+    h+=`</div></section>`;
   });
   setH($("boards"),h);
 }
@@ -1933,6 +1959,9 @@ function applyLook(L){
     R.setProperty("--Zg",g); R.setProperty("--Zeta",(g*st(F.eta)).toFixed(3)); R.setProperty("--Znext",(g*st(F.next)).toFixed(3)); R.setProperty("--Zname",(g*st(F.name)).toFixed(3));
     R.setProperty("--Ztt",(g*st(F.tt)).toFixed(3)); R.setProperty("--Ztk",(g*st(F.tk)).toFixed(3)); R.setProperty("--Zclk",(g*st(F.clk)).toFixed(3));
     setTimeout(()=>{ try{ tkSig=""; drawTicker(); if(window.tvFit) tvFit(); fitVid(); fitSub(); }catch(_){} },150); }
+  // 칸 안 배치: 정렬(위·가운데·아래·고르게) · 줄 간격(−2 ~ +2). 제목은 늘 위에 그대로
+  const va=["top","center","bottom","spread"].includes(L.valign)?L.valign:"spread"; ["top","center","bottom","spread"].forEach(k=>document.body.classList.toggle("va-"+k,va===k));
+  const vk={"-2":.45,"-1":.72,"0":1,"1":1.4,"2":1.85}[String(Math.max(-2,Math.min(2,Math.round(+L.vgap||0))))]; document.documentElement.style.setProperty("--vk",vk);
   WX_ON = L.wx!==false; if(!WX_ON) $("wx").classList.add("hide"); else if($("wxT").textContent!=="--°") $("wx").classList.remove("hide");
   const m=String(L.motto||"").trim(), on=!!L.mottoOn && !!m;
   $("hMotto").classList.toggle("hide",!on); $("hMottoT").textContent=m; document.body.classList.toggle("hasmotto",on);
