@@ -753,16 +753,28 @@ body.portrait .tl-axis{margin-left:calc(1.6vmin + 22vmin + 2vmin)}
 .cp-row small{font-size:1.4vmin;color:var(--sub);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
 .cp-none{grid-column:2/5;font-size:1.6vmin;color:var(--sub);text-align:right}
 .times.tc-both .tc-times{flex:0 0 auto}
-.times.tc-both .tc-wor{flex:1 1 0}
+.times.tc-both .tc-wor{flex:1 1 0;gap:.6vmin}
 .r3box .r3{flex:none!important}
 .r3box:not(.r3row){justify-content:flex-start}
 .r3one .r3-items{grid-template-columns:minmax(0,1fr)!important}
 .r3one .r3{zoom:1.15!important}
 
-.wc{display:flex;flex-wrap:nowrap;gap:.6vmin;zoom:var(--Ztt);overflow:hidden}
-.wc span{flex:none;display:flex;align-items:baseline;gap:.7vmin;background:var(--chip);border-radius:1vmin;padding:.5vmin 1.1vmin}
-.wc .wh{background:transparent;padding-left:0;font-size:1.6vmin;font-weight:700;color:var(--sub);align-items:center}
-.wc .wh .svi{width:1.9vmin;height:1.9vmin;margin-right:.2vmin}
+.wch{display:flex;align-items:center;gap:.6vmin;font-size:1.6vmin;font-weight:700;color:var(--sub);zoom:var(--Zg)}
+.wch .svi{width:1.9vmin;height:1.9vmin}
+.wc{display:grid;grid-auto-rows:4.6vmin;gap:.6vmin;zoom:var(--Ztt);align-content:start}
+body.mx-split .wc{grid-auto-rows:3.4vmin;gap:.4vmin}
+body.mx-split .times.tc-both .wch{display:none}
+body.mx-split .times.tc-both .tc-sec+.tc-sec{padding-top:.7vmin}
+body.mx-split .times.tc-both .tc-times{gap:.8vmin}
+body.mx-split .wc em{font-size:1.45vmin}body.mx-split .wc b{font-size:1.7vmin}
+body.mx-split .cp-row{padding:.45vmin 1.2vmin}body.mx-split .cp{gap:.4vmin}
+body.mx-split .cp-row b{font-size:2.1vmin}
+body.mx-split .times.tc-both .tc-sec>h2{font-size:2.3vmin}
+body:not(.mx-split) .times.tc-both .wc{grid-auto-rows:5.6vmin}
+body:not(.mx-split) .times.tc-both .wc em{font-size:1.9vmin}body:not(.mx-split) .times.tc-both .wc b{font-size:2.4vmin}
+.wc span{display:flex;align-items:center;justify-content:space-between;gap:.6vmin;background:var(--chip);border-radius:1vmin;padding:.4vmin 1.1vmin;min-width:0;container-type:inline-size}
+.wc em{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.wc b{white-space:nowrap}
 .times.tc-both{gap:1vmin}
 .times.tc-both .tc-sec+.tc-sec{padding-top:.9vmin}
 .wc em{font-style:normal;font-size:1.6vmin;font-weight:600}
@@ -1483,7 +1495,8 @@ function ringHtml(){
 // "둘 다"일 때 예배: 오늘 요일 예배만 작은 칩으로
 function worChips(){ const {day}=nowKST(), map={0:"주일",1:"월",2:"화",3:"수",4:"목",5:"금",6:"토"};
   const W=worshipItems().filter(x=>x.d===map[day] || (x.d==="새벽 (월-금)"&&day>=1&&day<=5)), L0=W.length?W:worshipItems().filter(x=>x.d==="주일"), {min}=nowKST(), m2=x=>{ if(!x.t) return 0; const [h,mm]=x.t.split(":").map(Number); return ((h%12)+(x.ap==="오후"?12:0))*60+mm; }, up=L0.filter(x=>m2(x)>=min-30), L=(up.length?up:L0);
-  return `<div class="wc"><span class="wh">${ic("church")}${day===0?"오늘 남은 예배":"오늘 예배"}</span>`+L.map(x=>`<span><em>${esc(x.n)}</em><b>${x.ap?`<small>${x.ap}</small>`:""}${x.t}</b></span>`).join("")+`</div>`; }
+  const cols=Math.max(1,Math.ceil(L.length/2)), spare=cols*2-L.length;
+  return `<div class="wch">${ic("church")}${day===0?"오늘 남은 예배":"오늘 예배"}</div><div class="wc" style="grid-template-columns:repeat(${cols},minmax(0,1fr))">`+L.map((x,k)=>`<span${k===L.length-1&&spare?` style="grid-column:span ${1+spare}"`:""}><em>${esc(x.n)}</em><b>${x.ap?`<small>${x.ap}</small>`:""}${x.t}</b></span>`).join("")+`</div>`; }
 // "둘 다"일 때: 방향마다 한 줄 (다음 차 · 남은 시간 · 그다음)
 function compactHtml(){ const {min}=nowKST();
   return `<div class="cp">`+dirRows().map(d=>`<div class="cp-row" style="--rc:${d.R.color}"><span class="tb-lab">${d.lab}</span>${d.next.length?`<b>${hhmm(d.next[0])}</b><em>${inTxt(d.next[0]-min)}</em><small>${d.next[1]!=null?"그다음 "+hhmm(d.next[1]):""}</small>`:`<span class="cp-none">${d.none}</span>`}</div>`).join("")+`</div>`; }
