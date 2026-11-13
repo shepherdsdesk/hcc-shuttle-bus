@@ -627,21 +627,147 @@ body.portrait:not(.rest) .boards .rt{flex:1 1 0;min-width:0}
 body.portrait .poster{min-height:0!important}
 /* 쉬는 날 (세로 · 포스터 없는 날): 다음 운행 · 예배 안내 · 이번 주 셔틀을 나란히 세 칸 */
 body.portrait.rest:not(.noposter) .main{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:minmax(0,1.45fr) minmax(0,1fr)!important;grid-template-areas:"poster" "rest"!important}
-.restbox.r3box.r3row{display:flex!important;flex-direction:row;gap:0;padding:2.2vmin 0}
-.r3row .r3{flex:1 1 0;min-width:0;padding:0 2.2vmin;overflow:hidden}
-.r3row .r3+.r3{border-top:0;border-left:.15vmin solid var(--line);padding-top:0}
-body.portrait .r3row .r3-items,body.portrait .r3row .r3-wt2{grid-template-columns:minmax(0,1fr)}
-body.portrait .r3row .r3-tt h2{font-size:2.5vmin}
-body.rest.noposter:not(.portrait) .r3row .r3{zoom:1.5}
-body.rest.noposter:not(.portrait) .r3row .r3-items,body.rest.noposter:not(.portrait) .r3row .r3-wt2{grid-template-columns:minmax(0,1fr)}
 body.rest.noposter.portrait .r3box{padding:3vmin 3.4vmin;gap:2vmin}
 body.rest.noposter.portrait .r3box .r3{zoom:1.45}
 body.rest.noposter.portrait .r3box .r3-week{flex:none}
-.r3row .r3-nr{flex-direction:column;align-items:flex-start;gap:.3vmin}
-.r3row .r3-nr b{white-space:normal}
 .r3row .r3-few{flex-wrap:wrap;row-gap:.2vmin}
 .r3row .r3-few span{white-space:normal}
-body.rest.noposter .r3row .r3-head{justify-content:flex-start}
+
+/* ===== 시간표 칸: 출발 안내판 ===== */
+.times{gap:1.4vmin}
+.tc-sec{display:flex;flex-direction:column;gap:1.2vmin;min-height:0;flex:1 1 0;overflow:hidden}
+.tc-sec>h2{margin:0;display:flex;align-items:center;gap:1.2vmin;font-size:2.7vmin;font-weight:800;zoom:var(--Zg)}
+.tc-sec>h2 small{margin-left:auto;font-size:1.7vmin;color:var(--sub);font-weight:500}
+.times.tc-both .tc-sec+.tc-sec{border-top:.15vmin solid var(--line);padding-top:1.2vmin}
+.tb{flex:1;display:flex;flex-direction:column;gap:1vmin;min-height:0;zoom:var(--Ztt)}
+.tb-row{flex:1 1 0;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:.8vmin;background:var(--chip);border-radius:1.6vmin;padding:1.1vmin 1.6vmin;position:relative;overflow:hidden}
+.tb-row::before{content:"";position:absolute;left:0;top:1.2vmin;bottom:1.2vmin;width:.55vmin;border-radius:0 99vmin 99vmin 0;background:var(--rc)}
+.tb-hd{display:flex;align-items:baseline;justify-content:space-between;gap:1vmin;min-width:0}
+.tb-lab{font-size:1.8vmin;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:.8vmin}
+.tb-lab i{display:none}
+.tb-last{font-size:1.5vmin;color:var(--sub);font-weight:500;white-space:nowrap}
+.tb-ts{display:flex;flex-wrap:wrap;gap:0 .6vmin;height:6.4vmin;overflow:hidden;align-items:center}
+.tb-ts>.tb-t{flex:1 0 9vmin;height:6.4vmin}
+.tb-t{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.5vmin 0;border-radius:1vmin;min-width:0}
+.tb-t b{font-size:2.5vmin;font-weight:500;color:var(--sub);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.tb-t.first{background:var(--cardA,var(--card));box-shadow:inset 0 0 0 .2vmin var(--rc)}
+.tb-t.first b{color:var(--ink);font-weight:800}
+.tb-t small{font-size:1.25vmin;color:var(--rc);font-weight:700;white-space:nowrap;margin-top:.1vmin}
+.tb-none{font-size:2vmin;color:var(--sub);font-weight:500;padding:.4vmin 0}
+.tc-wor .r3-wg{zoom:var(--Ztt)}
+.tc-wor .r3-it .n{font-size:2vmin}.tc-wor .r3-it .t{font-size:2.3vmin}
+.times.tc-wonly .tc-wor .r3-items{grid-template-columns:minmax(0,1fr)}
+body.v2 .tb-row{background:var(--chip)}
+/* ===== 쉬는 날 안내 칸: 위 띠 + 아래 같은 크기 두 칸 (세로 · 포스터 없는 가로) ===== */
+.restbox.r3box.r3row{flex-direction:column!important;padding:2vmin 2.4vmin;gap:1.6vmin}
+.r3row .r3band .r3-head{flex-direction:row;align-items:center;justify-content:space-between;gap:2vmin;padding:0;border:0}
+.r3row .r3band .r3-top{min-width:0}
+.r3row .r3band .r3-tt h2{font-size:2.6vmin}
+.r3row .r3band .r3-next{flex-direction:row;flex-wrap:wrap;justify-content:flex-end;margin:0}
+.r3row .r3band .r3-nr{flex-direction:column;align-items:flex-start;gap:.2vmin}
+.r3row .r3band .r3-nr b{white-space:nowrap}
+.r3pair{flex:1;min-height:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;border-top:.15vmin solid var(--line);padding-top:1.6vmin}
+.r3pair.n1{grid-template-columns:minmax(0,1fr)}
+.r3pair .r3{padding:0 1.8vmin;overflow:hidden;border-top:0!important}
+.r3pair .r3:first-child{padding-left:0}
+.r3pair .r3:last-child{padding-right:0}
+.r3pair .r3+.r3{border-left:.15vmin solid var(--line);padding-top:0}
+.r3row .r3{flex:initial}
+body.portrait .r3pair .r3-items,body.portrait .r3pair .r3-wt2{grid-template-columns:minmax(0,1fr)}
+body.rest.noposter:not(.portrait) .r3row .r3{zoom:1.35}
+body.rest.noposter:not(.portrait) .r3row .r3band{zoom:1.15}
+
+
+/* B. 타임라인 */
+.tl{flex:1;display:flex;flex-direction:column;gap:1vmin;min-height:0;zoom:var(--Ztt)}
+.tl-axis{position:relative;height:2vmin;margin:0 1.6vmin 0 1.6vmin}
+.tl-axis span{position:absolute;top:0;transform:translateX(-50%);font-size:1.3vmin;color:var(--sub);font-weight:500;white-space:nowrap}
+.tl-axis span:first-child{transform:none;color:var(--ink);font-weight:700}
+.tl-axis span:last-child{transform:translateX(-100%)}
+.tl-row{flex:1 1 0;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:.6vmin;background:var(--chip);border-radius:1.6vmin;padding:1vmin 1.6vmin;position:relative;overflow:hidden}
+.tl-row::before{content:"";position:absolute;left:0;top:1.2vmin;bottom:1.2vmin;width:.55vmin;border-radius:0 99vmin 99vmin 0;background:var(--rc)}
+.tl-track{position:relative;height:6.4vmin}
+.tl-line{position:absolute;left:0;right:0;top:2.2vmin;height:.4vmin;border-radius:99vmin;background:var(--line)}
+.tl-now{position:absolute;left:0;top:1.3vmin;width:.4vmin;height:2.2vmin;border-radius:99vmin;background:var(--ink)}
+.tl-dot{position:absolute;top:2.4vmin;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center}
+.tl-dot i{width:1.3vmin;height:1.3vmin;border-radius:50%;background:var(--cardA,var(--card));box-shadow:inset 0 0 0 .35vmin var(--rc);margin-top:-.65vmin}
+.tl-dot b{margin-top:.5vmin;font-size:1.7vmin;font-weight:500;color:var(--sub);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tl-dot.first i{width:2.2vmin;height:2.2vmin;margin-top:-1.1vmin;background:var(--rc);box-shadow:0 0 0 .5vmin var(--cardA,var(--card)),0 0 0 .75vmin var(--rc)}
+.tl-dot.first b{font-size:2.3vmin;font-weight:800;color:var(--ink)}
+.tl-dot.first small{font-size:1.3vmin;font-weight:700;color:var(--rc);white-space:nowrap}
+.tl-dot.first{z-index:2}
+.tl-dot .lb{display:flex;flex-direction:column;align-items:center}
+.tl-dot.el .lb{align-items:flex-start}.tl-dot.er .lb{align-items:flex-end}
+body.portrait .tl-track{height:4.6vmin}
+body.portrait .tl-line{top:1.6vmin}
+body.portrait .tl-now{top:.7vmin}
+body.portrait .tl-dot{top:1.8vmin}
+body.portrait .tl-dot b{margin-top:.3vmin}
+body.portrait .tl-dot .lb{flex-direction:row;align-items:baseline;gap:.6vmin}
+body.portrait .tl-dot.first .lb b{margin-top:.3vmin}
+body.portrait .tl-row{padding:.7vmin 1.6vmin;gap:.3vmin}
+body.portrait .tl-more,body.portrait .tl-later,body.portrait .tl-none{top:2.3vmin}
+/* 세로 TV(넓은 칸): 노선 이름은 왼쪽, 시간 막대는 오른쪽 한 줄 */
+body.portrait .tl-row{flex-direction:row;align-items:center;gap:2vmin}
+body.portrait .tl-row .tb-hd{flex:none;width:22vmin;flex-direction:column;align-items:flex-start;gap:.2vmin}
+body.portrait .tl-row .tb-lab{white-space:normal;font-size:1.8vmin;line-height:1.25}
+body.portrait .tl-row .tl-track{flex:1;min-width:0}
+body.portrait .tl-axis{margin-left:calc(1.6vmin + 22vmin + 2vmin)}
+.tl-dot:not(.first){opacity:.95}
+.tl-dot.el{align-items:flex-start;transform:translateX(-.65vmin)}
+.tl-dot.first.el{transform:translateX(-1.1vmin)}
+.tl-dot.er{align-items:flex-end;transform:translateX(calc(-100% + .65vmin))}
+.tl-more,.tl-later{position:absolute;right:0;top:3.1vmin;font-size:1.4vmin;color:var(--sub);font-weight:500;white-space:nowrap}
+.tl-later{left:0;right:auto;top:3vmin;font-size:1.8vmin;color:var(--ink)}
+.tl-later b{font-variant-numeric:tabular-nums}
+.tl-track.off .tl-line{opacity:.5}
+.tl-none{position:absolute;left:0;top:3vmin;font-size:1.8vmin;color:var(--sub);font-weight:500}
+.tl-dot.first:first-of-type{}
+/* C. 카운트다운 */
+.rg{flex:1;display:flex;flex-direction:column;gap:1vmin;min-height:0;zoom:var(--Ztt)}
+.rg-row{flex:1 1 0;min-height:0;display:flex;align-items:center;gap:1.8vmin;background:var(--chip);border-radius:1.6vmin;padding:1vmin 1.6vmin}
+.rg-ring{position:relative;flex:none;width:8vmin;height:8vmin;display:grid;place-items:center}
+.rg-ring svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.rg-ring circle{fill:none;stroke-width:3.4}
+.rg-ring .bg{stroke:var(--line)}
+.rg-ring .fg{stroke:var(--rc);stroke-linecap:round;transition:stroke-dasharray .8s ease}
+.rg-ring b{position:relative;font-size:2.8vmin;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.rg-ring small{position:absolute;bottom:1.6vmin;font-size:1.2vmin;color:var(--sub);font-weight:600}
+.rg-ring b{margin-top:-.8vmin}
+.rg-tx{display:flex;flex-direction:column;gap:.3vmin;min-width:0}
+.rg-main{font-size:1.8vmin;color:var(--sub)}
+.rg-main b{font-size:2.6vmin;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums}
+.rg-sub{font-size:1.5vmin;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.rg-row.off .rg-ring b{color:var(--sub)}
+/* D. 하루 운행 막대 */
+.db{display:flex;flex-direction:column;gap:.6vmin;padding-top:.4vmin;zoom:var(--Ztt)}
+.db-row{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;align-items:center;gap:1vmin;font-size:1.4vmin;color:var(--sub);font-variant-numeric:tabular-nums}
+.db-n{font-weight:700;color:var(--ink);min-width:11vmin}
+.db-bar{height:.8vmin;border-radius:99vmin;background:var(--line);overflow:hidden}
+.db-bar i{display:block;height:100%;border-radius:99vmin;background:var(--rc)}
+
+.cp{display:flex;flex-direction:column;gap:.6vmin;zoom:var(--Ztt)}
+.cp-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto 10vmin;align-items:baseline;gap:1.2vmin;background:var(--chip);border-radius:1.2vmin;padding:.8vmin 1.4vmin;box-shadow:inset .55vmin 0 0 var(--rc)}
+.cp-row b{font-size:2.4vmin;font-weight:800;font-variant-numeric:tabular-nums}
+.cp-row em{font-style:normal;font-size:1.5vmin;font-weight:700;color:var(--rc);white-space:nowrap}
+.cp-row small{font-size:1.4vmin;color:var(--sub);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.cp-none{grid-column:2/5;font-size:1.6vmin;color:var(--sub);text-align:right}
+.times.tc-both .tc-times{flex:0 0 auto}
+.times.tc-both .tc-wor{flex:1 1 0}
+.r3box .r3{flex:none!important}
+.r3box:not(.r3row){justify-content:flex-start}
+.r3one .r3-items{grid-template-columns:minmax(0,1fr)!important}
+.r3one .r3{zoom:1.15!important}
+
+.wc{display:flex;flex-wrap:nowrap;gap:.6vmin;zoom:var(--Ztt);overflow:hidden}
+.wc span{flex:none;display:flex;align-items:baseline;gap:.7vmin;background:var(--chip);border-radius:1vmin;padding:.5vmin 1.1vmin}
+.wc .wh{background:transparent;padding-left:0;font-size:1.6vmin;font-weight:700;color:var(--sub);align-items:center}
+.wc .wh .svi{width:1.9vmin;height:1.9vmin;margin-right:.2vmin}
+.times.tc-both{gap:1vmin}
+.times.tc-both .tc-sec+.tc-sec{padding-top:.9vmin}
+.wc em{font-style:normal;font-size:1.6vmin;font-weight:600}
+.wc b{font-size:1.9vmin;font-weight:800;font-variant-numeric:tabular-nums}
+.wc small{font-size:1.2vmin;color:var(--sub);font-weight:500;margin-right:.3vmin}
 </style>
 </head>
 <body>
@@ -1318,17 +1444,82 @@ function nextList(route,id,n){
   return scheduleFor(route,id,day).map(toM).filter(m=>m>=Math.floor(min)).sort((a,b)=>a-b).slice(0,n);
 }
 // 오늘 시간표: 지금 이후 출발 시각만
-function drawTimes(){
-  const {day,min}=nowKST(), port=document.body.classList.contains("portrait"), N=port?14:12;
-  let h=`<h2>${badge("timetable")}오늘 운행 시간표<small>${DAYNAME[day]} · 지금 이후 출발</small></h2>`;
+// 시간표 칸: 출발 안내판 (방향마다 한 줄 · 같은 개수 · 같은 폭) / 예배 안내 / 둘 다 — 관리자 → TV → 기본 → 시간표 칸
+let CELL={sun:"times",wk:"times"}, TTS="line", DAYBAR=true;
+function cellMode(){ const {day}=nowKST(), v=day===0?CELL.sun:CELL.wk; return ["times","worship","both"].includes(v)?v:"times"; }
+function boardHtml(){ return (TTS==="card"?cardHtml():TTS==="ring"?ringHtml():lineHtml())+(DAYBAR?dayBarHtml():""); }
+function dirRows(){ const {day,min}=nowKST(), out=[];
+  RT.forEach(r=>{ const R=ROUTES[r]; (DEP_ROWS[r]||[]).forEach(([id,lab])=>{ const all=scheduleFor(r,id,day).map(toM).sort((a,b)=>a-b);
+    out.push({r,R,id,lab,all,next:all.filter(m=>m>=Math.floor(min)), prev:all.filter(m=>m<Math.floor(min)).pop(),
+      none: r==="park"&&day!==0 ? "주일에만 운행합니다" : all.length ? "오늘 운행 종료" : "오늘은 운행하지 않습니다"}); }); });
+  return out; }
+// B. 타임라인: 지금 → 90분 뒤 시간 막대 위에 출발 시각을 점으로 (시간이 흐르면 점이 다가옴)
+function lineHtml(){
+  const {min}=nowKST(), WIN=90; let h=`<div class="tl"><div class="tl-axis"><span style="left:0">지금</span><span style="left:33.33%">30분</span><span style="left:66.66%">60분</span><span style="left:100%">90분</span></div>`;
+  dirRows().forEach(d=>{
+    h+=`<div class="tl-row" style="--rc:${d.R.color}"><div class="tb-hd"><span class="tb-lab">${d.lab}</span>${d.all.length?`<span class="tb-last">막차 ${hhmm(d.all[d.all.length-1])}</span>`:""}</div>`;
+    if(!d.next.length){ h+=`<div class="tl-track off"><i class="tl-line"></i><span class="tl-none">${d.none}</span></div></div>`; return; }
+    const inW=d.next.filter(m=>m-min<=WIN); let last=-99, fx=-1, dots="";
+    inW.forEach((m,k)=>{ const x=Math.max(0,Math.min(100,(m-min)/WIN*100)), lab=(k===0||x-last>=(last===fx?19:13))&&x<=96; if(k===0) fx=x;
+      if(lab) last=x;
+      const edge = x<7?" el":x>93?" er":"";
+      dots+= k===0 ? `<span class="tl-dot first${edge}" style="left:${x}%"><i></i><span class="lb"><b>${hhmm(m)}</b><small>${inTxt(m-min)}</small></span></span>`
+                   : `<span class="tl-dot${edge}" style="left:${x}%"><i></i>${lab?`<b>${hhmm(m)}</b>`:""}</span>`; });
+    if(!inW.length) dots=`<span class="tl-later">다음 <b>${hhmm(d.next[0])}</b> · ${inTxt(d.next[0]-min)}</span>`;
+    else if(d.next.length>inW.length && 100-last>=26) dots+=`<span class="tl-more">그다음 ${hhmm(d.next[inW.length])}</span>`;
+    h+=`<div class="tl-track"><i class="tl-line"></i><i class="tl-now"></i>${dots}</div></div>`; });
+  return h+`</div>`;
+}
+// C. 카운트다운: 다음 차까지 남은 시간을 원으로
+function ringHtml(){
+  const {min}=nowKST(); let h=`<div class="rg">`;
+  dirRows().forEach(d=>{
+    if(!d.next.length){ h+=`<div class="rg-row off" style="--rc:${d.R.color}"><span class="rg-ring"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" class="bg"/></svg><b>–</b></span><div class="rg-tx"><span class="tb-lab">${d.lab}</span><span class="rg-sub">${d.none}</span></div></div>`; return; }
+    const n=d.next[0], left=Math.max(0,n-min), span=Math.max(10,Math.min(60,n-(d.prev!=null?d.prev:n-30))), f=Math.max(.04,Math.min(1,1-left/span)), C=2*Math.PI*16;
+    h+=`<div class="rg-row" style="--rc:${d.R.color}"><span class="rg-ring"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" class="bg"/><circle cx="20" cy="20" r="16" class="fg" style="stroke-dasharray:${(C*f).toFixed(1)} ${C.toFixed(1)}"/></svg><b>${left<1?"곧":Math.ceil(left)}</b>${left<1?"":"<small>분</small>"}</span>
+      <div class="rg-tx"><span class="tb-lab">${d.lab}</span><span class="rg-main"><b>${hhmm(n)}</b> 출발</span><span class="rg-sub">${d.next.length>1?"그다음 "+d.next.slice(1,4).map(hhmm).join(" · "):"오늘 마지막 차"}</span></div></div>`; });
+  return h+`</div>`;
+}
+// "둘 다"일 때 예배: 오늘 요일 예배만 작은 칩으로
+function worChips(){ const {day}=nowKST(), map={0:"주일",1:"월",2:"화",3:"수",4:"목",5:"금",6:"토"};
+  const W=worshipItems().filter(x=>x.d===map[day] || (x.d==="새벽 (월-금)"&&day>=1&&day<=5)), L0=W.length?W:worshipItems().filter(x=>x.d==="주일"), {min}=nowKST(), m2=x=>{ if(!x.t) return 0; const [h,mm]=x.t.split(":").map(Number); return ((h%12)+(x.ap==="오후"?12:0))*60+mm; }, up=L0.filter(x=>m2(x)>=min-30), L=(up.length?up:L0);
+  return `<div class="wc"><span class="wh">${ic("church")}${day===0?"오늘 남은 예배":"오늘 예배"}</span>`+L.map(x=>`<span><em>${esc(x.n)}</em><b>${x.ap?`<small>${x.ap}</small>`:""}${x.t}</b></span>`).join("")+`</div>`; }
+// "둘 다"일 때: 방향마다 한 줄 (다음 차 · 남은 시간 · 그다음)
+function compactHtml(){ const {min}=nowKST();
+  return `<div class="cp">`+dirRows().map(d=>`<div class="cp-row" style="--rc:${d.R.color}"><span class="tb-lab">${d.lab}</span>${d.next.length?`<b>${hhmm(d.next[0])}</b><em>${inTxt(d.next[0]-min)}</em><small>${d.next[1]!=null?"그다음 "+hhmm(d.next[1]):""}</small>`:`<span class="cp-none">${d.none}</span>`}</div>`).join("")+`</div>`; }
+// D. 하루 운행 막대: 첫차 ~ 막차 중 얼마나 지났는지
+function dayBarHtml(){
+  const {day,min}=nowKST(); let h="";
+  RT.forEach(r=>{ const all=[]; (DEP_ROWS[r]||[]).forEach(([id])=>scheduleFor(r,id,day).forEach(x=>all.push(toM(x)))); if(!all.length) return;
+    const a=Math.min(...all), b=Math.max(...all), f=Math.max(0,Math.min(1,(min-a)/Math.max(1,b-a)));
+    h+=`<div class="db-row" style="--rc:${ROUTES[r].color}"><span class="db-n">${ROUTES[r].name}</span><span class="db-a">${hhmm(a)}</span><span class="db-bar"><i style="width:${(f*100).toFixed(1)}%"></i></span><span class="db-b">${hhmm(b)}</span></div>`; });
+  return h?`<div class="db">${h}</div>`:"";
+}
+// A. 출발 카드
+function cardHtml(){
+  const {day,min}=nowKST(); let h=`<div class="tb">`;
   RT.forEach(r=>{ const R=ROUTES[r];
-    const rows = r==="yatap" ? [["byc","야탑역 BYC 앞 출발 → 교회"],["church","교회 출발 → 야탑역"]] : [["cdong","테크노파크 C동 출발 → 교회"]];
-    h+=`<div class="ttr ${r}"><h3><i class="rbar" style="background:${R.color}"></i>${R.name}</h3><div class="ttls">`;
-    rows.forEach(([id,lab])=>{ const l=nextList(r,id,N);
-      const none = r==="park"&&day!==0 ? "주일에만 운행합니다" : scheduleFor(r,id,day).length ? "오늘 운행이 끝났습니다" : "오늘은 운행하지 않습니다";
-      h+=`<div class="ttl"><span class="lab">${lab}</span><div class="chips">${l.length? l.map((m,k)=>`<b class="${k===0?'first':''}">${hhmm(m)}</b>`).join("") : `<span class="none">${none}</span>`}</div></div>`; });
-    h+=`</div></div>`; });
-  setH($("times"),h);
+    (DEP_ROWS[r]||[]).forEach(([id,lab])=>{ const l=nextList(r,id,10), all=scheduleFor(r,id,day).map(toM).sort((a,b)=>a-b);
+      const none = r==="park"&&day!==0 ? "주일에만 운행합니다" : all.length ? "오늘 운행 종료" : "오늘은 운행하지 않습니다";
+      h+=`<div class="tb-row" style="--rc:${R.color}"><div class="tb-hd"><span class="tb-lab"><i></i>${lab}</span>${all.length?`<span class="tb-last">막차 ${hhmm(all[all.length-1])}</span>`:""}</div>`;
+      h+= l.length ? `<div class="tb-ts">`+l.map((m,k)=>k===0?`<span class="tb-t first"><b>${hhmm(m)}</b><small>${inTxt(m-min)}</small></span>`:`<span class="tb-t"><b>${hhmm(m)}</b></span>`).join("")+`</div>`
+                   : `<div class="tb-none">${none}</div>`;
+      h+=`</div>`; }); });
+  return h+`</div>`;
+}
+function worHtml(){
+  const W=worshipItems(); if(!W.length) return `<div class="tb-none">예배 안내가 없습니다</div>`;
+  const grp=[["주일",W.filter(x=>x.d==="주일")],["평일",W.filter(x=>x.d!=="주일")]].filter(g=>g[1].length);
+  return `<div class="r3-wg">`+grp.map(([g,L])=>`<div class="r3-g"><span class="r3-gl">${g}</span><div class="r3-items">`+L.map(x=>{
+    const dd = x.d==="주일" ? "" : x.d==="새벽 (월-금)" ? "월–금" : x.d;
+    return `<div class="r3-it"><span class="n">${esc(x.n)}${dd&&!x.n.includes(dd)?` <small>${esc(dd)}</small>`:""}</span><span class="t">${x.ap?`<small>${x.ap}</small>`:""}${x.t||""}</span></div>`; }).join("")+`</div></div>`).join("")+`</div>`;
+}
+function drawTimes(){
+  const {day}=nowKST(), mode=cellMode(); let h="";
+  if(mode!=="worship") h+=`<div class="tc-sec tc-times"><h2>${badge("timetable")}오늘 운행 시간표<small>${DAYNAME[day]} · 지금 이후 출발</small></h2>${mode==="both"?compactHtml():boardHtml()}</div>`;
+  if(mode==="both") h+=`<div class="tc-sec tc-wor">${worChips()}</div>`;
+  else if(mode==="worship") h+=`<div class="tc-sec tc-wor"><h2>${badge("church")}예배 안내<small>${day===0?"오늘 주일":DAYNAME[day]}</small></h2>${worHtml()}</div>`;
+  const t=$("times"); t.classList.toggle("tc-both",mode==="both"); t.classList.toggle("tc-wonly",mode==="worship"); setH(t,h);
 }
 function drawBoards(){
   drawTimes();
@@ -1484,12 +1675,14 @@ function drawRest3(){
   const firsts = early ? RT.map(r=>todayFirst(r)).filter(Boolean).sort((a,b)=>a.m-b.m) : [];
   const title = REST_WHY==="end" ? "오늘 셔틀 운행이 모두 끝났습니다" : early ? `오늘 셔틀은 ${firsts.length?ampm(firsts[0].m):""}에 시작합니다` : "오늘은 셔틀이 운행하지 않습니다";
   const sub = memo || (REST_WHY==="end" ? "함께해 주셔서 감사합니다" : early ? "첫차 1시간 전부터 실시간 안내가 나옵니다" : "");
+  const SC=REST_CFG.secs||{}, OO=Array.isArray(SC.order)?SC.order:(SC.order&&typeof SC.order==="object"?Object.keys(SC.order).sort().map(k=>SC.order[k]):null), ORD=(OO&&OO.length===3?OO:["next","wor","week"]), OFF=SC.off||{};
+  const parts={};
   let h=`<section class="r3 r3-head"><div class="r3-top"><span class="r3-ic" aria-hidden="true">${ic(REST_WHY==="end"?"moon":early?"sunrise":"bus")}</span><div class="r3-tt"><h2>${title}</h2>${sub?`<p>${esc(sub)}</p>`:""}</div></div><div class="r3-next">`;
   RT.forEach(r=>{ const R=ROUTES[r];
     if(early){ const f=todayFirst(r); h+=`<div class="r3-nr"><span class="r3-rn"><i style="background:${R.color}"></i>${R.name} 오늘 첫차</span><b>${f?ampm(f.m):"오늘은 쉼"}</b></div>`; return; }
     const n=nextService(r);
     h+=`<div class="r3-nr"><span class="r3-rn"><i style="background:${R.color}"></i>${R.name} 다음 운행</span><b>${n?`${n.k===1?"내일 ":""}${n.k>6?n.ds.slice(5).replace("-","/")+" ":""}${DAYNAME[n.d]} ${ampm(n.m)}`:"시간표 확인"}</b></div>`; });
-  h+=`</div></section>`;
+  h+=`</div></section>`; parts.next=h; h="";
   // 예배 안내: 주일 / 평일로 묶은 목록 (이름 왼쪽 · 시간 오른쪽)
   const W=worshipItems();
   if(W.length){
@@ -1498,6 +1691,7 @@ function drawRest3(){
       const day = x.d==="주일" ? "" : x.d==="새벽 (월-금)" ? "월–금" : x.d;
       return `<div class="r3-it"><span class="n">${esc(x.n)}${day&&!x.n.includes(day)?` <small>${esc(day)}</small>`:""}</span><span class="t">${x.ap?`<small>${x.ap}</small>`:""}${x.t||""}</span></div>`; }).join("")+`</div></div>`).join("")+`</div></section>`;
   }
+  parts.wor=h; h="";
   // 이번 주 셔틀: 요일을 세로로, 하루·이틀만 다니는 노선은 한 줄 요약
   const {day}=nowKST(), order=[1,2,3,4,5,6,0], short={0:"주일",1:"월",2:"화",3:"수",4:"목",5:"금",6:"토"};
   const span=(r,d)=>{ const all=[]; (DEP_ROWS[r]||[]).forEach(([id])=>scheduleFor(r,id,d).forEach(x=>all.push(toM(x)))); return all.length?[Math.min(...all),Math.max(...all)]:null; };
@@ -1520,8 +1714,13 @@ function drawRest3(){
   }
   few.forEach(x=>{ const on=x.days.filter(d=>d[1]);
     h+=`<div class="r3-few"><i style="background:${x.R.color}"></i><b>${x.R.name}</b>${on.length?`<span>${on.map(([d,v])=>`${short[d]}${on.length===1?"만":""} ${hhmm(v[0])} – ${hhmm(v[1])}`).join(" · ")}</span>`:`<span>이번 주 운행 없음</span>`}</div>`; });
-  h+=`</section>`;
-  const box=$("restBox"), b=document.body; box.classList.add("r3box"); const P=b.classList.contains("portrait"), N=b.classList.contains("noposter"); box.classList.toggle("r3row", P!==N); setH(box,h);
+  h+=`</section>`; parts.week=h;
+  const on=ORD.filter(k=>!OFF[k] && parts[k]), b=document.body, P=b.classList.contains("portrait"), N=b.classList.contains("noposter"), row=(P!==N);
+  if(!on.length) on.push("next");
+  if(row){ const band=on.includes("next")?parts.next:"", rest=on.filter(k=>k!=="next");
+    h=(band?`<div class="r3band">${band}</div>`:"")+(rest.length?`<div class="r3pair n${rest.length}">${rest.map(k=>parts[k]).join("")}</div>`:"");
+  } else h=on.map(k=>parts[k]).join("");
+  const box=$("restBox"); box.classList.add("r3box"); box.classList.toggle("r3one",on.length===1); box.classList.toggle("r3row", row); setH(box,h);
 }
 function drawRest(){
   if(restCompact()) return drawRest3();
@@ -1731,9 +1930,11 @@ try{
   onValue(ref(db,"live"), s=>{ const v=s.val()||{}; LIVE={yatap:v.yatap||{},park:v.park||{}}; applyRT(); drawMap(); drawBoards(); });
   onValue(ref(db,"config"), s=>{ const c=s.val()||{}; applyBrand(c); WAIT_CFG=c.waitCfg||{};
     TV_ROUTES=["auto","both","yatap","park"].includes(c.tvRoutes)?c.tvRoutes:"auto";
-    const tr=c.tvRest||{}; REST_CFG={afterEnd: tr.afterEnd!==false, beforeFirst: tr.beforeFirst!==false, dates: tr.dates||{}, verse: tr.verse||"", verseRef: tr.verseRef||"", worship: tr.worship||"", worshipList: tr.worshipList||null, motto: tr.motto||"", mottoRef: tr.mottoRef||"", mottoVerse: tr.mottoVerse||"", verses: tr.verses||"", verseMode: tr.verseMode||"", verseEvery: tr.verseEvery||"day"};
+    const tr=c.tvRest||{}; REST_CFG={afterEnd: tr.afterEnd!==false, beforeFirst: tr.beforeFirst!==false, dates: tr.dates||{}, verse: tr.verse||"", verseRef: tr.verseRef||"", worship: tr.worship||"", worshipList: tr.worshipList||null, motto: tr.motto||"", mottoRef: tr.mottoRef||"", mottoVerse: tr.mottoVerse||"", verses: tr.verses||"", verseMode: tr.verseMode||"", verseEvery: tr.verseEvery||"day", secs: tr.secs||null};
     const pc=c.tvPosters||{}; POSTER_CFG={when:["rest","always","off"].includes(pc.when)?pc.when:"rest", sec:pc.sec||8, view:pc.view||"one", mix:pc.mix||"alt"}; PS.view="";
     applyLook(c.tvLook||{}); POSTER_META=c.tvPosterList||{};
+    const cl=(c.tvLook||{}).cell||{}; CELL={sun:cl.sun||"times", wk:cl.wk||"times"};
+    TTS=["card","line","ring"].includes((c.tvLook||{}).tts)?(c.tvLook||{}).tts:"line"; DAYBAR=(c.tvLook||{}).daybar!==false; $("times")._h=null;
     const nv=c.tvVideo||{}, vsig=JSON.stringify(VID_CFG); VID_CFG=nv; if(JSON.stringify(nv)!==vsig){ VS.key="#"; syncVideo(""); VS.ended=""; VS.failKey=""; }
     applyRT();
     if(applyStops(c.stops)) drawStopMarks();
