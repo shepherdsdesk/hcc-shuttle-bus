@@ -362,6 +362,16 @@
   #lkFont[data-w=normal] .fontopt b{font-weight:600}
   #lkFont[data-w=light] .fontopt b{font-weight:400}
   .pst-row.dim,.seg3.dim{opacity:.55}
+  .fsparts{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+  .fsp{display:flex;align-items:center;justify-content:space-between;gap:8px;border:1.5px solid var(--line);border-radius:12px;padding:6px 8px 6px 12px;background:#fff}
+  .fsp span{font-size:13.5px;font-weight:700;color:var(--ink)}
+  .fsp .stp{display:flex;align-items:center;gap:4px}
+  .fsp .stp button{width:30px;height:30px;border-radius:9px;border:0;background:#EEF1F6;font:inherit;font-weight:800;font-size:16px;cursor:pointer;color:#1B2B5C}
+  .fsp .stp button:disabled{opacity:.35;cursor:default}
+  .fsp .stp b{min-width:44px;text-align:center;font-size:13px;color:var(--sub)}
+  .fsp.chg{border-color:#1B2B5C}
+  body[data-theme=dark] .fsp{background:#162033}
+
   .vdcheck{font-size:13px;color:var(--sub);display:flex;align-items:center;gap:10px;min-height:20px}
   .vdcheck img{width:112px;height:63px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
   .vdcheck .ok{color:#15803D;font-weight:700}
@@ -665,6 +675,13 @@
             <div class="seg3" id="lkDesign" style="align-self:flex-start"><button type="button" data-dsg="classic">지금 버전</button><button type="button" data-dsg="v2">새 버전 <small>(세련된 화면)</small></button></div>
             <div class="seg3" id="lkV2c" style="align-self:flex-start"><button type="button" data-v2c="light">밝게</button><button type="button" data-v2c="dark">어둡게</button><button type="button" data-v2c="theme">절기·계절 테마</button></div>
             <span class="muted" id="lkV2note">새 버전: 테두리 없이 면과 그림자로 칸을 나누고, 지도 옆 칸들을 같은 크기로 맞춥니다. ‘절기·계절 테마’는 꾸미기 탭의 테마 색·장식·계절 효과를 그대로 씁니다.</span>
+          </div></div>
+        <div class="lkrow" style="align-items:flex-start"><b style="padding-top:8px">글자 크기</b>
+          <div style="flex:1;display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span class="muted" style="min-width:64px">전체</span>
+              <div class="seg3" id="fsAll"><button type="button" data-fsa="90">작게</button><button type="button" data-fsa="100">보통</button><button type="button" data-fsa="110">크게</button><button type="button" data-fsa="120">아주 크게</button></div></div>
+            <div class="fsparts" id="fsParts"></div>
+            <span class="muted">부분별 크기는 전체 크기에 더해집니다. 글씨를 키우면 칸에 들어가는 내용이 줄어들고(시간표 개수 등) 칸 크기·배치는 그대로입니다. 특정 TV만 크게 하려면 TV 주소 끝에 <code>?fs=120</code>처럼 붙이세요. <a href="#" id="fsReset">모두 보통으로</a></span>
           </div></div>
         <div class="lkrow"><b>하단 배너</b><label class="wcauto"><input type="checkbox" id="lkBanner"> TV 맨 아래 QR 안내와 셔틀 문의 전화 보이기</label></div>
         <div class="lkrow"><b>교회 표어</b>
@@ -1581,7 +1598,7 @@ async function startAdmin(){
   onValue(ref(db,"waitc"),s=>{A.waitc=s.val()||{}; drawNow();},()=>{});
   onValue(ref(db,"board/"+kstDate(now())),s=>{A.boardToday=s.val()||{}; drawNow();});
   onValue(ref(db,"admins"),s=>{A.admins=s.val()||{}; drawAdmins();});
-  onValue(ref(db,"config"),s=>{A.config=s.val()||{}; fillConfig(); drawWaitCfg(); drawNow(); drawTvRt(); drawPosterAdmin(); drawLook(); drawVideo();});
+  onValue(ref(db,"config"),s=>{A.config=s.val()||{}; fillConfig(); drawWaitCfg(); drawNow(); drawTvRt(); drawPosterAdmin(); drawLook(); drawVideo(); drawFs();});
   setInterval(drawNow,10000);
   initStats(); initTimes();
 }
@@ -1897,6 +1914,22 @@ document.addEventListener("click",e=>{
 document.addEventListener("change",e=>{ const k=e.target.closest("[data-vpk]"); if(!k) return;
   const pick={}; document.querySelectorAll("[data-vpk]").forEach(x=>{ if(x.checked) pick[x.dataset.vpk]=true; });
   saveVd({pick:Object.keys(pick).length?pick:{_none:true}},"예배를 골랐습니다"); });
+
+// ---------- TV 글자 크기 ----------
+const FS_PARTS=[["eta","도착 시간 숫자"],["name","정류장 이름"],["tt","시간표"],["tk","교회 소식 띠"],["clk","시계"]];
+const FS_LAB={"-2":"작게 2","-1":"작게 1","0":"보통","1":"크게 1","2":"크게 2"};
+function drawFs(){
+  const F=(A.config.tvLook||{}).fs||{}, all=[90,100,110,120].includes(+F.all)?+F.all:100;
+  document.querySelectorAll("[data-fsa]").forEach(b=>b.classList.toggle("on",+b.dataset.fsa===all));
+  $("fsParts").innerHTML=FS_PARTS.map(([k,t])=>{ const v=Math.max(-2,Math.min(2,Math.round(+F[k]||0)));
+    return `<div class="fsp${v?" chg":""}"><span>${t}</span><div class="stp"><button type="button" data-fsk="${k}" data-d="-1" aria-label="${t} 작게" ${v<=-2?"disabled":""}>−</button><b>${FS_LAB[v]}</b><button type="button" data-fsk="${k}" data-d="1" aria-label="${t} 크게" ${v>=2?"disabled":""}>+</button></div></div>`; }).join("");
+}
+document.addEventListener("click",e=>{
+  const a=e.target.closest("[data-fsa]"); if(a){ saveLook({"fs/all":+a.dataset.fsa},"전체 글자 크기: "+a.textContent); return; }
+  const k=e.target.closest("[data-fsk]"); if(k){ const F=(A.config.tvLook||{}).fs||{}, v=Math.max(-2,Math.min(2,Math.round(+F[k.dataset.fsk]||0)+(+k.dataset.d)));
+    saveLook({["fs/"+k.dataset.fsk]:v||null},FS_PARTS.find(x=>x[0]===k.dataset.fsk)[1]+": "+FS_LAB[v]); return; }
+  if(e.target.id==="fsReset"){ e.preventDefault(); saveLook({fs:null},"글자 크기를 모두 보통으로 돌렸습니다"); }
+});
 // TV 미리 보기 (실제 TV 화면을 작게)
 const PV={lay:"land",mode:"live"};
 function pvLoad(){ const f=$("tvFrame"); const u=`tv.html?layout=${PV.lay}&preview=1${PV.mode==="rest"?"&rest=1":""}`; if(f.dataset.u!==u){ f.dataset.u=u; f.src=u; } pvFit(); }

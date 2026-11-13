@@ -547,6 +547,18 @@ body.v2 footer .credit .tel em{font-weight:400}
 /* 쉬는 날 */
 body.v2 .rb-sec{border:0!important}
 body.v2:not(.w-light) .restbox h2{font-weight:700}
+
+/* ---------- 글자 크기 (관리자 → TV 화면 → 기본 → 글자 크기) ---------- */
+:root{--Zg:1;--Zeta:1;--Zname:1;--Ztt:1;--Ztk:1;--Zclk:1}
+header h1,header small,.live,.wx,.hmotto,.rt h2,.times>h2,.nextbox h2,.notice,footer .ftxt,footer .credit,.rb-head h2,.rb-memo,.rb-sec h3,.wtile,.wk,.nx .lab,.nx small,.next,.rb-r,.rb-next small,.ttr h3{zoom:var(--Zg)}
+.nextbox{overflow:hidden}
+.rb-sec,.restbox{overflow:hidden}
+.eta,.nx>b,.nx>em,.rb-next>b{zoom:var(--Zeta)}
+.stop .nm{zoom:var(--Zname)}
+.ttls,.ttr>.ttl{zoom:var(--Ztt)}
+.ticker{zoom:var(--Ztk)}
+.clock{zoom:var(--Zclk)}
+.stop .nm{min-width:0;overflow:hidden}
 </style>
 </head>
 <body>
@@ -1548,6 +1560,14 @@ function applyLook(L){
   const nv={on:L.design==="v2", color:["light","dark","theme"].includes(L.v2color)?L.v2color:"light"};
   document.body.classList.toggle("v2",nv.on); document.body.classList.toggle("nobanner",L.banner===false);
   if(nv.on!==V2.on || nv.color!==V2.color){ V2=nv; try{ applyTheme(); }catch(_){} $("boards")._h=null; $("times")._h=null; setTimeout(()=>{ try{ if(window.tvFit) tvFit(); }catch(_){} fitVid(); },150); }
+  // 글자 크기: 전체 배율 × 부분별 단계 (TV 주소 끝 ?fs=110 으로 이 TV만 전체 배율을 바꿀 수도 있음)
+  const F=L.fs||{}, ALL=[90,100,110,120], qf=+qs.get("fs"), g=(ALL.includes(qf)?qf:(ALL.includes(+F.all)?+F.all:100))/100;
+  const st=v=>({"-2":.8,"-1":.9,"0":1,"1":1.12,"2":1.25})[String(Math.max(-2,Math.min(2,Math.round(+v||0))))];
+  const R=document.documentElement.style, fsig=[g,F.eta,F.name,F.tt,F.tk,F.clk].join();
+  if(fsig!==window.__fsig){ window.__fsig=fsig;
+    R.setProperty("--Zg",g); R.setProperty("--Zeta",(g*st(F.eta)).toFixed(3)); R.setProperty("--Zname",(g*st(F.name)).toFixed(3));
+    R.setProperty("--Ztt",(g*st(F.tt)).toFixed(3)); R.setProperty("--Ztk",(g*st(F.tk)).toFixed(3)); R.setProperty("--Zclk",(g*st(F.clk)).toFixed(3));
+    setTimeout(()=>{ try{ tkSig=""; drawTicker(); if(window.tvFit) tvFit(); fitVid(); }catch(_){} },150); }
   WX_ON = L.wx!==false; if(!WX_ON) $("wx").classList.add("hide"); else if($("wxT").textContent!=="--°") $("wx").classList.remove("hide");
   const m=String(L.motto||"").trim(), on=!!L.mottoOn && !!m;
   $("hMotto").classList.toggle("hide",!on); $("hMottoT").textContent=m; document.body.classList.toggle("hasmotto",on);
