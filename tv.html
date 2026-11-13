@@ -818,6 +818,7 @@ body.va-bottom{--vjc:flex-end;--vac:end}
 body:not(.va-spread) .stops,body:not(.va-spread) .tb,body:not(.va-spread) .tl,body:not(.va-spread) .rg,body:not(.va-spread) .cp{justify-content:var(--vjc)}
 body:not(.va-spread) .times:not(.tc-both) .tc-sec{justify-content:flex-start}
 body:not(.va-spread) .times.tc-wonly .tc-wor .r3-wg{flex:1;justify-content:var(--vjc);display:flex;flex-direction:column}
+.legend .lgn{font-style:normal}
 </style>
 </head>
 <body>
@@ -838,7 +839,7 @@ body:not(.va-spread) .times.tc-wonly .tc-wor .r3-wg{flex:1;justify-content:var(-
   <div class="notice hide" id="notice"></div>
   <div class="main">
     <div class="mapbox"><div id="map"></div>
-      <div class="legend" id="legend"><span data-lg="yatap"><i style="background:#3B5BA9"></i>야탑역 셔틀</span><span data-lg="park"><i style="background:#14B8A6"></i>파킹엔젤스</span><span>꽉 찬 표시 = 교회행</span><span>테두리 = 반대 방향</span></div>
+      <div class="legend" id="legend"><span data-lg="yatap"><i style="background:#3B5BA9"></i><em class="lgn">야탑역 셔틀</em></span><span data-lg="park"><i style="background:#14B8A6"></i><em class="lgn">파킹엔젤스</em></span><span>꽉 찬 표시 = 교회행</span><span>테두리 = 반대 방향</span></div>
     </div>
     <div class="boards" id="boards"></div>
     <section class="times" id="times"></section>
@@ -846,7 +847,7 @@ body:not(.va-spread) .times.tc-wonly .tc-wor .r3-wg{flex:1;justify-content:var(-
     <section class="poster hide" id="poster" aria-label="교회 행사 안내"><div class="pbg" id="pBg"></div><div class="pbg" id="pBg2"></div><div class="pslides" id="pSlides"></div><div class="pdots" id="pDots"></div><div class="pvid" id="pVid"><div class="pvin" id="pVidIn"></div><div class="vwait"><i></i><span>예배 영상을 연결하고 있습니다</span></div><span class="vlive"><i></i>실시간</span></div></section>
     <section class="restbox hide" id="restBox"></section>
   </div>
-  <div class="ticker hide" id="ticker"><div class="tag"><i></i>교회 소식</div><div class="tk-view"><div class="tk-track" id="tkTrack"></div></div><i class="shine"></i></div>
+  <div class="ticker hide" id="ticker"><div class="tag"><i></i><span id="tkTag">교회 소식</span></div><div class="tk-view"><div class="tk-track" id="tkTrack"></div></div><i class="shine"></i></div>
   <footer>
     <div class="qr" id="qr" aria-hidden="true"></div>
     <div class="ftxt"><b class="ft1">휴대폰으로도 확인하세요</b><b class="ft2"><em id="ftBrand">HCC 셔틀버스</em><small>휴대폰에서도 보기</small></b><span>QR을 찍으면 내 정류장 도착 알림까지 받을 수 있어요</span><span class="site">AI목양지원센터 · mokyangdesk.com</span></div>
@@ -902,6 +903,22 @@ const ROUTES = {
             {id:"church", name:"할렐루야교회", sub:"교회 입구", lat:37.40990, lng:127.15590, r:120} ],
     tip:"주일에만 운행합니다. 테크노파크 C동 → 차량등록사업소 → 교회 순서로 돕니다." }
 };
+// 노선 이름 · 정류장(방향) 순서 · 칸 제목 — 관리자 → TV 화면 → 기본 → 이름 · 순서
+const DEF_NAME={yatap:ROUTES.yatap.name, park:ROUTES.park.name}, DEF_ORDER={yatap:ROUTES.yatap.stops.map(x=>x.id), park:ROUTES.park.stops.map(x=>x.id)};
+const DEF_TITLE={next:"다음 출발", times:"오늘 운행 시간표", wor:"예배 안내", tk:"교회 소식"};
+let TITLE={...DEF_TITLE};
+const TT=k=>esc(TITLE[k]||DEF_TITLE[k]);
+function applyNames(L){
+  const N=L.names||{}, O=L.order||{}, T=L.titles||{};
+  ["yatap","park"].forEach(r=>{ const R=ROUTES[r]; R.name=String(N[r]||"").trim()||DEF_NAME[r];
+    const ord=Array.isArray(O[r])?O[r]:(O[r]&&typeof O[r]==="object"?Object.keys(O[r]).sort().map(k=>O[r][k]):null), base=ord&&ord.length?ord:DEF_ORDER[r];
+    const pos=id=>{ const i=base.indexOf(id); return i<0?99:i; };
+    R.stops.sort((a,b)=>pos(a.id)-pos(b.id));
+    if(typeof DEP_ROWS!=="undefined"&&DEP_ROWS[r]) DEP_ROWS[r].sort((a,b)=>pos(a[0])-pos(b[0])); });
+  TITLE={}; Object.keys(DEF_TITLE).forEach(k=>TITLE[k]=String(T[k]||"").trim()||DEF_TITLE[k]);
+  document.querySelectorAll("[data-lg]").forEach(x=>{ const e=x.querySelector(".lgn"); if(e&&ROUTES[x.dataset.lg]) e.textContent=ROUTES[x.dataset.lg].name; });
+  const tg=document.getElementById("tkTag"); if(tg) tg.textContent=TITLE.tk;
+}
 // 정류장 위치·도착 반경: 관리자가 지도에서 고친 값(config/stops/정류장id)이 있으면 그걸 씀
 Object.values(ROUTES).forEach(R=>R.stops.forEach(s=>{ s._def={lat:s.lat,lng:s.lng,r:s.r}; }));
 function applyStops(cfg){
@@ -1567,9 +1584,9 @@ function worHtml(){
 }
 function drawTimes(){
   const {day}=nowKST(), mode=cellMode(); let h="";
-  if(mode!=="worship") h+=`<div class="tc-sec tc-times"><h2>${badge("timetable")}오늘 운행 시간표<small>${DAYNAME[day]} · 지금 이후 출발</small></h2>${mode==="both"?compactHtml():boardHtml()}</div>`;
+  if(mode!=="worship") h+=`<div class="tc-sec tc-times"><h2>${badge("timetable")}${TT("times")}<small>${DAYNAME[day]} · 지금 이후 출발</small></h2>${mode==="both"?compactHtml():boardHtml()}</div>`;
   if(mode==="both") h+=`<div class="tc-sec tc-wor">${worChips()}</div>`;
-  else if(mode==="worship") h+=`<div class="tc-sec tc-wor"><h2>${badge("church")}예배 안내<small>${day===0?"오늘 주일":DAYNAME[day]}</small></h2>${worHtml()}</div>`;
+  else if(mode==="worship") h+=`<div class="tc-sec tc-wor"><h2>${badge("church")}${TT("wor")}<small>${day===0?"오늘 주일":DAYNAME[day]}</small></h2>${worHtml()}</div>`;
   const t=$("times"); t.classList.toggle("tc-both",mode==="both"); t.classList.toggle("tc-wonly",mode==="worship"); setH(t,h);
 }
 function drawBoards(){
@@ -1673,7 +1690,7 @@ function applyMode(){
 }
 function drawNext(){
   const r=RT[0], R=ROUTES[r], {min}=nowKST();
-  let h=`<h2>${badge("clock")}다음 출발<small>${R.name} · 시간표 기준</small></h2><div class="nxs">`;
+  let h=`<h2>${badge("clock")}${TT("next")}<small>${R.name} · 시간표 기준</small></h2><div class="nxs">`;
   (DEP_ROWS[r]||[]).forEach(([id,lab])=>{ const l=nextList(r,id,2);
     h+= l.length ? `<div class="nx"><span class="lab">${lab}</span><b>${hhmm(l[0])}</b><em>${inTxt(l[0]-min)}</em><small>${l[1]!=null?"그다음 "+hhmm(l[1]):"오늘 마지막 차"}</small></div>`
                  : `<div class="nx done"><span class="lab">${lab}</span><b>운행 종료</b><small>오늘 운행이 끝났습니다</small></div>`; });
@@ -1986,7 +2003,7 @@ try{
     TV_ROUTES=["auto","both","yatap","park"].includes(c.tvRoutes)?c.tvRoutes:"auto";
     const tr=c.tvRest||{}; REST_CFG={afterEnd: tr.afterEnd!==false, beforeFirst: tr.beforeFirst!==false, dates: tr.dates||{}, verse: tr.verse||"", verseRef: tr.verseRef||"", worship: tr.worship||"", worshipList: tr.worshipList||null, motto: tr.motto||"", mottoRef: tr.mottoRef||"", mottoVerse: tr.mottoVerse||"", verses: tr.verses||"", verseMode: tr.verseMode||"", verseEvery: tr.verseEvery||"day", secs: tr.secs||null};
     const pc=c.tvPosters||{}; POSTER_CFG={when:["rest","always","off"].includes(pc.when)?pc.when:"rest", sec:pc.sec||8, view:pc.view||"one", mix:pc.mix||"alt"}; PS.view="";
-    applyLook(c.tvLook||{}); POSTER_META=c.tvPosterList||{};
+    applyLook(c.tvLook||{}); applyNames(c.tvLook||{}); POSTER_META=c.tvPosterList||{}; $("nextBox")._h=null; $("restBox")._h=null;
     const cl=(c.tvLook||{}).cell||{}; CELL={sun:cl.sun||"times", wk:cl.wk||"times"};
     TTS=["card","line","ring"].includes((c.tvLook||{}).tts)?(c.tvLook||{}).tts:"line"; DAYBAR=(c.tvLook||{}).daybar!==false; $("times")._h=null;
     const nv=c.tvVideo||{}, vsig=JSON.stringify(VID_CFG); VID_CFG=nv; if(JSON.stringify(nv)!==vsig){ VS.key="#"; syncVideo(""); VS.ended=""; VS.failKey=""; }
