@@ -894,7 +894,8 @@ const parseTimes=v=>String(v||"").split(/[,\s]+/).map(x=>x.trim()).filter(x=>/^\
 let tt; function toast(m){ $("toast").textContent=m; $("toast").classList.add("show"); clearTimeout(tt); tt=setTimeout(()=>$("toast").classList.remove("show"),2600); }
 const randPin=()=>{ const a=new Uint32Array(1); crypto.getRandomValues(a); return String(100000 + a[0]%900000); };
 
-const app=initializeApp(firebaseConfig), auth=getAuth(app), db=getDatabase(app);
+// 관리자 로그인은 성도님·TV 화면(익명 로그인)과 따로 보관 — 같은 브라우저에서 TV·성도님 화면을 열어도 관리자 로그인이 풀리지 않게
+const app=initializeApp(firebaseConfig,"hcc-admin"), auth=getAuth(app), db=getDatabase(app);
 // ==== MAPKIT START ====  (카카오맵 / OpenStreetMap 공통 지도 — 이 블록은 index·driver·admin·tv에 똑같이 들어갑니다)
 // 관리자 설정에 카카오 지도 키(config/kakaoKey)가 있으면 카카오맵, 없거나 불러오지 못하면 OpenStreetMap(Leaflet)을 씁니다.
 const MapKit = (()=>{
