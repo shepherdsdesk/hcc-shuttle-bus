@@ -476,18 +476,22 @@ body.nobanner footer{display:none!important}
 body.v2{--v2acc:#D9622B;--v2accS:#FBEDE5;--tagbg:#15171C;--tagink:#fff;--ry:#2F4A9E;--rp:#0E8478;--v2sh:0 .1vmin .2vmin rgba(20,22,30,.04),0 1vmin 3vmin rgba(20,22,30,.07);letter-spacing:-.015em}
 body.v2:not(.light){--v2acc:#FFA45C;--v2accS:rgba(255,164,92,.14);--tagbg:#1F2731;--tagink:#F1F3F6;--ry:#8EA4FF;--rp:#2CC9B5;--v2sh:0 .1vmin 0 rgba(255,255,255,.03) inset,0 1vmin 3vmin rgba(0,0,0,.35)}
 body.v2 .tv{padding:3vmin 3.6vmin 2.6vmin;gap:2vmin}
+body.v2{--mg:2.2vmin}
 body.v2 .main{gap:2.2vmin}
 body.v2 .boards{gap:2.2vmin}
 /* 칸: 테두리 대신 면과 그림자 */
 body.v2 .rt,body.v2 .times,body.v2 .mapbox,body.v2 .poster,body.v2 .nextbox,body.v2 .restbox,body.v2 .ticker,body.v2 .hdbg{border:0!important;border-radius:2.6vmin;box-shadow:var(--v2sh)}
 body.v2 .rt,body.v2 .times,body.v2 .nextbox{padding:2.2vmin 2.6vmin}
 /* 가로 화면: 3칸 × 2줄 같은 크기 (지도만 2줄 높이) */
-body.v2:not(.rest):not(.portrait) .main{grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:repeat(2,minmax(0,1fr))!important;grid-template-areas:"map boards times" "map boards times"!important}
-body.v2.one:not(.rest):not(.portrait) .main{grid-template-areas:"map boards times" "map next times"!important}
-body.v2.pside.mx-split:not(.rest):not(.portrait) .main{grid-template-areas:"map boards times" "map boards ptr"!important}
-body.v2.one.pside.mx-split:not(.rest):not(.portrait) .main{grid-template-areas:"map boards times" "map next ptr"!important}
-body.v2.one:not(.rest):not(.portrait) .boards .rt{flex:1}
-body.v2.portrait:not(.rest):not(.one):not(.pside) .main{grid-template-rows:25% minmax(0,1.22fr) minmax(0,.78fr)!important}
+/* (두 디자인 공통) 3칸 × 2줄 같은 크기 — 지도만 2줄 높이, 칸 사이 간격도 하나로 */
+body:not(.rest):not(.portrait) .main{grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:repeat(2,minmax(0,1fr))!important;grid-template-areas:"map boards times" "map boards times"!important}
+body.one:not(.rest):not(.portrait) .main{grid-template-areas:"map boards times" "map next times"!important}
+body.pside.mx-split:not(.rest):not(.portrait) .main{grid-template-areas:"map boards times" "map boards ptr"!important}
+body.one.pside.mx-split:not(.rest):not(.portrait) .main{grid-template-areas:"map boards times" "map next ptr"!important}
+body.one:not(.rest):not(.portrait) .boards .rt{flex:1}
+body:not(.portrait) .boards{gap:var(--mg,1.6vmin)!important}
+body.rest:not(.noposter):not(.portrait) .main{grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:minmax(0,1fr)!important;grid-template-areas:"poster poster rest"!important}
+
 /* 머리 */
 body.v2 header h1{font-weight:700;letter-spacing:-.02em}
 body.v2 header small{font-weight:400}
@@ -548,17 +552,96 @@ body.v2 footer .credit .tel em{font-weight:400}
 body.v2 .rb-sec{border:0!important}
 body.v2:not(.w-light) .restbox h2{font-weight:700}
 
+.brandtx h1{display:inline-block}
+.brandtx small{display:block;width:max-content;white-space:nowrap}
 /* ---------- 글자 크기 (관리자 → TV 화면 → 기본 → 글자 크기) ---------- */
-:root{--Zg:1;--Zeta:1;--Zname:1;--Ztt:1;--Ztk:1;--Zclk:1}
+:root{--Zg:1;--Zeta:1;--Znext:1;--Zname:1;--Ztt:1;--Ztk:1;--Zclk:1}
 header h1,header small,.live,.wx,.hmotto,.rt h2,.times>h2,.nextbox h2,.notice,footer .ftxt,footer .credit,.rb-head h2,.rb-memo,.rb-sec h3,.wtile,.wk,.nx .lab,.nx small,.next,.rb-r,.rb-next small,.ttr h3{zoom:var(--Zg)}
 .nextbox{overflow:hidden}
 .rb-sec,.restbox{overflow:hidden}
-.eta,.nx>b,.nx>em,.rb-next>b{zoom:var(--Zeta)}
+.eta,.rb-next>b{zoom:var(--Zeta)}
+.nx>b,.nx>em{zoom:var(--Znext)}
+.nx.done>b{font-size:3.2vmin!important;color:var(--sub)!important;font-weight:700!important;letter-spacing:0}
+.eta.none b{font-size:2.3vmin!important;font-weight:600!important;color:var(--sub)!important;opacity:.85}
 .stop .nm{zoom:var(--Zname)}
 .ttls,.ttr>.ttl{zoom:var(--Ztt)}
 .ticker{zoom:var(--Ztk)}
 .clock{zoom:var(--Zclk)}
 .stop .nm{min-width:0;overflow:hidden}
+
+/* ===== 포스터와 함께 쓰는 안내 칸 (세 가지를 한꺼번에) ===== */
+.restbox.r3box{display:flex;flex-direction:column;gap:1.1vmin;padding:2vmin 2.4vmin}
+.r3{display:flex;flex-direction:column;gap:.8vmin;flex:none}
+.r3-week{flex:1 1 0;min-height:0;overflow:hidden}
+.r3+.r3{border-top:.15vmin solid var(--line);padding-top:1.1vmin}
+.r3 h3{margin:0;display:flex;align-items:center;gap:1vmin;font-size:2vmin;font-weight:800;color:var(--ink)}
+.r3-top{display:flex;align-items:center;gap:1.4vmin}
+.r3-ic{flex:none;display:grid;place-items:center;width:5.4vmin;height:5.4vmin;border-radius:1.4vmin;background:var(--chip);color:var(--navy)}
+.r3-ic .svi{width:3vmin;height:3vmin}
+.r3-tt h2{margin:0;font-size:2.7vmin;font-weight:800;line-height:1.25;word-break:keep-all}
+.r3-tt p{margin:.3vmin 0 0;font-size:1.7vmin;color:var(--sub);font-weight:500}
+.r3-next{display:flex;flex-direction:column;gap:.6vmin;margin-top:.4vmin}
+.r3-nr{display:flex;align-items:baseline;justify-content:space-between;gap:1vmin;background:var(--chip);border-radius:1.2vmin;padding:.7vmin 1.4vmin}
+.r3-rn{display:flex;align-items:center;gap:.8vmin;font-size:1.7vmin;color:var(--sub);font-weight:600;white-space:nowrap}
+.r3-rn i,.r3-wh i,.r3-one i,.r3-few i{width:.6vmin;height:1.8vmin;border-radius:99vmin;flex:none;display:inline-block}
+.r3-nr b{font-size:2.4vmin;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.r3-wg{display:flex;flex-direction:column;gap:.6vmin}
+.r3-g{display:grid;grid-template-columns:5.2vmin minmax(0,1fr);gap:1vmin;align-items:start}
+.r3-gl{font-size:1.6vmin;font-weight:700;color:var(--sub);padding-top:.35vmin}
+.r3-items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:2vmin;row-gap:.2vmin}
+.r3-it{display:flex;align-items:baseline;justify-content:space-between;gap:.8vmin;border-bottom:.12vmin dashed var(--line);padding:.25vmin 0;min-width:0}
+.r3-it .n{font-size:1.85vmin;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.r3-it .n small{font-size:1.4vmin;color:var(--sub);font-weight:500}
+.r3-it .t{font-size:2.1vmin;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.r3-it .t small{font-size:1.3vmin;color:var(--sub);font-weight:500;margin-right:.4vmin}
+.r3-wt{display:grid;column-gap:2vmin;row-gap:.2vmin;align-items:center}
+.r3-wh{display:flex;align-items:center;gap:.6vmin;font-size:1.5vmin;color:var(--sub);font-weight:600}
+.r3-d{font-size:1.8vmin;font-weight:700;color:var(--sub);padding:.35vmin 1vmin;border-radius:.8vmin 0 0 .8vmin;white-space:nowrap}
+.r3-d em{font-style:normal;font-size:1.3vmin;margin-left:.6vmin;color:var(--v2acc,#B45309)}
+.r3-v{font-size:2vmin;font-weight:600;font-variant-numeric:tabular-nums;padding:.35vmin 1vmin;white-space:nowrap}
+.r3-v.off{color:var(--sub);font-weight:400}
+.r3-d.today,.r3-v.today{background:var(--chip);color:var(--ink)}
+.r3-v.today{border-radius:0 .8vmin .8vmin 0;font-weight:800}
+.r3-one{display:none}
+.r3-wt2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.6vmin 1.2vmin;zoom:var(--Zg)}
+.r3-wc{display:flex;align-items:baseline;justify-content:space-between;gap:.8vmin;padding:.45vmin 1.1vmin;border-radius:1vmin;background:transparent;box-shadow:inset 0 0 0 .12vmin var(--line);min-width:0}
+.r3-wc .d{font-size:1.7vmin;font-weight:700;color:var(--sub);white-space:nowrap}
+.r3-wc .d em{font-style:normal;font-size:1.25vmin;margin-left:.5vmin;color:var(--v2acc,#B45309)}
+.r3-wc .v{font-size:1.95vmin;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.r3-wc .v.off{color:var(--sub);font-weight:400}
+.r3-wc.today{background:var(--chip);box-shadow:none}
+.r3-wc.today .d{color:var(--ink)}
+.r3-few{display:flex;align-items:center;gap:.9vmin;font-size:1.8vmin;margin-top:.2vmin;padding:.6vmin 1.1vmin;border-radius:1vmin;background:var(--chip);min-width:0}
+.r3-few b{font-weight:700;white-space:nowrap}
+.r3-few span{color:var(--sub);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+body.v2 .r3+.r3{border-top-color:var(--line)}
+.r3-tt h2,.r3-nr,.r3 h3,.r3-it,.r3-wt,.r3-few{zoom:var(--Zg)}
+
+/* ===== 세로 TV: 지도 위에 넓게, 아래는 2칸 × 2줄 같은 크기 ===== */
+body.portrait:not(.rest) .main{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:minmax(0,.9fr) minmax(0,1fr) minmax(0,1fr)!important;grid-template-areas:"map map" "boards boards" "times times"!important}
+body.portrait.one:not(.rest) .main{grid-template-areas:"map map" "boards next" "times times"!important}
+body.portrait.pside.mx-split:not(.rest) .main{grid-template-areas:"map map" "boards boards" "times ptr"!important}
+body.portrait.one.pside.mx-split:not(.rest) .main{grid-template-areas:"map map" "boards next" "times ptr"!important}
+body.portrait:not(.rest) .boards{flex-direction:row;gap:var(--mg,1.6vmin)!important}
+body.portrait:not(.rest) .boards .rt{flex:1 1 0;min-width:0}
+body.portrait .poster{min-height:0!important}
+/* 쉬는 날 (세로 · 포스터 없는 날): 다음 운행 · 예배 안내 · 이번 주 셔틀을 나란히 세 칸 */
+body.portrait.rest:not(.noposter) .main{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:minmax(0,1.45fr) minmax(0,1fr)!important;grid-template-areas:"poster" "rest"!important}
+.restbox.r3box.r3row{display:flex!important;flex-direction:row;gap:0;padding:2.2vmin 0}
+.r3row .r3{flex:1 1 0;min-width:0;padding:0 2.2vmin;overflow:hidden}
+.r3row .r3+.r3{border-top:0;border-left:.15vmin solid var(--line);padding-top:0}
+body.portrait .r3row .r3-items,body.portrait .r3row .r3-wt2{grid-template-columns:minmax(0,1fr)}
+body.portrait .r3row .r3-tt h2{font-size:2.5vmin}
+body.rest.noposter:not(.portrait) .r3row .r3{zoom:1.5}
+body.rest.noposter:not(.portrait) .r3row .r3-items,body.rest.noposter:not(.portrait) .r3row .r3-wt2{grid-template-columns:minmax(0,1fr)}
+body.rest.noposter.portrait .r3box{padding:3vmin 3.4vmin;gap:2vmin}
+body.rest.noposter.portrait .r3box .r3{zoom:1.45}
+body.rest.noposter.portrait .r3box .r3-week{flex:none}
+.r3row .r3-nr{flex-direction:column;align-items:flex-start;gap:.3vmin}
+.r3row .r3-nr b{white-space:normal}
+.r3row .r3-few{flex-wrap:wrap;row-gap:.2vmin}
+.r3row .r3-few span{white-space:normal}
+body.rest.noposter .r3row .r3-head{justify-content:flex-start}
 </style>
 </head>
 <body>
@@ -567,7 +650,7 @@ header h1,header small,.live,.wx,.hmotto,.rt h2,.times>h2,.nextbox h2,.notice,fo
   <header>
     <div class="hdbg" aria-hidden="true"><div class="ph" id="hdPhoto"></div></div>
     <div class="logo" id="brandLogo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" aria-hidden="true"><rect x="4" y="3" width="16" height="14" rx="3"/><path d="M4 11h16M8 21v-4M16 21v-4"/></svg></div>
-    <div><h1 id="brandTitle">HCC 셔틀버스 운행 현황</h1><small id="brandSub">할렐루야교회 셔틀 실시간 안내</small></div>
+    <div class="brandtx"><h1 id="brandTitle">HCC 셔틀버스</h1><small id="brandSub">할렐루야교회 셔틀 실시간 안내</small></div>
     <span class="live" id="conn"><i></i><span>연결 중</span></span>
     <div class="hmotto hide" id="hMotto"><span id="hMottoT"></span></div>
     <div class="hright">
@@ -971,7 +1054,16 @@ function paintLogo(el,B,pad){
   if(B.logo){ el.innerHTML=`<img src="${B.logo}" alt="" style="width:100%;height:100%;object-fit:contain;display:block">`; el.style.background = B.bg==="navy"?"#1B2B5C":B.bg==="none"?"transparent":"#FFFFFF"; el.style.padding=pad; el.style.boxSizing="border-box"; }
   else { el.innerHTML=el._def; el.style.background=el._bg||""; el.style.padding=""; }
 }
-function applyBrand(c){ const B=brandOf(c); $("brandTitle").textContent=B.short+" 셔틀버스 운행 현황"; $("brandSub").textContent=B.church+" 셔틀 실시간 안내"; document.title=B.short+" 셔틀버스 · 운행 현황판"; $("ftBrand").textContent=B.short+" 셔틀버스"; paintLogo($("brandLogo"),B,".6vmin"); }
+// 부제목을 제목 글자 폭에 딱 맞춤: 글자 사이 간격을 고르게 벌리고, 더 길면 글씨를 줄임
+function fitSub(){ const t=$("brandTitle"), sb=$("brandSub"); if(!t||!sb) return;
+  sb.style.letterSpacing="0px"; sb.style.fontSize=""; sb.style.width="";
+  const W=t.getBoundingClientRect().width, n=[...sb.textContent].length; if(!W||n<2) return;
+  let w=sb.getBoundingClientRect().width;
+  if(w>W){ const fs=parseFloat(getComputedStyle(sb).fontSize); sb.style.fontSize=(fs*W/w*0.98)+"px"; w=sb.getBoundingClientRect().width; }
+  const z=parseFloat(getComputedStyle(sb).zoom)||1, ls=Math.max(0,(W-w)/(n-1))/z; sb.style.letterSpacing=ls.toFixed(2)+"px"; sb.style.whiteSpace="nowrap"; }
+window.addEventListener("resize",()=>setTimeout(fitSub,120));
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>fitSub());
+function applyBrand(c){ const B=brandOf(c); $("brandTitle").textContent=B.short+" 셔틀버스"; setTimeout(fitSub,50); $("brandSub").textContent=B.church+" 셔틀 실시간 안내"; document.title=B.short+" 셔틀버스 · 운행 현황판"; $("ftBrand").textContent=B.short+" 셔틀버스"; paintLogo($("brandLogo"),B,".6vmin"); }
 // ---------- 계절 효과 ----------
 const hexA=(h,a)=>{ const n=parseInt(h.slice(1),16); return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`; };
 const FX_OF={spring:"petal",easter:"petal",summer:"wind",pentecost:"wind",autumn:"leaf",thanks:"leaf",winter:"snow",advent:"snow",christmas:"snow"};
@@ -1342,7 +1434,7 @@ function drawNext(){
   let h=`<h2>${badge("clock")}다음 출발<small>${R.name} · 시간표 기준</small></h2><div class="nxs">`;
   (DEP_ROWS[r]||[]).forEach(([id,lab])=>{ const l=nextList(r,id,2);
     h+= l.length ? `<div class="nx"><span class="lab">${lab}</span><b>${hhmm(l[0])}</b><em>${inTxt(l[0]-min)}</em><small>${l[1]!=null?"그다음 "+hhmm(l[1]):"오늘 마지막 차"}</small></div>`
-                 : `<div class="nx done"><span class="lab">${lab}</span><b>운행 끝</b><small>오늘 운행이 끝났습니다</small></div>`; });
+                 : `<div class="nx done"><span class="lab">${lab}</span><b>운행 종료</b><small>오늘 운행이 끝났습니다</small></div>`; });
   h+=`</div>`; setH($("nextBox"),h);
 }
 function todayFirst(r){ const {day}=nowKST(); let best=null;
@@ -1384,7 +1476,56 @@ function worshipHtml(items){
     const day = x.d==="주일" ? (allSun?"":"주일") : x.d.replace(" (월-금)"," 월-금").replace(/^([월화수목금토])$/,"$1요일");
     return `<div class="wtile${x.d==="주일"?"":" wk2"}"><span class="n">${esc(x.n)}</span><span class="ap">${esc([day,x.ap].filter(Boolean).join(" "))}</span>${x.t?`<span class="t">${x.t}</span>`:""}${x.p?`<span class="pl">${esc(x.p)}</span>`:""}</div>`; }).join("")+`</div></div>`;
 }
+// 포스터·영상과 함께 쓰는 좁은 안내 칸: 다음 운행 · 예배 안내 · 이번 주 셔틀을 한꺼번에 (번갈아 보이지 않음)
+function restCompact(){ return document.body.classList.contains("rest"); }
+function drawRest3(){
+  const memo = REST_WHY==="manual" ? String(REST_CFG.dates[todayStr()]||"").trim() : "";
+  const early = REST_WHY==="early";
+  const firsts = early ? RT.map(r=>todayFirst(r)).filter(Boolean).sort((a,b)=>a.m-b.m) : [];
+  const title = REST_WHY==="end" ? "오늘 셔틀 운행이 모두 끝났습니다" : early ? `오늘 셔틀은 ${firsts.length?ampm(firsts[0].m):""}에 시작합니다` : "오늘은 셔틀이 운행하지 않습니다";
+  const sub = memo || (REST_WHY==="end" ? "함께해 주셔서 감사합니다" : early ? "첫차 1시간 전부터 실시간 안내가 나옵니다" : "");
+  let h=`<section class="r3 r3-head"><div class="r3-top"><span class="r3-ic" aria-hidden="true">${ic(REST_WHY==="end"?"moon":early?"sunrise":"bus")}</span><div class="r3-tt"><h2>${title}</h2>${sub?`<p>${esc(sub)}</p>`:""}</div></div><div class="r3-next">`;
+  RT.forEach(r=>{ const R=ROUTES[r];
+    if(early){ const f=todayFirst(r); h+=`<div class="r3-nr"><span class="r3-rn"><i style="background:${R.color}"></i>${R.name} 오늘 첫차</span><b>${f?ampm(f.m):"오늘은 쉼"}</b></div>`; return; }
+    const n=nextService(r);
+    h+=`<div class="r3-nr"><span class="r3-rn"><i style="background:${R.color}"></i>${R.name} 다음 운행</span><b>${n?`${n.k===1?"내일 ":""}${n.k>6?n.ds.slice(5).replace("-","/")+" ":""}${DAYNAME[n.d]} ${ampm(n.m)}`:"시간표 확인"}</b></div>`; });
+  h+=`</div></section>`;
+  // 예배 안내: 주일 / 평일로 묶은 목록 (이름 왼쪽 · 시간 오른쪽)
+  const W=worshipItems();
+  if(W.length){
+    const grp=[["주일",W.filter(x=>x.d==="주일")],["평일",W.filter(x=>x.d!=="주일")]].filter(g=>g[1].length);
+    h+=`<section class="r3 r3-wor"><h3>${badge("church","sm")}예배 안내</h3><div class="r3-wg">`+grp.map(([g,L])=>`<div class="r3-g"><span class="r3-gl">${g}</span><div class="r3-items">`+L.map(x=>{
+      const day = x.d==="주일" ? "" : x.d==="새벽 (월-금)" ? "월–금" : x.d;
+      return `<div class="r3-it"><span class="n">${esc(x.n)}${day&&!x.n.includes(day)?` <small>${esc(day)}</small>`:""}</span><span class="t">${x.ap?`<small>${x.ap}</small>`:""}${x.t||""}</span></div>`; }).join("")+`</div></div>`).join("")+`</div></section>`;
+  }
+  // 이번 주 셔틀: 요일을 세로로, 하루·이틀만 다니는 노선은 한 줄 요약
+  const {day}=nowKST(), order=[1,2,3,4,5,6,0], short={0:"주일",1:"월",2:"화",3:"수",4:"목",5:"금",6:"토"};
+  const span=(r,d)=>{ const all=[]; (DEP_ROWS[r]||[]).forEach(([id])=>scheduleFor(r,id,d).forEach(x=>all.push(toM(x)))); return all.length?[Math.min(...all),Math.max(...all)]:null; };
+  const RS=weekRoutes().map(r=>({r,R:ROUTES[r],days:order.map(d=>[d,span(r,d)])}));
+  const many=RS.filter(x=>x.days.filter(d=>d[1]).length>=3), few=RS.filter(x=>x.days.filter(d=>d[1]).length<3);
+  h+=`<section class="r3 r3-week"><h3>${badge("cal","sm")}이번 주 셔틀</h3>`;
+  if(many.length){
+    h+=`<div class="r3-wt" style="grid-template-columns:auto repeat(${many.length},minmax(0,1fr))">`+(many.length>1?`<span></span>`+many.map(x=>`<span class="r3-wh"><i style="background:${x.R.color}"></i>${x.R.name}</span>`).join(""):"");
+    // 같은 시간이 이어지는 요일은 한 줄로 묶음 (예: 화–목 9:00 – 16:40)
+    const key=d=>many.map(x=>{ const v=x.days.find(z=>z[0]===d)[1]; return v?v.join("-"):"off"; }).join("|"), groups=[];
+    order.forEach(d=>{ const k=key(d), g=groups[groups.length-1]; if(g && g.k===k && d!==day && g.last!==day) { g.ds.push(d); g.last=d; } else groups.push({k,ds:[d],last:d}); });
+    if(many.length===1){ h=h.replace(/<div class="r3-wt"[^>]*>$/,`<div class="r3-wt2">`);
+      groups.forEach(g=>{ const t=g.ds.includes(day), lab=g.ds.length>1?short[g.ds[0]]+"–"+short[g.ds[g.ds.length-1]]:short[g.ds[0]], v=many[0].days.find(z=>z[0]===g.ds[0])[1];
+        h+=`<div class="r3-wc${t?" today":""}"><span class="d">${lab}${t?"<em>오늘</em>":""}</span><span class="v${v?"":" off"}">${v?`${hhmm(v[0])} – ${hhmm(v[1])}`:"쉼"}</span></div>`; });
+    } else
+    groups.forEach(g=>{ const t=g.ds.includes(day), lab=g.ds.length>1?short[g.ds[0]]+"–"+short[g.ds[g.ds.length-1]]:short[g.ds[0]], d=g.ds[0];
+      h+=`<span class="r3-d${t?" today":""}">${lab}${t?"<em>오늘</em>":""}</span>`+many.map(x=>{ const v=x.days.find(z=>z[0]===d)[1];
+        return v?`<span class="r3-v${t?" today":""}">${hhmm(v[0])} – ${hhmm(v[1])}</span>`:`<span class="r3-v off${t?" today":""}">쉼</span>`; }).join(""); });
+    h+=`</div>`+(many.length===1?`<div class="r3-one"><i style="background:${many[0].R.color}"></i>${many[0].R.name}</div>`:"");
+  }
+  few.forEach(x=>{ const on=x.days.filter(d=>d[1]);
+    h+=`<div class="r3-few"><i style="background:${x.R.color}"></i><b>${x.R.name}</b>${on.length?`<span>${on.map(([d,v])=>`${short[d]}${on.length===1?"만":""} ${hhmm(v[0])} – ${hhmm(v[1])}`).join(" · ")}</span>`:`<span>이번 주 운행 없음</span>`}</div>`; });
+  h+=`</section>`;
+  const box=$("restBox"), b=document.body; box.classList.add("r3box"); const P=b.classList.contains("portrait"), N=b.classList.contains("noposter"); box.classList.toggle("r3row", P!==N); setH(box,h);
+}
 function drawRest(){
+  if(restCompact()) return drawRest3();
+  $("restBox").classList.remove("r3box");
   const memo = REST_WHY==="manual" ? String(REST_CFG.dates[todayStr()]||"").trim() : "";
   const early = REST_WHY==="early";
   const firsts = early ? RT.map(r=>todayFirst(r)).filter(Boolean).sort((a,b)=>a.m-b.m) : [];
@@ -1555,19 +1696,19 @@ function applyLook(L){
   const f=FONT_FAM[L.font]?L.font:"pretendard";
   if(FONT_CSS[f] && !document.getElementById("ff-"+f)){ const l=document.createElement("link"); l.rel="stylesheet"; l.id="ff-"+f; l.href=FONT_CSS[f]; document.head.appendChild(l); }
   if(f==="gmarket" && !document.getElementById("ff-gm")){ const st=document.createElement("style"); st.id="ff-gm"; st.textContent='@font-face{font-family:"GmarketSans";font-weight:300;font-display:swap;src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansLight.woff") format("woff")}@font-face{font-family:"GmarketSans";font-weight:400 600;font-display:swap;src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff") format("woff")}@font-face{font-family:"GmarketSans";font-weight:700 900;font-display:swap;src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff") format("woff")}'; document.head.appendChild(st); }
-  document.documentElement.style.setProperty("--ff",FONT_FAM[f]); document.body.dataset.font=f;
+  document.documentElement.style.setProperty("--ff",FONT_FAM[f]); setTimeout(fitSub,300); setTimeout(fitSub,1500); document.body.dataset.font=f;
   const w=["bold","normal","light"].includes(L.weight)?L.weight:"bold"; ["normal","light"].forEach(k=>document.body.classList.toggle("w-"+k,w===k));
   const nv={on:L.design==="v2", color:["light","dark","theme"].includes(L.v2color)?L.v2color:"light"};
   document.body.classList.toggle("v2",nv.on); document.body.classList.toggle("nobanner",L.banner===false);
   if(nv.on!==V2.on || nv.color!==V2.color){ V2=nv; try{ applyTheme(); }catch(_){} $("boards")._h=null; $("times")._h=null; setTimeout(()=>{ try{ if(window.tvFit) tvFit(); }catch(_){} fitVid(); },150); }
   // 글자 크기: 전체 배율 × 부분별 단계 (TV 주소 끝 ?fs=110 으로 이 TV만 전체 배율을 바꿀 수도 있음)
   const F=L.fs||{}, ALL=[90,100,110,120], qf=+qs.get("fs"), g=(ALL.includes(qf)?qf:(ALL.includes(+F.all)?+F.all:100))/100;
-  const st=v=>({"-2":.8,"-1":.9,"0":1,"1":1.12,"2":1.25})[String(Math.max(-2,Math.min(2,Math.round(+v||0))))];
-  const R=document.documentElement.style, fsig=[g,F.eta,F.name,F.tt,F.tk,F.clk].join();
+  const st=v=>1+0.07*Math.max(-5,Math.min(5,Math.round(+v||0)));   // −5 … +5 (한 단계 7%)
+  const R=document.documentElement.style, fsig=[g,F.eta,F.next,F.name,F.tt,F.tk,F.clk].join();
   if(fsig!==window.__fsig){ window.__fsig=fsig;
-    R.setProperty("--Zg",g); R.setProperty("--Zeta",(g*st(F.eta)).toFixed(3)); R.setProperty("--Zname",(g*st(F.name)).toFixed(3));
+    R.setProperty("--Zg",g); R.setProperty("--Zeta",(g*st(F.eta)).toFixed(3)); R.setProperty("--Znext",(g*st(F.next)).toFixed(3)); R.setProperty("--Zname",(g*st(F.name)).toFixed(3));
     R.setProperty("--Ztt",(g*st(F.tt)).toFixed(3)); R.setProperty("--Ztk",(g*st(F.tk)).toFixed(3)); R.setProperty("--Zclk",(g*st(F.clk)).toFixed(3));
-    setTimeout(()=>{ try{ tkSig=""; drawTicker(); if(window.tvFit) tvFit(); fitVid(); }catch(_){} },150); }
+    setTimeout(()=>{ try{ tkSig=""; drawTicker(); if(window.tvFit) tvFit(); fitVid(); fitSub(); }catch(_){} },150); }
   WX_ON = L.wx!==false; if(!WX_ON) $("wx").classList.add("hide"); else if($("wxT").textContent!=="--°") $("wx").classList.remove("hide");
   const m=String(L.motto||"").trim(), on=!!L.mottoOn && !!m;
   $("hMotto").classList.toggle("hide",!on); $("hMottoT").textContent=m; document.body.classList.toggle("hasmotto",on);

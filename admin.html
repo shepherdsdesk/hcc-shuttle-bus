@@ -347,6 +347,12 @@
   .tvprev{position:sticky;top:14px;background:#fff;border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:8px}
   .tvprevhead{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
   .tvprevhead b{margin-right:auto}
+  .pvx{order:9;border:0;background:#EEF1F6;color:#475569;border-radius:9px;padding:5px 10px;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer}
+  .tvprevhead .pvx{order:0}
+  .pvbar{display:none;justify-content:flex-end;margin:-6px 0 8px}
+  .pvoff .pvbar{display:flex}
+  .pvoff .tvwrap{grid-template-columns:1fr}
+  .pvoff .tvprev{display:none}
   .seg3.mini button{padding:5px 9px;font-size:12px}
   .tvframe{position:relative;overflow:hidden;border-radius:10px;background:#0F172A;margin:0 auto;box-shadow:0 0 0 1px var(--line)}
   .tvframe iframe{border:0;position:absolute;top:0;left:0;transform-origin:0 0;pointer-events:none}
@@ -658,7 +664,8 @@
     <!-- TV 화면 -->
     <section id="tab-tv" class="hide">
       <div class="tvsub" id="tvSub" role="tablist"><button type="button" role="tab" data-pane="basic"><span class="tsi" style="background:#E6F1FB;color:#0C447C"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span><span class="tst"><b>기본</b><small id="tss-basic"></small></span></button><button type="button" role="tab" data-pane="poster"><span class="tsi" style="background:#FBEAF0;color:#72243E"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="9.5" cy="9" r="1.6"/><path d="M4 17l5-5 4 4 2.5-2.5L20 18"/></svg></span><span class="tst"><b>포스터</b><small id="tss-poster"></small></span></button><button type="button" role="tab" data-pane="video"><span class="tsi" style="background:#FCEBEB;color:#791F1F"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="3.5"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor" stroke="none"/></svg></span><span class="tst"><b>영상</b><small id="tss-video"></small></span></button><button type="button" role="tab" data-pane="rest"><span class="tsi" style="background:#FAEEDA;color:#633806"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M8 3v4M16 3v4M3.5 10h17M10 14l4 4M14 14l-4 4"/></svg></span><span class="tst"><b>쉬는 날</b><small id="tss-rest"></small></span></button><button type="button" role="tab" data-pane="worship"><span class="tsi" style="background:#EEEDFE;color:#3C3489"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v4M10 5h4M5 21V12l7-4 7 4v9"/><path d="M10 21v-4a2 2 0 0 1 4 0v4"/></svg></span><span class="tst"><b>예배</b><small id="tss-worship"></small></span></button><button type="button" role="tab" data-pane="look"><span class="tsi" style="background:#E1F5EE;color:#085041"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.6-.8 1.6-1.6 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.7-1.6 1.6-1.6H16a5 5 0 0 0 5-5c0-4-4-7.4-9-7.4z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7.5" r="1"/><circle cx="14.5" cy="7.5" r="1"/></svg></span><span class="tst"><b>꾸미기</b><small id="tss-look"></small></span></button><button type="button" role="tab" data-pane="links"><span class="tsi" style="background:#F1EFE8;color:#444441"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></span><span class="tst"><b>TV 주소</b><small id="tss-links"></small></span></button></div>
-      <div class="tvwrap">
+      <div class="pvbar" id="pvBar"><button type="button" class="btn ghost" id="pvOn">TV 미리 보기 켜기</button></div>
+      <div class="tvwrap" id="tvWrap">
       <div class="tvpanes">
       <div class="card tvpane" data-pane="basic">
         <h2>기본 <small>TV에 무엇을 어떻게 보여 줄지 정합니다 · 바꾸면 TV에 바로 반영됩니다</small></h2>
@@ -866,7 +873,7 @@
       </div>
       </div>
       <aside class="tvprev" id="tvPrev">
-        <div class="tvprevhead"><b>TV 미리 보기</b>
+        <div class="tvprevhead"><b>TV 미리 보기</b><button type="button" class="pvx" id="pvOff" title="미리 보기 끄기" aria-label="미리 보기 끄기">끄기 ✕</button>
           <div class="seg3 mini"><button type="button" data-pvl="land" class="on">가로</button><button type="button" data-pvl="port">세로</button></div>
           <div class="seg3 mini"><button type="button" data-pvm="live" class="on">지금</button><button type="button" data-pvm="rest">운행 없는 날</button></div>
         </div>
@@ -1916,23 +1923,30 @@ document.addEventListener("change",e=>{ const k=e.target.closest("[data-vpk]"); 
   saveVd({pick:Object.keys(pick).length?pick:{_none:true}},"예배를 골랐습니다"); });
 
 // ---------- TV 글자 크기 ----------
-const FS_PARTS=[["eta","도착 시간 숫자"],["name","정류장 이름"],["tt","시간표"],["tk","교회 소식 띠"],["clk","시계"]];
-const FS_LAB={"-2":"작게 2","-1":"작게 1","0":"보통","1":"크게 1","2":"크게 2"};
+const FS_PARTS=[["eta","도착 시간 숫자"],["next","다음 출발 · 운행 종료"],["name","정류장 이름"],["tt","시간표"],["tk","교회 소식 띠"],["clk","시계"]];
+const FS_LAB=new Proxy({},{get:(_,v)=>{ v=+v; return v===0?"보통":(v>0?"+":"−")+Math.abs(v); }});
 function drawFs(){
   const F=(A.config.tvLook||{}).fs||{}, all=[90,100,110,120].includes(+F.all)?+F.all:100;
   document.querySelectorAll("[data-fsa]").forEach(b=>b.classList.toggle("on",+b.dataset.fsa===all));
-  $("fsParts").innerHTML=FS_PARTS.map(([k,t])=>{ const v=Math.max(-2,Math.min(2,Math.round(+F[k]||0)));
-    return `<div class="fsp${v?" chg":""}"><span>${t}</span><div class="stp"><button type="button" data-fsk="${k}" data-d="-1" aria-label="${t} 작게" ${v<=-2?"disabled":""}>−</button><b>${FS_LAB[v]}</b><button type="button" data-fsk="${k}" data-d="1" aria-label="${t} 크게" ${v>=2?"disabled":""}>+</button></div></div>`; }).join("");
+  $("fsParts").innerHTML=FS_PARTS.map(([k,t])=>{ const v=Math.max(-5,Math.min(5,Math.round(+F[k]||0)));
+    return `<div class="fsp${v?" chg":""}"><span>${t}</span><div class="stp"><button type="button" data-fsk="${k}" data-d="-1" aria-label="${t} 작게" ${v<=-5?"disabled":""}>−</button><b>${FS_LAB[v]}</b><button type="button" data-fsk="${k}" data-d="1" aria-label="${t} 크게" ${v>=5?"disabled":""}>+</button></div></div>`; }).join("");
 }
 document.addEventListener("click",e=>{
   const a=e.target.closest("[data-fsa]"); if(a){ saveLook({"fs/all":+a.dataset.fsa},"전체 글자 크기: "+a.textContent); return; }
-  const k=e.target.closest("[data-fsk]"); if(k){ const F=(A.config.tvLook||{}).fs||{}, v=Math.max(-2,Math.min(2,Math.round(+F[k.dataset.fsk]||0)+(+k.dataset.d)));
+  const k=e.target.closest("[data-fsk]"); if(k){ const F=(A.config.tvLook||{}).fs||{}, v=Math.max(-5,Math.min(5,Math.round(+F[k.dataset.fsk]||0)+(+k.dataset.d)));
     saveLook({["fs/"+k.dataset.fsk]:v||null},FS_PARTS.find(x=>x[0]===k.dataset.fsk)[1]+": "+FS_LAB[v]); return; }
   if(e.target.id==="fsReset"){ e.preventDefault(); saveLook({fs:null},"글자 크기를 모두 보통으로 돌렸습니다"); }
 });
 // TV 미리 보기 (실제 TV 화면을 작게)
 const PV={lay:"land",mode:"live"};
-function pvLoad(){ const f=$("tvFrame"); const u=`tv.html?layout=${PV.lay}&preview=1${PV.mode==="rest"?"&rest=1":""}`; if(f.dataset.u!==u){ f.dataset.u=u; f.src=u; } pvFit(); }
+// 미리 보기 켜기/끄기 (이 기기에 기억) — 끄면 화면을 불러오지 않아 가볍고, 영상도 미리 보기에서 재생되지 않음
+let PV_ON=(()=>{ try{ return localStorage.getItem("tvPreview")!=="off"; }catch(_){ return true; } })();
+function pvApply(){ const box=$("tvWrap").parentElement; box.classList.toggle("pvoff",!PV_ON);
+  if(!PV_ON){ const f=$("tvFrame"); f.src="about:blank"; f.dataset.u=""; } else if(curTab==="tv") pvLoad(); }
+$("pvOff").onclick=()=>{ PV_ON=false; try{ localStorage.setItem("tvPreview","off"); }catch(_){} pvApply(); toast("미리 보기를 껐습니다"); };
+$("pvOn").onclick=()=>{ PV_ON=true; try{ localStorage.setItem("tvPreview","on"); }catch(_){} pvApply(); };
+setTimeout(pvApply,0);
+function pvLoad(){ if(!PV_ON) return; const f=$("tvFrame"); const u=`tv.html?layout=${PV.lay}&preview=1${PV.mode==="rest"?"&rest=1":""}`; if(f.dataset.u!==u){ f.dataset.u=u; f.src=u; } pvFit(); }
 function pvFit(){ const box=$("tvFrameBox"), f=$("tvFrame"); if(!box||!f) return; const W=PV.lay==="land"?1920:1080, H=PV.lay==="land"?1080:1920;
   const w=box.clientWidth||360, k=Math.min(w/W, (PV.lay==="land"?9999:520/H)); f.style.width=W+"px"; f.style.height=H+"px"; f.style.transform=`scale(${k})`; box.style.height=Math.round(H*k)+"px"; box.style.width=PV.lay==="land"?"100%":Math.round(W*k)+"px"; }
 document.addEventListener("click",e=>{ const l=e.target.closest("[data-pvl]"), m=e.target.closest("[data-pvm]");
