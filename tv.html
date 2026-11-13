@@ -272,11 +272,11 @@ body.light .rb-next b em{color:#B45309}
 .rb-verse p{margin:0;flex:1;display:flex;align-items:center;font-size:3vmin;font-weight:800;line-height:1.55;word-break:keep-all}
 .rb-verse cite{align-self:flex-end;font-style:normal;font-size:1.9vmin;color:var(--sub);font-weight:800}
 .wtiles{flex:1;display:grid;grid-template-columns:repeat(auto-fit,minmax(15vmin,1fr));gap:1vmin;align-content:center}
-.wt{background:var(--cardA,var(--card));border:.2vmin solid var(--line);border-radius:1.2vmin;padding:1.1vmin .6vmin;text-align:center;display:flex;flex-direction:column;justify-content:center;gap:.15vmin;min-width:0}
-.wt .n{font-size:2vmin;font-weight:900;color:var(--deco)}
-.wt .ap{font-size:1.5vmin;color:var(--sub);font-weight:800}
-.wt .t{font-size:3.6vmin;font-weight:900;line-height:1.05;font-variant-numeric:tabular-nums}
-.wt .pl{font-size:1.6vmin;color:var(--sub);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wtile{background:var(--cardA,var(--card));border:.2vmin solid var(--line);border-radius:1.2vmin;padding:1.1vmin .6vmin;text-align:center;display:flex;flex-direction:column;justify-content:center;gap:.15vmin;min-width:0}
+.wtile .n{font-size:2vmin;font-weight:900;color:var(--deco)}
+.wtile .ap{font-size:1.5vmin;color:var(--sub);font-weight:800}
+.wtile .t{font-size:3.6vmin;font-weight:900;line-height:1.05;font-variant-numeric:tabular-nums}
+.wtile .pl{font-size:1.6vmin;color:var(--sub);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wk{flex:1;display:grid;grid-template-columns:auto repeat(7,minmax(0,1fr));gap:.7vmin;align-content:center;align-items:stretch}
 .wk .dh{text-align:center;font-size:1.8vmin;font-weight:900;color:var(--sub)}
 .wk .dh.today{color:var(--deco)}
@@ -307,9 +307,9 @@ body.rest.noposter .rb-ic{font-size:7vmin}
 body.rest.noposter .rb-next b{font-size:4vmin}
 body.rest.noposter .rb-verse p{font-size:3.6vmin}
 body.rest.noposter .wtiles{grid-template-columns:repeat(auto-fit,minmax(18vmin,1fr))}
-body.rest.noposter .wt .t{font-size:4.8vmin}
-body.rest.noposter .wt .n{font-size:2.4vmin}
-body.rest.noposter .wt .pl,body.rest.noposter .wt .ap{font-size:1.9vmin}
+body.rest.noposter .wtile .t{font-size:4.8vmin}
+body.rest.noposter .wtile .n{font-size:2.4vmin}
+body.rest.noposter .wtile .pl,body.rest.noposter .wtile .ap{font-size:1.9vmin}
 body.rest.noposter .wk .c b{font-size:3vmin}
 body.rest.noposter .wk .c small{font-size:1.7vmin}
 body.rest.noposter .wk .dh{font-size:2.2vmin}
@@ -344,10 +344,10 @@ body.rest.noposter:not(.portrait) .restbox h2{font-size:4vmin}
 body.rest.noposter:not(.portrait) .rb-ic{font-size:6vmin}
 body.rest.noposter:not(.portrait) .rb-next b{font-size:3.4vmin}
 body.rest.noposter:not(.portrait) .rb-verse p{font-size:3.1vmin}
-body.rest.noposter:not(.portrait) .wt{padding:.8vmin .6vmin}
-body.rest.noposter:not(.portrait) .wt .t{font-size:3.8vmin}
-body.rest.noposter:not(.portrait) .wt .n{font-size:2.1vmin}
-body.rest.noposter:not(.portrait) .wt .pl,body.rest.noposter:not(.portrait) .wt .ap{font-size:1.6vmin}
+body.rest.noposter:not(.portrait) .wtile{padding:.8vmin .6vmin}
+body.rest.noposter:not(.portrait) .wtile .t{font-size:3.8vmin}
+body.rest.noposter:not(.portrait) .wtile .n{font-size:2.1vmin}
+body.rest.noposter:not(.portrait) .wtile .pl,body.rest.noposter:not(.portrait) .wtile .ap{font-size:1.6vmin}
 body.rest.noposter:not(.portrait) .wk{gap:.6vmin}
 body.rest.noposter:not(.portrait) .wk .c{padding:.6vmin .1vmin}
 body.rest.noposter:not(.portrait) .wk .c b{font-size:2.5vmin}
@@ -360,15 +360,42 @@ body.rest.noposter:not(.portrait) .restbox{grid-template-rows:auto auto auto;ali
 .rb-verse .motto{font-size:2vmin;font-weight:800;color:var(--deco);display:flex;align-items:baseline;gap:.8vmin;flex-wrap:wrap}
 .rb-verse .motto b{font-size:2.3vmin;color:var(--ink)}
 .rb-verse .motto small{color:var(--sub);font-weight:700}
-.wt.wk2{background:transparent;border-style:dashed}
-.wt.wk2 .n{color:var(--sub)}
-.wt .n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wtile.wk2{background:transparent;border-style:dashed}
+.wtile.wk2 .n{color:var(--sub)}
+.wtile .n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 body.rest:not(.noposter):not(.portrait) .wtiles{grid-template-columns:repeat(4,minmax(0,1fr));gap:.8vmin}
-body.rest:not(.noposter):not(.portrait) .wt{padding:.8vmin .4vmin}
-body.rest:not(.noposter):not(.portrait) .wt .t{font-size:3vmin}
-body.rest:not(.noposter):not(.portrait) .wt .n{font-size:1.6vmin}
-body.rest:not(.noposter):not(.portrait) .wt .ap,body.rest:not(.noposter):not(.portrait) .wt .pl{font-size:1.35vmin}
+body.rest:not(.noposter):not(.portrait) .wtile{padding:.8vmin .4vmin}
+body.rest:not(.noposter):not(.portrait) .wtile .t{font-size:3vmin}
+body.rest:not(.noposter):not(.portrait) .wtile .n{font-size:1.6vmin}
+body.rest:not(.noposter):not(.portrait) .wtile .ap,body.rest:not(.noposter):not(.portrait) .wtile .pl{font-size:1.35vmin}
 body.portrait.rest:not(.noposter) .wtiles{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+/* 글꼴 선택 */
+html,body{font-family:var(--ff,"Pretendard Variable",Pretendard,"Noto Sans KR",system-ui,sans-serif)}
+body[data-font=gmarket] h1,body[data-font=gmarket] b,body[data-font=gmarket] h2{letter-spacing:-.01em}
+/* 교회 표어: 머리글 가운데 */
+.hmotto{flex:1;min-width:0;text-align:center;padding:0 2vmin}
+.hmotto span{display:inline-block;max-width:100%;font-size:2.7vmin;font-weight:900;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:.6vmin 2.2vmin;border-radius:99vmin;background:var(--chip);box-shadow:inset 0 0 0 .2vmin var(--line)}
+body.hasmotto .hright{margin-left:0}
+body.portrait header{flex-wrap:wrap;row-gap:.8vmin}
+body.portrait .hmotto{order:20;flex-basis:100%;padding:0}
+body.portrait .hmotto span{font-size:2.4vmin}
+/* 미리 보기(관리자 화면 안) */
+body.preview .ctl{display:none!important}
+body.preview{cursor:default}
+/* 포스터: 두 장 나란히 · 겹쳐 보기 */
+.poster[data-view=two] .pslides img{max-width:48.5%}
+.poster[data-view=two] .pslides img.l{transform:translate(-101.5%,-50%)}
+.poster[data-view=two] .pslides img.r{transform:translate(1.5%,-50%)}
+.poster[data-view=stack] .pslides img{max-width:60%;transition:transform 1s ease,opacity 1s ease,filter 1s ease}
+.poster[data-view=stack] .pslides img.c{opacity:1;z-index:3}
+.poster[data-view=stack] .pslides img.side{opacity:.5;z-index:1;filter:blur(.25vmin) saturate(.85)}
+.poster[data-view=stack] .pslides img.side.l{transform:translate(-108%,-50%) scale(.76)}
+.poster[data-view=stack] .pslides img.side.r{transform:translate(8%,-50%) scale(.76)}
+.poster .pslides img{transition:opacity 1.1s ease,transform 1s ease}
+/* 항상 보이기 · 두 노선 날: 시간표 칸과 번갈아 */
+body.palt:not(.rest) .poster{grid-area:times}
+body.palt.pshow:not(.rest) .times{display:none}
+body.palt:not(.pshow):not(.rest) .poster{display:none}
 </style>
 </head>
 <body>
@@ -379,6 +406,7 @@ body.portrait.rest:not(.noposter) .wtiles{grid-template-columns:repeat(4,minmax(
     <div class="logo" id="brandLogo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" aria-hidden="true"><rect x="4" y="3" width="16" height="14" rx="3"/><path d="M4 11h16M8 21v-4M16 21v-4"/></svg></div>
     <div><h1 id="brandTitle">HCC 셔틀버스 운행 현황</h1><small id="brandSub">할렐루야교회 셔틀 실시간 안내</small></div>
     <span class="live" id="conn"><i></i><span>연결 중</span></span>
+    <div class="hmotto hide" id="hMotto"><span id="hMottoT"></span></div>
     <div class="hright">
       <div class="hdeco" id="hdDeco" aria-hidden="true"></div>
       <div class="wx hide" id="wx" aria-label="오늘 날씨"><span class="wi" id="wxI"></span><div class="wt"><b id="wxT">--°</b><span class="wd" id="wxD"></span><span class="wd d2" id="wxE"></span></div></div>
@@ -825,7 +853,7 @@ async function loadWx(){
     $("wxD").innerHTML=`<i>${txt}</i>${hi!=null?` · 최고 ${Math.round(hi)}° 최저 ${Math.round(lo)}°`:""}`;
     const pg=q&&q.current?pmGrade(q.current.pm10,q.current.pm2_5):null;
     $("wxE").innerHTML=[pp!=null?`비 올 확률 ${pp}%`:"", pg?`미세먼지 <span class="pm" style="background:${pg[1]}">${pg[0]}</span>`:""].filter(Boolean).join(" · ");
-    $("wx").classList.remove("hide");
+    $("wx").classList.toggle("hide",!WX_ON);
   }catch(_){ $("wx").classList.add("hide"); }
 }
 function watchPhoto(){
@@ -1099,13 +1127,15 @@ function nextService(r){
 let MODE_SIG="";
 function applyMode(){
   const b=document.body, one=RT.length===1, rest=isRestDay();
-  const want = POSTER_CFG.when!=="off" && (rest || (POSTER_CFG.when==="always" && one));
+  const want = POSTER_CFG.when!=="off" && (rest || POSTER_CFG.when==="always");
   watchPosters(want);
   const posters = want ? activePosters() : [];
   const pal = !rest && one && POSTER_CFG.when==="always" && posters.length>0;
-  const sig=[one,rest,pal,rest&&!posters.length].join();
-  b.classList.toggle("rest",rest); b.classList.toggle("pal",pal); b.classList.toggle("noposter",rest && !posters.length);
-  ["poster"].forEach(id=>$(id).classList.toggle("hide",!(rest||pal) || !posters.length));
+  const palt = !rest && !one && POSTER_CFG.when==="always" && posters.length>0;   // 두 노선 날: 시간표 칸과 20초씩 번갈아
+  const sig=[one,rest,pal,palt,rest&&!posters.length].join();
+  b.classList.toggle("rest",rest); b.classList.toggle("pal",pal); b.classList.toggle("palt",palt); b.classList.toggle("noposter",rest && !posters.length);
+  if(!palt) b.classList.remove("pshow");
+  ["poster"].forEach(id=>$(id).classList.toggle("hide",!(rest||pal||palt) || !posters.length));
   $("restBox").classList.toggle("hide",!rest);
   $("nextBox").classList.toggle("hide",rest || !one);
   drawPosters(posters);
@@ -1157,7 +1187,7 @@ function worshipHtml(items){
   const allSun=items.every(x=>x.d==="주일");
   return `<div class="rb-sec rb-wor"><h3>⛪ ${allSun?"주일 예배 안내":"예배 안내"}</h3><div class="wtiles">`+items.map(x=>{
     const day = x.d==="주일" ? (allSun?"":"주일") : x.d.replace(" (월-금)"," 월-금").replace(/^([월화수목금토])$/,"$1요일");
-    return `<div class="wt${x.d==="주일"?"":" wk2"}"><span class="n">${esc(x.n)}</span><span class="ap">${esc([day,x.ap].filter(Boolean).join(" "))}</span>${x.t?`<span class="t">${x.t}</span>`:""}${x.p?`<span class="pl">${esc(x.p)}</span>`:""}</div>`; }).join("")+`</div></div>`;
+    return `<div class="wtile${x.d==="주일"?"":" wk2"}"><span class="n">${esc(x.n)}</span><span class="ap">${esc([day,x.ap].filter(Boolean).join(" "))}</span>${x.t?`<span class="t">${x.t}</span>`:""}${x.p?`<span class="pl">${esc(x.p)}</span>`:""}</div>`; }).join("")+`</div></div>`;
 }
 function drawRest(){
   const memo = REST_WHY==="manual" ? String(REST_CFG.dates[todayStr()]||"").trim() : "";
@@ -1172,7 +1202,7 @@ function drawRest(){
     const n=nextService(r);
     h+=`<div class="rb-next"><span class="rb-r"><i style="background:${R.color}"></i>${R.name} 다음 운행</span>${n?`<b>${n.k===1?"내일 ":""}${n.k>6?n.ds.slice(5).replace("-","/")+" ":""}${DAYNAME[n.d]} <em>${ampm(n.m)} 첫차</em></b><small>${n.lab}</small>`:`<b>시간표 확인</b>`}</div>`; });
   h+=`</div></div><div class="rb-more">`;
-  const V=pickVerse(), v=V?V.t:"";
+  const V=null, v="";   // 말씀 칸은 쓰지 않음 (교회 표어는 맨 위 머리글에)
   if(V) h+=`<div class="rb-sec rb-verse">${REST_CFG.motto?`<div class="motto">✝️ <b>${esc(REST_CFG.motto)}</b>${V.kind!=="motto"&&REST_CFG.mottoRef?` <small>${esc(REST_CFG.mottoRef)}</small>`:""}</div>`:""}<h3>📖 ${V.label}</h3><p>${esc(V.t).replace(/\n/g,"<br>")}</p>${V.r?`<cite>${esc(V.r)}</cite>`:""}</div>`;
   const w=worshipItems();
   if(w.length) h+=worshipHtml(w);
@@ -1191,24 +1221,38 @@ function watchPosters(on){
   if(on && !posterUnsub) posterUnsub=onValue(ref(db,"tvmedia/posters"), s=>{ const v=s.val()||{}; POSTER_IMG={}; Object.entries(v).forEach(([k,x])=>{ if(x&&x.data) POSTER_IMG[k]=x.data; }); applyMode(); }, ()=>{});
   if(!on && posterUnsub){ posterUnsub(); posterUnsub=null; POSTER_IMG={}; }
 }
-let PS={ids:"",i:0,timer:null,sec:0,list:[]};
+let PS={ids:"",i:0,timer:null,sec:0,list:[],view:""};
+setInterval(()=>{ if(document.body.classList.contains("palt")){ document.body.classList.toggle("pshow"); } },20000);
+// 보여 주는 방식: 한 장(색 액자) · 두 장 나란히 · 겹쳐 보기 — 모두 포스터 색에 맞춘 액자
+const pView=()=>["one","two","stack"].includes(POSTER_CFG.view)?POSTER_CFG.view:"one";
+function layoutSlides(){
+  const imgs=[...$("pSlides").children], n=imgs.length, v=pView(), dots=[...$("pDots").children];
+  $("poster").dataset.view=n<2?"one":(v==="two"&&n<2?"one":v);
+  imgs.forEach((im,k)=>{ im.className=""; });
+  if(!n) return;
+  const i=PS.i%n;
+  if(v==="two" && n>=2){ imgs[i].classList.add("on","l"); imgs[(i+1)%n].classList.add("on","r"); }
+  else if(v==="stack" && n>=2){ imgs[i].classList.add("on","c"); imgs[(i-1+n)%n].classList.add("side","l"); if(n>2) imgs[(i+1)%n].classList.add("side","r"); else imgs[(i+1)%n].classList.add("side","r"); }
+  else imgs[i].classList.add("on");
+  dots.forEach((d,k)=>d.classList.toggle("on",k===i || (v==="two"&&n>=2&&k===(i+1)%n)));
+  if(v==="two" && n>=2) paintFrame2(PS.list[i],PS.list[(i+1)%n]); else paintFrame(PS.list[i]);
+}
 function drawPosters(ids){
   const key=ids.join(",");
   if(key!==PS.ids){
     PS.ids=key; PS.i=0;
-    $("pSlides").innerHTML=ids.map((id,k)=>`<img src="${POSTER_IMG[id]}" alt="" class="${k===0?'on':''}">`).join("");
+    $("pSlides").innerHTML=ids.map((id,k)=>`<img src="${POSTER_IMG[id]}" alt="">`).join("");
     $("pDots").innerHTML=ids.length>1?ids.map((_,k)=>`<i class="${k===0?'on':''}"></i>`).join(""):"";
-    PS.list=ids; if(ids.length) paintFrame(ids[0]);
+    PS.list=ids; PS.view=""; 
   }
+  if(PS.view!==pView()+ids.length){ PS.view=pView()+ids.length; layoutSlides(); }
   const sec=[5,8,10,15].includes(+POSTER_CFG.sec)?+POSTER_CFG.sec:8;
   if(ids.length>1 && (!PS.timer || PS.sec!==sec)){ clearInterval(PS.timer); PS.sec=sec; PS.timer=setInterval(nextSlide,sec*1000); }
   if(ids.length<=1 && PS.timer){ clearInterval(PS.timer); PS.timer=null; }
 }
 function nextSlide(){
-  const imgs=$("pSlides").children, dots=$("pDots").children, n=imgs.length; if(n<2) return;
-  imgs[PS.i].classList.remove("on"); if(dots[PS.i]) dots[PS.i].classList.remove("on");
-  PS.i=(PS.i+1)%n; imgs[PS.i].classList.add("on"); if(dots[PS.i]) dots[PS.i].classList.add("on");
-  paintFrame(PS.list[PS.i]);
+  const n=$("pSlides").children.length; if(n<2) return;
+  PS.i=(PS.i+(pView()==="two"&&n>2?2:1))%n; layoutSlides();
 }
 // 포스터 대표 색을 뽑아 액자(바탕)를 그 색의 연한 톤으로 — 밝은 테마는 연하게, 어두운 테마는 차분하게
 const PCOL={}; let PF=0;
@@ -1218,6 +1262,13 @@ function posterColor(id){ return new Promise(res=>{ if(PCOL[id]) return res(PCOL
     for(let i=0;i<d.length;i+=4){ const R=d[i],G=d[i+1],B=d[i+2], mx=Math.max(R,G,B), mn=Math.min(R,G,B), w=1+(mx-mn)/40; r+=R*w; gg+=G*w; b+=B*w; wsum+=w; }
     PCOL[id]=[r/wsum,gg/wsum,b/wsum].map(Math.round); }catch(_){ PCOL[id]=[128,128,128]; } res(PCOL[id]); };
   im.onerror=()=>res([128,128,128]); im.src=src; }); }
+function paintFrame2(a,b){
+  Promise.all([posterColor(a),posterColor(b)]).then(([ca,cb])=>{
+    const light=document.body.classList.contains("light"), base=light?[255,255,255]:[14,18,28], mix=(c,k)=>c.map((v,i)=>Math.round(v*(1-k)+base[i]*k)), k=light?.5:.55;
+    const bg=`radial-gradient(ellipse 80% 75% at 50% 46%, transparent 50%, var(--cardA,var(--card)) 100%), linear-gradient(90deg, rgb(${mix(ca,k)}) 0%, rgb(${mix(ca,k+.15)}) 48%, rgb(${mix(cb,k+.15)}) 52%, rgb(${mix(cb,k)}) 100%)`;
+    const L=[$("pBg"),$("pBg2")], on=L[PF], off=L[1-PF]; off.style.background=bg; off.style.opacity="1"; on.style.opacity="0"; PF=1-PF;
+  });
+}
 function paintFrame(id){
   if(!id) return;
   posterColor(id).then(c=>{
@@ -1228,6 +1279,20 @@ function paintFrame(id){
   });
 }
 
+// ---------- 글꼴 · 날씨 · 교회 표어 (관리자 → TV 화면 → 기본) ----------
+const FONT_CSS={gmarket:null, nanumsq:"https://cdn.jsdelivr.net/npm/nanumsquareneo@0.0.5/nanumsquareneo.css", suit:"https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css"};
+const FONT_FAM={pretendard:'"Pretendard Variable",Pretendard,"Noto Sans KR",system-ui,sans-serif', gmarket:'"GmarketSans","Pretendard Variable",sans-serif', nanumsq:'"NanumSquareNeo","Pretendard Variable",sans-serif', suit:'"SUIT Variable","SUIT","Pretendard Variable",sans-serif'};
+let WX_ON=true;
+function applyLook(L){
+  const f=FONT_FAM[L.font]?L.font:"pretendard";
+  if(FONT_CSS[f] && !document.getElementById("ff-"+f)){ const l=document.createElement("link"); l.rel="stylesheet"; l.id="ff-"+f; l.href=FONT_CSS[f]; document.head.appendChild(l); }
+  if(f==="gmarket" && !document.getElementById("ff-gm")){ const st=document.createElement("style"); st.id="ff-gm"; st.textContent='@font-face{font-family:"GmarketSans";font-weight:500;font-display:swap;src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff") format("woff")}@font-face{font-family:"GmarketSans";font-weight:700 900;font-display:swap;src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff") format("woff")}'; document.head.appendChild(st); }
+  document.documentElement.style.setProperty("--ff",FONT_FAM[f]); document.body.dataset.font=f;
+  WX_ON = L.wx!==false; if(!WX_ON) $("wx").classList.add("hide"); else if($("wxT").textContent!=="--°") $("wx").classList.remove("hide");
+  const m=String(L.motto||"").trim(), on=!!L.mottoOn && !!m;
+  $("hMotto").classList.toggle("hide",!on); $("hMottoT").textContent=m; document.body.classList.toggle("hasmotto",on);
+}
+if(qs.get("preview")==="1") document.body.classList.add("preview");
 // ---------- QR (성도님 주소) ----------
 try{
   const url=location.origin+location.pathname.replace(/[^/]*$/,"");
@@ -1246,7 +1311,8 @@ try{
   onValue(ref(db,"config"), s=>{ const c=s.val()||{}; applyBrand(c); WAIT_CFG=c.waitCfg||{};
     TV_ROUTES=["auto","both","yatap","park"].includes(c.tvRoutes)?c.tvRoutes:"auto";
     const tr=c.tvRest||{}; REST_CFG={afterEnd: tr.afterEnd!==false, beforeFirst: tr.beforeFirst!==false, dates: tr.dates||{}, verse: tr.verse||"", verseRef: tr.verseRef||"", worship: tr.worship||"", worshipList: tr.worshipList||null, motto: tr.motto||"", mottoRef: tr.mottoRef||"", mottoVerse: tr.mottoVerse||"", verses: tr.verses||"", verseMode: tr.verseMode||"", verseEvery: tr.verseEvery||"day"};
-    const pc=c.tvPosters||{}; POSTER_CFG={when:["rest","always","off"].includes(pc.when)?pc.when:"rest", sec:pc.sec||8}; POSTER_META=c.tvPosterList||{};
+    const pc=c.tvPosters||{}; POSTER_CFG={when:["rest","always","off"].includes(pc.when)?pc.when:"rest", sec:pc.sec||8, view:pc.view||"one"}; PS.view="";
+    applyLook(c.tvLook||{}); POSTER_META=c.tvPosterList||{};
     applyRT();
     if(applyStops(c.stops)) drawStopMarks();
     NEWS_CFG=c.news||null; drawTicker();

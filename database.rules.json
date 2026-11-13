@@ -1,23 +1,23 @@
 {
   "rules": {
     "admins": {
-      ".read": "(auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
-      ".write": "(auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
+      ".read": "(auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
+      ".write": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff')",
       "$key": {
-        ".validate": "newData.child('email').isString()"
+        ".validate": "newData.child('email').isString() && (!newData.child('role').exists() || newData.child('role').val() === 'super' || newData.child('role').val() === 'staff')"
       }
     },
     "pins": {
-      ".read": "(auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
-      ".write": "(auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
+      ".read": "(auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
+      ".write": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && (root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff' || root.child('admins').child(auth.token.email.replace('.', ',')).child('perm').child('drivers').val() === true))",
       "$pin": {
         ".read": "auth != null && root.child('drivers').child(auth.uid).child('pin').val() === $pin",
         ".validate": "$pin.matches(/^[0-9]{4,8}$/) && (newData.val() === true || newData.child('name').isString())"
       }
     },
     "drivers": {
-      ".read": "(auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
-      ".write": "(auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
+      ".read": "(auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
+      ".write": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && (root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff' || root.child('admins').child(auth.token.email.replace('.', ',')).child('perm').child('drivers').val() === true))",
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
         ".write": "auth != null && auth.uid === $uid && newData.exists() && newData.child('pin').isString() && newData.child('pin').val().matches(/^[0-9]{4,8}$/) && root.child('pins').child(newData.child('pin').val()).exists()"
@@ -27,14 +27,14 @@
       ".read": true,
       "$route": {
         "$bus": {
-          ".write": "((auth != null && root.child('drivers').child(auth.uid).child('pin').exists() && root.child('pins').child(root.child('drivers').child(auth.uid).child('pin').val()).child('slot').val() === $route + '/' + $bus) && ($route === 'yatap' || $route === 'park') && $bus.matches(/^[1-9]$/)) || (((auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())) && !newData.exists())",
+          ".write": "((auth != null && root.child('drivers').child(auth.uid).child('pin').exists() && root.child('pins').child(root.child('drivers').child(auth.uid).child('pin').val()).child('slot').val() === $route + '/' + $bus) && ($route === 'yatap' || $route === 'park') && $bus.matches(/^[1-9]$/)) || (((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && (root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff' || root.child('admins').child(auth.token.email.replace('.', ',')).child('perm').child('now').val() === true || root.child('admins').child(auth.token.email.replace('.', ',')).child('perm').child('drivers').val() === true)) && !newData.exists())",
           ".validate": "!newData.exists() || (newData.child('lat').isNumber() && newData.child('lng').isNumber() && newData.child('ts').isNumber() && newData.child('uid').val() === auth.uid && newData.child('trip').isString())"
         }
       }
     },
     "logs": {
-      ".read": "(auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
-      ".write": "(auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
+      ".read": "(auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
+      ".write": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff')",
       "$date": {
         "$sid": {
           ".write": "((auth != null && root.child('drivers').child(auth.uid).child('pin').exists() && root.child('pins').child(root.child('drivers').child(auth.uid).child('pin').val()).exists())) && ((!data.exists() && newData.child('uid').val() === auth.uid) || (data.exists() && data.child('uid').val() === auth.uid && newData.exists()))"
@@ -42,8 +42,8 @@
       }
     },
     "board": {
-      ".read": "(auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
-      ".write": "(auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
+      ".read": "(auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
+      ".write": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff')",
       "$date": {
         "$route": {
           "$bus": {
@@ -60,8 +60,8 @@
       }
     },
     "wait": {
-      ".read": "((auth != null && root.child('drivers').child(auth.uid).child('pin').exists() && root.child('pins').child(root.child('drivers').child(auth.uid).child('pin').val()).exists())) || ((auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists()))",
-      ".write": "(auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
+      ".read": "((auth != null && root.child('drivers').child(auth.uid).child('pin').exists() && root.child('pins').child(root.child('drivers').child(auth.uid).child('pin').val()).exists())) || ((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()))",
+      ".write": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && (root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff' || root.child('admins').child(auth.token.email.replace('.', ',')).child('perm').child('stops').val() === true))",
       "$route": {
         "$uid": {
           ".read": "auth != null && auth.uid === $uid",
@@ -72,7 +72,7 @@
     },
     "waitc": {
       ".read": "auth != null",
-      ".write": "(auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
+      ".write": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && (root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff' || root.child('admins').child(auth.token.email.replace('.', ',')).child('perm').child('stops').val() === true))",
       "$route": {
         "$uid": {
           ".write": "auth != null && auth.uid === $uid && ($route === 'yatap' || $route === 'park')",
@@ -81,12 +81,12 @@
       }
     },
     "stats": {
-      ".read": "(auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
-      ".write": "(auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())"
+      ".read": "(auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
+      ".write": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && (root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff' || root.child('admins').child(auth.token.email.replace('.', ',')).child('perm').child('stats').val() === true))"
     },
     "waitpeak": {
-      ".read": "(auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
-      ".write": "(auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
+      ".read": "(auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
+      ".write": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff')",
       "$date": {
         "$route": {
           "$stop": {
@@ -98,11 +98,59 @@
     },
     "config": {
       ".read": true,
-      ".write": "(auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())"
+      ".write": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff')",
+      "notice": {
+        ".write": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && (root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff' || root.child('admins').child(auth.token.email.replace('.', ',')).child('perm').child('notice').val() === true))"
+      },
+      "noticeTemplates": {
+        ".write": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && (root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff' || root.child('admins').child(auth.token.email.replace('.', ',')).child('perm').child('notice').val() === true))"
+      },
+      "news": {
+        ".write": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && (root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff' || root.child('admins').child(auth.token.email.replace('.', ',')).child('perm').child('notice').val() === true))"
+      },
+      "times": {
+        ".write": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && (root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff' || root.child('admins').child(auth.token.email.replace('.', ',')).child('perm').child('times').val() === true))"
+      },
+      "parkTimes": {
+        ".write": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && (root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff' || root.child('admins').child(auth.token.email.replace('.', ',')).child('perm').child('times').val() === true))"
+      },
+      "stops": {
+        ".write": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && (root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff' || root.child('admins').child(auth.token.email.replace('.', ',')).child('perm').child('stops').val() === true))"
+      },
+      "paths": {
+        ".write": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && (root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff' || root.child('admins').child(auth.token.email.replace('.', ',')).child('perm').child('stops').val() === true))"
+      },
+      "pathInfo": {
+        ".write": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && (root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff' || root.child('admins').child(auth.token.email.replace('.', ',')).child('perm').child('stops').val() === true))"
+      },
+      "waitCfg": {
+        ".write": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && (root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff' || root.child('admins').child(auth.token.email.replace('.', ',')).child('perm').child('stops').val() === true))"
+      },
+      "buses": {
+        ".write": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && (root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff' || root.child('admins').child(auth.token.email.replace('.', ',')).child('perm').child('drivers').val() === true))"
+      },
+      "tvTheme": {
+        ".write": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && (root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff' || root.child('admins').child(auth.token.email.replace('.', ',')).child('perm').child('tv').val() === true))"
+      },
+      "tvRoutes": {
+        ".write": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && (root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff' || root.child('admins').child(auth.token.email.replace('.', ',')).child('perm').child('tv').val() === true))"
+      },
+      "tvRest": {
+        ".write": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && (root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff' || root.child('admins').child(auth.token.email.replace('.', ',')).child('perm').child('tv').val() === true))"
+      },
+      "tvPosters": {
+        ".write": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && (root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff' || root.child('admins').child(auth.token.email.replace('.', ',')).child('perm').child('tv').val() === true))"
+      },
+      "tvPosterList": {
+        ".write": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && (root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff' || root.child('admins').child(auth.token.email.replace('.', ',')).child('perm').child('tv').val() === true))"
+      },
+      "tvLook": {
+        ".write": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && (root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff' || root.child('admins').child(auth.token.email.replace('.', ',')).child('perm').child('tv').val() === true))"
+      }
     },
     "tvmedia": {
       ".read": true,
-      ".write": "(auth != null && auth.token.email != null && auth.token.email_verified == true && root.child('admins').child(auth.token.email.replace('.', ',')).exists())",
+      ".write": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && (root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff' || root.child('admins').child(auth.token.email.replace('.', ',')).child('perm').child('tv').val() === true))",
       "photo": {
         ".validate": "!newData.exists() || (newData.child('data').isString() && newData.child('data').val().beginsWith('data:image/') && newData.child('data').val().length < 700000)"
       },

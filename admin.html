@@ -6,10 +6,17 @@
 <title>HCC 셔틀버스 · 관리자</title>
 <meta name="robots" content="noindex">
 <link rel="icon" href="icon-admin-192.png">
+<link rel="manifest" href="manifest-admin.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon-admin.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#1B2B5C">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nanumsquareneo@0.0.5/nanumsquareneo.css">
+<style>@font-face{font-family:"GmarketSans";font-weight:700;font-display:swap;src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff") format("woff")}</style>
 <style>
   :root{--navy:#1B2B5C;--teal:#0F766E;--ink:#0F172A;--sub:#5B6478;--line:#E2E6EE;--bg:#F3F5FA;--amber:#F59E0B;--red:#DC2626;--green:#15803D}
   *{box-sizing:border-box}
@@ -247,6 +254,117 @@
   .wortbl .wb{display:flex;gap:4px}
   .wortbl .wb .btn{padding:5px 9px}
   @media (max-width:700px){ .wortbl .wh{display:none} .wortbl .wr{grid-template-columns:1fr 1fr;padding:8px;border:1px solid #EEF1F6;border-radius:10px} }
+  /* ===== 메뉴 아이콘 · 기기별 · 화면 색 ===== */
+  #tabs button .tic{width:20px;height:20px;flex:none;opacity:.9}
+  .menuBtn{display:none;border:0;background:#fff;color:var(--ink);width:42px;height:42px;border-radius:12px;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 0 var(--line)}
+  .navShade{display:none}
+  .themebox{padding:10px 8px 0;border-top:1px solid rgba(255,255,255,.12);margin-top:auto}
+  .themebox small{display:block;font-size:11.5px;color:#C7D2FE;margin-bottom:6px}
+  .themedots{display:flex;gap:7px}
+  .themedots button{width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,.35);cursor:pointer;padding:0}
+  .themedots button.on{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.35)}
+  .themedots [data-th=navy]{background:#1B2B5C}.themedots [data-th=lavender]{background:#534AB7}.themedots [data-th=sage]{background:#0F6E56}.themedots [data-th=beige]{background:#A16207}.themedots [data-th=dark]{background:#0B1220}
+  .themebox+.who{margin-top:0}
+  .who .whoTxt b{color:#fff;font-size:12px}
+  body[data-theme=lavender]{--navy:#3C3489;--bg:#F4F3FB}
+  body[data-theme=sage]{--navy:#0F5A47;--bg:#F1F6F3}
+  body[data-theme=beige]{--navy:#6B4410;--bg:#F7F3EC}
+  body[data-theme=dark]{--navy:#0B1220;--bg:#0F172A;--ink:#E2E8F0;--sub:#94A3B8;--line:#2A3650;color-scheme:dark}
+  body[data-theme=dark] .card,body[data-theme=dark] .stat,body[data-theme=dark] .rf,body[data-theme=dark] .pbox,body[data-theme=dark] .pstitem,body[data-theme=dark] .vbox,body[data-theme=dark] .menuBtn{background:#162033;color:var(--ink)}
+  body[data-theme=dark] .stat.amb{background:#2A2210}
+  body[data-theme=dark] .stat b{color:#C7D2FE}
+  body[data-theme=dark] input,body[data-theme=dark] select,body[data-theme=dark] textarea{background:#0F172A;color:var(--ink);border-color:#2A3650}
+  body[data-theme=dark] .btn.ghost{background:#24304A;color:var(--ink)}
+  body[data-theme=dark] .seg3{background:#0F172A}
+  body[data-theme=dark] .seg3 button{color:#94A3B8}
+  body[data-theme=dark] .seg3 button.on{background:#334C8C;color:#fff}
+  body[data-theme=dark] table th{background:#1C273C;color:#CBD5E1}
+  body[data-theme=dark] td{border-color:#24304A}
+  body[data-theme=dark] .muted{color:#94A3B8}
+  body[data-theme=dark] .rf button.on{background:#334C8C}
+  body[data-theme=dark] .wline{background:#2A2210;border-color:#5B3A0E;color:#FCD34D}
+  body[data-theme=dark] .gate .card{background:#162033}
+  /* 로그인 화면 */
+  .ordiv{display:flex;align-items:center;gap:10px;margin:14px 0 10px;color:var(--sub);font-size:12.5px}
+  .ordiv:before,.ordiv:after{content:"";flex:1;height:1px;background:var(--line)}
+  .pwform{display:grid;gap:8px}
+  .pwform input{margin:0}
+  .a2hs{margin-top:14px;background:#F1F5FF;border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.6;color:#334155}
+  .a2hs b:first-child{display:block}
+  .idhelp{margin-top:12px;background:#FFF7E6;border:1px solid #FDE68A;border-radius:12px;padding:10px 14px;font-size:13.5px;line-height:1.7}
+  .idhelp ol{margin:4px 0 0;padding-left:20px}
+  /* 관리자 목록 */
+  .admrow{display:grid;grid-template-columns:minmax(160px,1.1fr) auto minmax(220px,2fr) auto;gap:10px 14px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+  .admrow:first-child{border-top:0}
+  .admwho b{display:block}.admwho small{color:var(--sub);word-break:break-all}
+  .admperm{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13.5px}
+  .admperm label{display:flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap}
+  .admperm input{width:17px!important;height:17px;margin:0!important;accent-color:var(--navy)}
+  /* 태블릿: 아이콘만 있는 좁은 메뉴 */
+  @media (min-width:701px) and (max-width:1100px){
+    .side{flex:0 0 74px;max-width:74px;padding:16px 8px;align-items:center}
+    .side .brand>div:not(.ic),.side .tl,.side .lv,.themebox small,.who .whoTxt{display:none}
+    .side .brand{padding:0 0 12px}
+    #tabs button .lv,#tabs button .tl{display:none!important}
+    #tabs button{justify-content:center;padding:11px 0;width:56px}
+    #tabs button .tic{width:22px;height:22px}
+    .themedots{flex-direction:column;align-items:center}
+    .who{padding:10px 0 0;text-align:center}
+    .who button{padding:6px 6px;font-size:11px}
+    .admrow{grid-template-columns:1fr auto;}
+    .admperm{grid-column:1/-1}
+  }
+  /* 휴대폰: ☰ 메뉴로 열고 닫기 */
+  @media (max-width:700px){
+    .layout{display:block}
+    .side{position:fixed!important;top:0;left:0;bottom:0;width:270px;max-width:82vw!important;z-index:1200;transform:translateX(-105%);transition:transform .25s ease;overflow-y:auto;flex-basis:auto!important}
+    body.navopen .side{transform:none}
+    #tabs{flex-direction:column!important;flex-wrap:nowrap!important}
+    .who{display:block!important}
+    .navShade{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:1100}
+    body.navopen .navShade{display:block}
+    .menuBtn{display:flex}
+    .topbar{position:sticky;top:0;z-index:900;background:var(--bg);margin:-18px -14px 12px;padding:10px 14px}
+    .topbar h1{font-size:19px}
+    .rf{width:100%;margin-left:0;overflow-x:auto}
+    .card{padding:14px;border-radius:14px}
+    .tblwrap,.card table{display:block;overflow-x:auto}
+    .admrow{grid-template-columns:1fr;gap:8px}
+    .form{grid-template-columns:1fr!important}
+  }
+  body[data-theme=dark] .wxalert{background:#1C2A44;border-color:#2A3D63;color:#DBEAFE}
+  body[data-theme=dark] .a2hs{background:#1C2A44;color:#CBD5E1}
+  /* ===== TV 화면: 작은 탭 · 미리 보기 ===== */
+  .tvsub{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-bottom:14px}
+  .tvsub button{display:flex;align-items:center;gap:10px;border:1.5px solid transparent;background:#fff;border-radius:14px;padding:10px 12px;cursor:pointer;text-align:left;min-width:0;color:var(--ink)}
+  .tvsub button.on{border-color:var(--navy);box-shadow:0 2px 10px rgba(15,23,42,.08)}
+  .tvsub .tsi{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;flex:none}
+  .tvsub .tsi svg{width:20px;height:20px}
+  .tvsub .tst{min-width:0;display:flex;flex-direction:column}
+  .tvsub .tst b{font-size:14.5px}
+  .tvsub .tst small{font-size:11.5px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tvwrap{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:14px;align-items:start}
+  .tvprev{position:sticky;top:14px;background:#fff;border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:8px}
+  .tvprevhead{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+  .tvprevhead b{margin-right:auto}
+  .seg3.mini button{padding:5px 9px;font-size:12px}
+  .tvframe{position:relative;overflow:hidden;border-radius:10px;background:#0F172A;margin:0 auto;box-shadow:0 0 0 1px var(--line)}
+  .tvframe iframe{border:0;position:absolute;top:0;left:0;transform-origin:0 0;pointer-events:none}
+  .lkrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:12px 0;border-top:1px solid var(--line)}
+  .lkrow>b{min-width:90px}
+  .fontgrid{flex:1;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+  .fontopt{border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px;color:var(--ink)}
+  .fontopt.on{border-color:var(--navy);box-shadow:inset 0 0 0 1px var(--navy)}
+  .fontopt b{font-size:19px;font-weight:800}
+  .fontopt span{font-size:13px;font-weight:700}
+  .fontopt small{font-size:11.5px;color:var(--sub)}
+  .ff-gmarket{font-family:"GmarketSans","GmarketSansMedium",sans-serif}
+  .ff-nanumsq{font-family:"NanumSquareNeo",sans-serif}
+  .ff-suit{font-family:"SUIT Variable","SUIT",sans-serif}
+  body[data-theme=dark] .tvsub button,body[data-theme=dark] .tvprev,body[data-theme=dark] .fontopt{background:#162033;color:var(--ink)}
+  @media (max-width:1300px){ .tvwrap{grid-template-columns:1fr} .tvprev{position:static;order:-1;max-width:560px} }
+  @media (max-width:1100px){ .tvsub{grid-template-columns:repeat(3,minmax(0,1fr))} }
+  @media (max-width:520px){ .tvsub{grid-template-columns:repeat(2,minmax(0,1fr))} .tvsub button{padding:8px} .tvsub .tsi{width:30px;height:30px} }
 </style>
 </head>
 <body>
@@ -256,9 +374,16 @@
     <div class="brand"><div class="ic brandIc" style="background:#1B2B5C"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg></div><div><b class="sideBrand">HCC 셔틀 관리</b><small class="brandChurchSm">할렐루야교회 셔틀버스 관리자</small></div></div>
     <div class="card">
       <h2>관리자 로그인</h2>
-      <p>관리자로 등록된 구글 계정으로 로그인해 주세요.</p>
-      <button class="btn" id="loginBtn">구글 계정으로 로그인</button>
+      <p>관리자로 등록된 구글 계정이나 아이디로 로그인해 주세요. 한 번 로그인하면 이 기기에서는 계속 유지됩니다.</p>
+      <button class="btn" id="loginBtn" style="width:100%">구글 계정으로 로그인</button>
+      <div class="ordiv"><span>또는 아이디로</span></div>
+      <form id="pwForm" class="pwform" autocomplete="on">
+        <input id="lgId" name="username" autocomplete="username" placeholder="아이디" required>
+        <input id="lgPw" name="password" type="password" autocomplete="current-password" placeholder="비밀번호" required>
+        <button class="btn ghost" type="submit">아이디로 로그인</button>
+      </form>
       <p class="muted" id="loginErr"></p>
+      <div class="a2hs"><b>📱 더 편하게 쓰기</b> 크롬에서 이 화면을 연 뒤 메뉴(⋮) → <b>홈 화면에 추가</b>를 누르면 앱처럼 바로 열립니다. 카카오톡 안에서 열면 로그인이 자주 풀리니 꼭 크롬(아이폰은 Safari)으로 열어 주세요.</div>
     </div>
   </div>
   <div class="gate hide" id="gateDenied">
@@ -290,10 +415,12 @@
         <button data-tab="admins">관리자</button>
         <button data-tab="brand">기본 설정</button>
       </div>
+      <div class="themebox"><small>화면 색</small><div class="themedots" id="themeDots"></div></div>
       <div class="who" id="who"></div>
     </nav>
     <div class="content">
     <div class="topbar">
+      <button type="button" class="menuBtn" id="menuBtn" aria-label="메뉴 열기"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
       <div><h1 id="pageTitle">운행 현황</h1><small id="pageSub"></small></div>
       <div class="rf" id="rf"><button data-rf="all" class="on">전체</button><button data-rf="yatap">야탑역 셔틀</button><button data-rf="park">파킹엔젤스</button></div>
     </div>
@@ -377,7 +504,7 @@
           <button class="btn" id="stLoad">보기</button>
           <button class="btn ghost" id="stToday">오늘</button>
           <button class="btn ghost" id="stSunday">지난 주일</button>
-          <button class="btn red hide" id="stDelDay" style="margin-left:auto">🗑 이날 기록 모두 지우기</button>
+          <button class="btn red hide superOnly2" id="stDelDay" style="margin-left:auto">🗑 이날 기록 모두 지우기</button>
         </div>
       </div>
       <div id="stOut"></div>
@@ -386,7 +513,7 @@
         <button class="btn ghost" id="stWeeks">불러오기</button>
         <div id="stWeeksOut" style="margin-top:12px"></div>
       </div>
-      <div class="card" style="border:2px solid #FECACA">
+      <div class="card superOnly" style="border:2px solid #FECACA">
         <h2>🧹 운행기록 초기화 <small>테스트로 쌓인 기록을 정리할 때</small></h2>
         <ul class="muted" style="margin:0 0 12px;padding-left:20px;line-height:1.8">
           <li>지워지는 것: <b>운행 기록</b>과 <b>탑승 인원 기록</b></li>
@@ -500,14 +627,11 @@
 
     <!-- TV 화면 -->
     <section id="tab-tv" class="hide">
-      <div class="card">
-        <h2>TV 화면 열기 <small>TV 브라우저나 TV에 연결한 PC에서 아래 주소를 여세요</small></h2>
-        <div class="row" style="flex-wrap:wrap;gap:8px">
-          <a class="btn" href="tv.html" target="_blank" rel="noopener">TV 화면 (아래 설정대로)</a>
-          <a class="btn ghost" href="tv.html?route=yatap" target="_blank" rel="noopener">야탑역 셔틀만</a>
-          <a class="btn ghost" href="tv.html?route=park" target="_blank" rel="noopener">파킹엔젤스만</a>
-          <a class="btn ghost" href="tv.html?layout=port-r" target="_blank" rel="noopener">세로로 세운 TV (↻)</a>
-        </div>
+      <div class="tvsub" id="tvSub" role="tablist"><button type="button" role="tab" data-pane="basic"><span class="tsi" style="background:#E6F1FB;color:#0C447C"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span><span class="tst"><b>기본</b><small id="tss-basic"></small></span></button><button type="button" role="tab" data-pane="poster"><span class="tsi" style="background:#FBEAF0;color:#72243E"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="9.5" cy="9" r="1.6"/><path d="M4 17l5-5 4 4 2.5-2.5L20 18"/></svg></span><span class="tst"><b>포스터</b><small id="tss-poster"></small></span></button><button type="button" role="tab" data-pane="rest"><span class="tsi" style="background:#FAEEDA;color:#633806"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M8 3v4M16 3v4M3.5 10h17M10 14l4 4M14 14l-4 4"/></svg></span><span class="tst"><b>쉬는 날</b><small id="tss-rest"></small></span></button><button type="button" role="tab" data-pane="worship"><span class="tsi" style="background:#EEEDFE;color:#3C3489"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v4M10 5h4M5 21V12l7-4 7 4v9"/><path d="M10 21v-4a2 2 0 0 1 4 0v4"/></svg></span><span class="tst"><b>예배</b><small id="tss-worship"></small></span></button><button type="button" role="tab" data-pane="look"><span class="tsi" style="background:#E1F5EE;color:#085041"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.6-.8 1.6-1.6 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.7-1.6 1.6-1.6H16a5 5 0 0 0 5-5c0-4-4-7.4-9-7.4z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7.5" r="1"/><circle cx="14.5" cy="7.5" r="1"/></svg></span><span class="tst"><b>꾸미기</b><small id="tss-look"></small></span></button><button type="button" role="tab" data-pane="links"><span class="tsi" style="background:#F1EFE8;color:#444441"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></span><span class="tst"><b>TV 주소</b><small id="tss-links"></small></span></button></div>
+      <div class="tvwrap">
+      <div class="tvpanes">
+      <div class="card tvpane" data-pane="basic">
+        <h2>기본 <small>TV에 무엇을 어떻게 보여 줄지 정합니다 · 바꾸면 TV에 바로 반영됩니다</small></h2>
         <div class="tvrt"><b>보여 줄 노선</b>
           <div class="seg3" id="tvRt">
             <button type="button" data-tvrt="auto">자동 <small>(주일엔 파킹엔젤스도)</small></button>
@@ -516,20 +640,43 @@
             <button type="button" data-tvrt="park">파킹엔젤스만</button>
           </div></div>
         <p class="muted" style="margin:6px 0 0"><b>자동</b>: 주일에는 야탑역 셔틀과 파킹엔젤스를 함께, 평일에는 야탑역 셔틀만 보여 줍니다. 평일이라도 파킹엔젤스 버스가 실제로 운행하면 자동으로 함께 나옵니다. 위의 ‘야탑역 셔틀만·파킹엔젤스만’ 주소로 연 TV는 이 설정과 상관없이 그 노선만 보여 줍니다.</p>
-        <p class="muted" style="margin:8px 0 0">TV에서 리모컨이나 마우스를 움직이면 아래에 ‘전체 화면’과 화면 방향 버튼이 나옵니다. 고른 방향은 그 TV에 저장됩니다.</p>
+        <div class="lkrow"><b>교회 표어</b>
+          <label class="wcauto"><input type="checkbox" id="lkMottoOn"> TV 맨 위 가운데에 보이기</label>
+          <input type="text" id="lkMotto" maxlength="60" placeholder="예: 2027년 교회 표어 · 일어나 빛을 발하라" style="flex:1;min-width:240px;margin:0">
+          <button class="btn small" id="lkMottoSave">저장</button>
+        </div>
+        <div class="lkrow" style="align-items:flex-start"><b style="padding-top:10px">글꼴</b><div class="fontgrid" id="lkFont"><button type="button" class="fontopt" data-font="pretendard"><b class="ff-pretendard">셔틀 9:30 도착</b><span>프리텐다드</span><small>깔끔하고 균형 잡힌 기본 글꼴</small></button><button type="button" class="fontopt" data-font="gmarket"><b class="ff-gmarket">셔틀 9:30 도착</b><span>G마켓 산스</span><small>굵고 또렷해 멀리서 잘 보임</small></button><button type="button" class="fontopt" data-font="nanumsq"><b class="ff-nanumsq">셔틀 9:30 도착</b><span>나눔스퀘어 네오</span><small>반듯하고 단정한 느낌</small></button><button type="button" class="fontopt" data-font="suit"><b class="ff-suit">셔틀 9:30 도착</b><span>SUIT</span><small>부드럽고 읽기 편함</small></button></div></div>
+        <div class="lkrow"><b>날씨</b><label class="wcauto"><input type="checkbox" id="lkWx"> TV 맨 위에 오늘 날씨와 미세먼지 보이기</label>
+          <small class="muted">TV가 날씨를 불러오지 못하면 자동으로 숨겨집니다 (교회 인터넷이 날씨 사이트를 막는 경우).</small></div>
       </div>
-      <div class="card" id="pstCard">
-        <h2>📰 행사 포스터 · 쉬는 날 <small>운행이 없을 때 TV에 행사 포스터를 슬라이드로 보여 줍니다</small></h2>
-        <div class="pst-row"><b>포스터 보여 줄 때</b>
+      <div class="card tvpane hide" data-pane="poster" id="pstCard">
+        <h2>행사 포스터 <small>TV에 행사 포스터를 슬라이드로 보여 줍니다</small></h2>
+        <div class="pst-row"><b>언제 보일까요</b>
           <div class="seg3" id="pstWhen">
             <button type="button" data-pw="rest">운행 없을 때만</button>
-            <button type="button" data-pw="always">평일 운행 중에도 (작게)</button>
+            <button type="button" data-pw="always">항상 보이기</button>
             <button type="button" data-pw="off">끄기</button>
+          </div>
+        </div>
+        <p class="muted" style="margin:-2px 0 6px"><b>항상 보이기</b>: 평일엔 오른쪽 칸에, 주일(두 노선)엔 시간표 칸과 20초씩 번갈아 나옵니다. 셔틀 정보는 가려지지 않습니다.</p>
+        <div class="pst-row"><b>보여 주는 방식</b>
+          <div class="seg3" id="pstView">
+            <button type="button" data-pv="one">한 장 <small>(포스터 색 액자)</small></button>
+            <button type="button" data-pv="two">두 장 나란히</button>
+            <button type="button" data-pv="stack">겹쳐 보기</button>
           </div>
           <label class="wcauto">넘김 <select id="pstSec"><option value="5">5초</option><option value="8">8초</option><option value="10">10초</option><option value="15">15초</option></select></label>
         </div>
-        <div class="pst-row"><label class="wcauto"><input type="checkbox" id="pstEnd"> 그날 <b>운행이 모두 끝나면</b> 포스터 화면으로 바꾸기 <small class="muted">(마지막 출발 30분 뒤)</small></label></div>
-        <div class="pst-row"><label class="wcauto"><input type="checkbox" id="pstEarly"> <b>첫차 1시간 전까지</b>는 포스터 화면으로 두기 <small class="muted">(새벽·이른 아침)</small></label></div>
+        <div class="pst-row" style="margin-top:6px"><b>포스터</b>
+          <label class="btn" style="cursor:pointer;margin:0">⬆️ 포스터 올리기 (여러 장)<input type="file" id="pstFile" accept="image/*" multiple hidden></label>
+          <a class="btn ghost" href="tv.html?rest=1" target="_blank" rel="noopener">TV에서 미리 보기</a>
+          <span class="muted" id="pstState"></span>
+        </div>
+        <p class="muted" style="margin:6px 0 10px">권장 규격: 세로 포스터 <b>1080×1528</b> (A4 비율) · 정사각형 <b>1080×1080</b> · 가로 <b>1920×1080</b>. 잘리지 않고 통째로 보이며 남는 곳은 포스터를 흐리게 깔아 채웁니다. 최대 12장 · 크기는 자동으로 줄여 저장합니다.</p>
+        <div id="pstList" class="pstlist"></div>
+      </div>
+      <div class="card tvpane hide" data-pane="rest">
+        <h2>쉬는 날 <small>운행이 없는 날·시간에는 TV가 포스터 화면으로 바뀝니다</small></h2>
         <div class="pst-row" style="align-items:flex-start"><b style="padding-top:8px">쉬는 날 정하기</b>
           <div style="flex:1;min-width:280px">
             <div class="row" style="gap:8px;flex-wrap:wrap;margin:0">
@@ -541,8 +688,19 @@
             <div id="rdList" class="rdlist"></div>
           </div>
         </div>
-        <div class="pst-row" style="align-items:flex-start"><b style="padding-top:8px">안내 칸에 함께</b>
-          <div style="flex:1;min-width:280px;display:grid;gap:8px">
+        <div class="pst-row"><label class="wcauto"><input type="checkbox" id="pstEnd"> 그날 <b>운행이 모두 끝나면</b> 포스터 화면으로 바꾸기 <small class="muted">(마지막 출발 30분 뒤)</small></label></div>
+        <div class="pst-row"><label class="wcauto"><input type="checkbox" id="pstEarly"> <b>첫차 1시간 전까지</b>는 포스터 화면으로 두기 <small class="muted">(새벽·이른 아침)</small></label></div>
+        <p class="muted" style="margin:8px 0 0">시간표에 운행이 없는 날(예: 월요일)은 따로 정하지 않아도 자동으로 포스터 화면이 됩니다. 버스가 실제로 운행하면 언제든 셔틀 화면으로 돌아옵니다.</p>
+      </div>
+      <div class="card tvpane hide" data-pane="worship">
+        <h2>예배 안내 <small>운행 없는 날 TV 안내 칸에 보입니다</small></h2>
+            <div class="vbox">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b>⛪ 예배 안내</b> <small class="muted">TV에 이 순서대로 보입니다</small>
+                <span style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="btn ghost small" id="worAdd">＋ 예배 추가</button><button type="button" class="btn ghost small" id="worDef">할렐루야교회 기본값 불러오기</button></span></div>
+              <div class="wortbl" id="worList"></div>
+            </div>
+            <div><button class="btn" id="rvSave">예배 안내 저장</button> <span class="muted" style="font-size:13px">저장하면 TV에 바로 반영됩니다. 이번 주 셔틀 운행표는 시간표에서 자동으로 만들어집니다.</span></div>
+        <div class="hide" id="legacyVerse">
             <div class="vbox">
               <b>✝️ 교회 표어</b> <small class="muted">말씀 칸 맨 위에 늘 보입니다</small>
               <div class="row" style="gap:8px;margin:6px 0 0;flex-wrap:wrap">
@@ -564,24 +722,10 @@
               <textarea id="rvText" rows="2" maxlength="160" placeholder="예: 여호와께 감사하라 그는 선하시며 그 인자하심이 영원함이로다" style="width:100%;margin:4px 0 0"></textarea></label>
             <input type="text" id="rvRef" maxlength="30" placeholder="말씀 출처 (예: 시편 136:1)" style="margin:6px 0 0;max-width:260px">
             </div>
-            <div class="vbox">
-              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b>⛪ 예배 안내</b> <small class="muted">TV에 이 순서대로 보입니다</small>
-                <span style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="btn ghost small" id="worAdd">＋ 예배 추가</button><button type="button" class="btn ghost small" id="worDef">할렐루야교회 기본값 불러오기</button></span></div>
-              <div class="wortbl" id="worList"></div>
-            </div>
-            <div><button class="btn" id="rvSave">안내 저장</button> <span class="muted" style="font-size:13px">이번 주 셔틀 운행표는 시간표에서 자동으로 만들어집니다.</span></div>
-          </div>
         </div>
-        <div class="pst-row" style="margin-top:6px"><b>포스터</b>
-          <label class="btn" style="cursor:pointer;margin:0">⬆️ 포스터 올리기 (여러 장)<input type="file" id="pstFile" accept="image/*" multiple hidden></label>
-          <a class="btn ghost" href="tv.html?rest=1" target="_blank" rel="noopener">TV에서 미리 보기</a>
-          <span class="muted" id="pstState"></span>
-        </div>
-        <p class="muted" style="margin:6px 0 10px">권장 규격: 세로 포스터 <b>1080×1528</b> (A4 비율) · 정사각형 <b>1080×1080</b> · 가로 <b>1920×1080</b>. 잘리지 않고 통째로 보이며 남는 곳은 포스터를 흐리게 깔아 채웁니다. 최대 12장 · 크기는 자동으로 줄여 저장합니다.</p>
-        <div id="pstList" class="pstlist"></div>
       </div>
-      <div class="card">
-        <h2>TV 화면 꾸미기 <small>색 테마 · 절기 장식 · 사진. 저장하면 TV에 바로 바뀝니다</small></h2>
+      <div class="card tvpane hide" data-pane="look">
+        <h2>꾸미기 <small>색 테마 · 절기 장식 · 계절 효과 · 사진</small></h2>
         <div class="thgrid" id="thAuto"></div>
         <div id="thList"></div>
         <div class="row" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line)">
@@ -600,6 +744,26 @@
         </div>
         <p class="muted" style="margin:8px 0 0"><b>권장 규격: 가로 2400 × 세로 300 픽셀 (가로:세로 = 8:1), JPG 또는 PNG.</b> TV 맨 위 제목 띠에 깔리며, 사진 양 끝은 글씨가 보이도록 흐리게 처리되고 <b>가운데 부분</b>이 가장 잘 보입니다. 큰 사진도 올리면 자동으로 줄여 저장합니다.
           · 미리보기: <a href="tv.html" target="_blank" rel="noopener" id="thOpen">TV 화면 새 창으로 열기</a></p>
+            </div>
+      <div class="card tvpane hide" data-pane="links">
+        <h2>TV 주소 <small>TV 브라우저나 TV에 연결한 PC에서 여세요</small></h2>
+        <div class="row" style="flex-wrap:wrap;gap:8px">
+          <a class="btn" href="tv.html" target="_blank" rel="noopener">TV 화면 (아래 설정대로)</a>
+          <a class="btn ghost" href="tv.html?route=yatap" target="_blank" rel="noopener">야탑역 셔틀만</a>
+          <a class="btn ghost" href="tv.html?route=park" target="_blank" rel="noopener">파킹엔젤스만</a>
+          <a class="btn ghost" href="tv.html?layout=port-r" target="_blank" rel="noopener">세로로 세운 TV (↻)</a>
+        </div>
+        <p class="muted" style="margin:8px 0 0">TV에서 리모컨이나 마우스를 움직이면 아래에 ‘전체 화면’과 화면 방향 버튼이 나옵니다. 고른 방향은 그 TV에 저장됩니다.</p>
+      </div>
+      </div>
+      <aside class="tvprev" id="tvPrev">
+        <div class="tvprevhead"><b>TV 미리 보기</b>
+          <div class="seg3 mini"><button type="button" data-pvl="land" class="on">가로</button><button type="button" data-pvl="port">세로</button></div>
+          <div class="seg3 mini"><button type="button" data-pvm="live" class="on">지금</button><button type="button" data-pvm="rest">운행 없는 날</button></div>
+        </div>
+        <div class="tvframe" id="tvFrameBox"><iframe id="tvFrame" title="TV 미리 보기" loading="lazy"></iframe></div>
+        <small class="muted">실제 TV와 같은 화면입니다. 설정을 바꾸면 몇 초 안에 함께 바뀝니다.</small>
+      </aside>
       </div>
     </section>
 
@@ -645,19 +809,27 @@
     <!-- 관리자 -->
     <section id="tab-admins" class="hide">
       <div class="card">
-        <h2>관리자 추가 <small>구글 계정 이메일</small></h2>
+        <h2>관리자 추가 <small>구글 계정 또는 아이디</small></h2>
         <div class="form">
-          <div><label>이메일</label><input id="aEmail" placeholder="example@gmail.com"></div>
+          <div><label>로그인 방식</label><select id="aKind"><option value="google">구글 계정</option><option value="id">아이디 · 비밀번호</option></select></div>
+          <div><label id="aEmailL">구글 이메일</label><input id="aEmail" placeholder="example@gmail.com"></div>
           <div><label>이름 (선택)</label><input id="aName" placeholder="예: 셔틀 담당 OOO"></div>
+          <div><label>권한</label><select id="aRole"><option value="staff">일반 관리자</option><option value="super">최고 관리자</option></select></div>
           <div><button class="btn green" id="aAdd">추가</button></div>
         </div>
+        <div class="idhelp hide" id="aIdHelp"><b>아이디로 추가할 때 (처음 한 번만)</b>
+          <ol><li>Firebase 콘솔 → <b>Authentication → 로그인 방법</b>에서 <b>이메일/비밀번호</b>를 사용 설정합니다.</li>
+          <li><b>Authentication → 설정 → 사용자 작업</b>에서 <b>‘생성(가입) 사용 설정’을 끕니다.</b> (아무나 계정을 만들지 못하게 · 꼭 해 주세요)</li>
+          <li><b>Authentication → 사용자 → 사용자 추가</b>에서 이메일 칸에 <b>아이디@hccshuttle.app</b> (예: shuttle01@hccshuttle.app), 비밀번호를 넣어 만듭니다.</li>
+          <li>그분은 관리자 화면에서 <b>아이디</b>(예: shuttle01)와 비밀번호로 로그인합니다.</li></ol></div>
       </div>
-      <div class="card"><h2>관리자 목록</h2><div class="tblwrap" id="aTbl"></div></div>
+      <div class="card"><h2>관리자 목록 <small>일반 관리자는 체크한 메뉴만 볼 수 있습니다</small></h2><div id="aTbl"></div></div>
     </section>
     <p class="muted" style="text-align:center;margin-top:24px">만든 사람 AI목양지원센터 · 이세진 목사 · <a href="./" style="color:inherit">성도님 화면</a> · <a href="./driver.html" style="color:inherit">드라이버 화면</a></p>
     </div>
   </div>
 </div>
+<div class="navShade" id="navShade"></div>
 <div class="toast" id="toast"></div>
 <div class="smsbox" id="smsBox" role="dialog" aria-modal="true" aria-labelledby="smsH"><div class="box">
   <h3 id="smsH">문자로 배차 보내기</h3>
@@ -670,7 +842,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import { getDatabase, ref, onValue, get, set, update, remove, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
 const firebaseConfig = {
@@ -851,8 +1023,15 @@ const A={ live:{}, pins:{}, drivers:{}, wait:{}, boardToday:{}, admins:{}, confi
 const RF=()=> A.rf==="all" ? ["yatap","park"] : [A.rf];
 
 // ---------- 로그인 ----------
+// 로그인 유지: 이 기기·브라우저에 로그인 상태를 계속 기억
+setPersistence(auth,browserLocalPersistence).catch(()=>{});
+$("pwForm").onsubmit=async e=>{ e.preventDefault(); $("loginErr").textContent="";
+  let id=$("lgId").value.trim().toLowerCase(); if(!id.includes("@")) id+=ID_DOMAIN;
+  try{ await setPersistence(auth,browserLocalPersistence).catch(()=>{}); await signInWithEmailAndPassword(auth,id,$("lgPw").value); $("lgPw").value=""; }
+  catch(err){ const c=err&&err.code||""; $("loginErr").textContent = c==="auth/operation-not-allowed" ? "Firebase 콘솔 → Authentication → 로그인 방법에서 ‘이메일/비밀번호’를 사용 설정해 주세요."
+    : c==="auth/too-many-requests" ? "여러 번 틀려서 잠시 막혔습니다. 몇 분 뒤 다시 해 주세요." : "아이디나 비밀번호가 맞지 않습니다."; } };
 $("loginBtn").onclick=async()=>{ $("loginErr").textContent="";
-  try{ await signInWithPopup(auth,new GoogleAuthProvider()); }
+  try{ await setPersistence(auth,browserLocalPersistence).catch(()=>{}); await signInWithPopup(auth,new GoogleAuthProvider()); }
   catch(e){ $("loginErr").textContent = e.code==="auth/unauthorized-domain"
       ? "Firebase 콘솔 Authentication → 설정 → 승인된 도메인에 shepherdsdesk.github.io 를 추가해 주세요."
       : e.code==="auth/operation-not-allowed" ? "Firebase 콘솔 Authentication → 로그인 방법에서 Google을 사용 설정해 주세요."
@@ -864,12 +1043,63 @@ onAuthStateChanged(auth, async u=>{
   ["gateLogin","gateDenied","main"].forEach(id=>$(id).classList.add("hide"));
   if(!u || u.isAnonymous){ $("who").innerHTML=""; $("gateLogin").classList.remove("hide"); return; }
   me=u;
-  $("who").innerHTML=`<span>${esc(u.email)}</span><button class="btn ghost small" id="logoutBtn">로그아웃</button>`;
+  $("who").innerHTML=`<span class="whoTxt">${esc(showId(u.email))}<br><b id="myRole"></b></span><button class="btn ghost small" id="logoutBtn">로그아웃</button>`;
   $("logoutBtn").onclick=doLogout;
   try{ await get(ref(db,"admins")); }
-  catch(_){ $("deniedEmail").textContent=u.email; $("deniedKey").textContent=emailKey(u.email); $("deniedVal").textContent=u.email.toLowerCase(); $("gateDenied").classList.remove("hide"); return; }
-  $("main").classList.remove("hide"); startAdmin();
+  catch(_){ $("deniedEmail").textContent=showId(u.email); $("deniedKey").textContent=emailKey(u.email); $("deniedVal").textContent=u.email.toLowerCase(); $("gateDenied").classList.remove("hide"); return; }
+  $("main").classList.remove("hide"); await loadMe(u); startAdmin();
 });
+
+// =====================================================================
+//   관리자 권한 · 화면 꾸미기(테마) · 기기별 메뉴
+// =====================================================================
+const ID_DOMAIN="@hccshuttle.app";
+const isIdAcct=e=>String(e||"").toLowerCase().endsWith(ID_DOMAIN);
+const showId=e=>isIdAcct(e)?String(e).slice(0,-ID_DOMAIN.length)+" (아이디)":String(e||"");
+const PERM_LIST=[["now","운행 현황"],["drivers","기사님 관리"],["notice","공지 · 교회 소식"],["times","시간표"],["stops","정류장 · 노선"],["tv","TV 화면"],["stats","통계"]];
+const STAFF_DEF={now:true,drivers:true,stops:true,stats:true};
+let ME={role:"super",perm:{}};
+const isSuper=()=>ME.role!=="staff";
+const can=p=>isSuper() || !!(ME.perm&&ME.perm[p]);
+const TAB_PERM={now:"now",drivers:"drivers",notice:"notice",times:"times",stops:"stops",tv:"tv",stats:"stats",admins:"*",brand:"*"};
+function applyPerms(){
+  document.querySelectorAll("#tabs button").forEach(b=>{ const p=TAB_PERM[b.dataset.tab]; b.classList.toggle("hide", p==="*" ? !isSuper() : !can(p)); });
+  document.querySelectorAll(".superOnly").forEach(el=>el.classList.toggle("hide",!isSuper()));
+  const cur=document.querySelector(`#tabs button[data-tab="${curTab}"]`);
+  if(!cur || cur.classList.contains("hide")){ const f=document.querySelector("#tabs button:not(.hide)"); if(f) f.click(); }
+  const r=$("myRole"); if(r) r.textContent=isSuper()?"최고 관리자":"일반 관리자";
+}
+async function loadMe(u){
+  try{ const v=(await get(ref(db,"admins/"+emailKey(u.email)))).val()||{}; ME={role:v.role==="staff"?"staff":"super", perm:v.perm||{}}; }catch(_){ ME={role:"staff",perm:{}}; }
+  applyPerms();
+}
+// 메뉴 아이콘 (가는 선)
+const TAB_ICON={
+  now:'<circle cx="12" cy="10" r="3"/><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/>',
+  drivers:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/><path d="M12 14v7M10 12H3M14 12h7"/>',
+  notice:'<path d="M4 10v4h3l6 4V6L7 10z"/><path d="M16.5 9a4 4 0 0 1 0 6M19 6.5a8 8 0 0 1 0 11"/>',
+  times:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  stops:'<circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h7a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h7"/>',
+  tv:'<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M8 3l4 3 4-3"/>',
+  stats:'<path d="M5 20V11M11 20V5M17 20v-6M3 20h18"/>',
+  admins:'<path d="M12 3l7 3v6c0 4.6-3 7.7-7 9-4-1.3-7-4.4-7-9V6z"/><path d="M9 12l2 2 4-4"/>',
+  brand:'<circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M2.5 12h3M18.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/>'};
+document.querySelectorAll("#tabs button").forEach(b=>{ const lv=b.querySelector(".lv"); const t=[...b.childNodes].filter(n=>n.nodeType===3).map(n=>n.textContent).join("").trim();
+  [...b.childNodes].filter(n=>n.nodeType===3).forEach(n=>n.remove());
+  b.insertAdjacentHTML("afterbegin",`<svg class="tic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TAB_ICON[b.dataset.tab]||""}</svg><span class="tl">${t}</span>`);
+  b.title=t; if(lv) b.appendChild(lv); });
+// 휴대폰: ☰ 메뉴
+$("menuBtn").onclick=()=>document.body.classList.toggle("navopen");
+$("navShade").onclick=()=>document.body.classList.remove("navopen");
+$("tabs").addEventListener("click",()=>document.body.classList.remove("navopen"));
+// 관리자 화면 색 (이 기기에만 기억)
+const THEMES=[["navy","네이비"],["lavender","라벤더"],["sage","세이지"],["beige","웜 베이지"],["dark","다크"]];
+function setTheme(t){ if(!THEMES.some(x=>x[0]===t)) t="navy"; document.body.dataset.theme=t; try{ localStorage.setItem("adminTheme",t); }catch(_){}
+  document.querySelectorAll("[data-th]").forEach(b=>b.classList.toggle("on",b.dataset.th===t));
+  const m=document.querySelector('meta[name="theme-color"]'); if(m) m.content=getComputedStyle(document.body).getPropertyValue("--navy").trim()||"#1B2B5C"; }
+$("themeDots").innerHTML=THEMES.map(([k,l])=>`<button type="button" data-th="${k}" title="${l}" aria-label="화면 색 ${l}"></button>`).join("");
+$("themeDots").addEventListener("click",e=>{ const b=e.target.closest("[data-th]"); if(b) setTheme(b.dataset.th); });
+try{ setTheme(localStorage.getItem("adminTheme")||"navy"); }catch(_){ setTheme("navy"); }
 
 // ---------- 탭 ----------
 const TITLES={now:"운행 현황",drivers:"기사님 관리",notice:"공지 · 교회 소식",times:"시간표",stops:"정류장 · 노선",tv:"TV 화면",stats:"통계",admins:"관리자",brand:"기본 설정"};
@@ -884,6 +1114,7 @@ $("tabs").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!
   if(curTab==="now" && map) setTimeout(()=>{ map.resize(); fitRF(); },50);
   if(curTab==="stops") setTimeout(()=>{ openStopEdit(); openPathMap(); },50);
   if(curTab==="stats" && !PER.last && PER.ref) drawPeriod();
+  if(curTab==="tv") setTimeout(pvLoad,60);
 });
 // 노선 고르기: 전체 / 야탑역 셔틀 / 파킹엔젤스
 $("rf").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return;
@@ -1241,7 +1472,7 @@ async function startAdmin(){
   onValue(ref(db,"waitc"),s=>{A.waitc=s.val()||{}; drawNow();},()=>{});
   onValue(ref(db,"board/"+kstDate(now())),s=>{A.boardToday=s.val()||{}; drawNow();});
   onValue(ref(db,"admins"),s=>{A.admins=s.val()||{}; drawAdmins();});
-  onValue(ref(db,"config"),s=>{A.config=s.val()||{}; fillConfig(); drawWaitCfg(); drawNow(); drawTvRt(); drawPosterAdmin();});
+  onValue(ref(db,"config"),s=>{A.config=s.val()||{}; fillConfig(); drawWaitCfg(); drawNow(); drawTvRt(); drawPosterAdmin(); drawLook();});
   setInterval(drawNow,10000);
   initStats(); initTimes();
 }
@@ -1447,6 +1678,48 @@ $("pstFile").onchange=async e=>{
   }
   drawPosterList(); if(ok) toast(`포스터 ${ok}장을 올렸습니다`);
 };
+// ---------- TV 화면: 작은 탭 · 미리 보기 · 기본(표어·글꼴·날씨) ----------
+let TVPANE=(()=>{ try{ return localStorage.getItem("tvPane")||"basic"; }catch(_){ return "basic"; } })();
+function showPane(k){ TVPANE=k; try{ localStorage.setItem("tvPane",k); }catch(_){}
+  document.querySelectorAll("#tvSub [data-pane]").forEach(b=>{ b.classList.toggle("on",b.dataset.pane===k); b.setAttribute("aria-selected",b.dataset.pane===k); });
+  document.querySelectorAll(".tvpane").forEach(p=>p.classList.toggle("hide",p.dataset.pane!==k)); }
+$("tvSub").addEventListener("click",e=>{ const b=e.target.closest("[data-pane]"); if(b) showPane(b.dataset.pane); });
+showPane(TVPANE);
+const lookCfg=()=>{ const c=A.config.tvLook||{}; return {mottoOn:!!c.mottoOn, motto:c.motto||"", font:["pretendard","gmarket","nanumsq","suit"].includes(c.font)?c.font:"pretendard", wx:c.wx!==false}; };
+function drawLook(){
+  const L=lookCfg();
+  $("lkMottoOn").checked=L.mottoOn; if(document.activeElement!==$("lkMotto") && !$("lkMotto").dataset.dirty) $("lkMotto").value=L.motto;
+  document.querySelectorAll("[data-font]").forEach(b=>b.classList.toggle("on",b.dataset.font===L.font));
+  $("lkWx").checked=L.wx;
+  const pv=(A.config.tvPosters||{}).view; document.querySelectorAll("[data-pv]").forEach(b=>b.classList.toggle("on",b.dataset.pv===(["one","two","stack"].includes(pv)?pv:"one")));
+  // 작은 탭 상태
+  const rt={auto:"자동",both:"두 노선",yatap:"야탑만",park:"파킹만"}[A.config.tvRoutes]||"자동";
+  const np=Object.values(A.config.tvPosterList||{}).filter(Boolean).length, pw={rest:"운행 없을 때",always:"항상",off:"끔"}[(A.config.tvPosters||{}).when]||"운행 없을 때";
+  const today=kstDate(now()), nd=Object.keys((A.config.tvRest||{}).dates||{}).filter(d=>d>=today).length;
+  const nw=WOR.list.length, th=(A.config.tvTheme||{}).mode;
+  const set_=(k,t)=>{ const e=$("tss-"+k); if(e) e.textContent=t; };
+  set_("basic",rt+(L.mottoOn?" · 표어":"")); set_("poster",`${np}장 · ${np?pw:"없음"}`); set_("rest",nd?`쉬는 날 ${nd}일`:"자동"); set_("worship",`${nw}개`);
+  set_("look",(TV_THEMES[th]&&TV_THEMES[th].name)||"절기 자동"); set_("links","링크");
+}
+async function saveLook(patch,msg){ try{ await update(ref(db,"config/tvLook"),patch); toast(msg||"TV에 바로 반영됩니다"); }catch(_){ toast("저장하지 못했습니다"); } }
+$("lkMottoOn").onchange=e=>{ if(e.target.checked && !$("lkMotto").value.trim()){ toast("표어 문구를 먼저 적어 주세요"); e.target.checked=false; $("lkMotto").focus(); return; }
+  saveLook({mottoOn:e.target.checked, motto:$("lkMotto").value.trim()||null}, e.target.checked?"TV 맨 위에 표어가 보입니다":"표어를 숨겼습니다"); };
+$("lkMotto").addEventListener("input",()=>{ $("lkMotto").dataset.dirty="1"; });
+$("lkMottoSave").onclick=()=>{ delete $("lkMotto").dataset.dirty; saveLook({motto:$("lkMotto").value.trim()||null},"표어를 저장했습니다"); };
+$("lkWx").onchange=e=>saveLook({wx:e.target.checked},e.target.checked?"날씨를 보여 줍니다":"날씨를 숨겼습니다");
+document.addEventListener("click",e=>{
+  const f=e.target.closest("[data-font]"); if(f){ saveLook({font:f.dataset.font},"글꼴을 바꿨습니다"); return; }
+  const v=e.target.closest("[data-pv]"); if(v){ set(ref(db,"config/tvPosters/view"),v.dataset.pv).then(()=>toast({one:"한 장씩 보여 줍니다",two:"두 장씩 나란히 보여 줍니다",stack:"겹쳐 보기로 보여 줍니다"}[v.dataset.pv])).catch(()=>toast("저장하지 못했습니다")); return; }
+});
+// TV 미리 보기 (실제 TV 화면을 작게)
+const PV={lay:"land",mode:"live"};
+function pvLoad(){ const f=$("tvFrame"); const u=`tv.html?layout=${PV.lay}&preview=1${PV.mode==="rest"?"&rest=1":""}`; if(f.dataset.u!==u){ f.dataset.u=u; f.src=u; } pvFit(); }
+function pvFit(){ const box=$("tvFrameBox"), f=$("tvFrame"); if(!box||!f) return; const W=PV.lay==="land"?1920:1080, H=PV.lay==="land"?1080:1920;
+  const w=box.clientWidth||360, k=Math.min(w/W, (PV.lay==="land"?9999:520/H)); f.style.width=W+"px"; f.style.height=H+"px"; f.style.transform=`scale(${k})`; box.style.height=Math.round(H*k)+"px"; box.style.width=PV.lay==="land"?"100%":Math.round(W*k)+"px"; }
+document.addEventListener("click",e=>{ const l=e.target.closest("[data-pvl]"), m=e.target.closest("[data-pvm]");
+  if(l){ PV.lay=l.dataset.pvl; document.querySelectorAll("[data-pvl]").forEach(x=>x.classList.toggle("on",x===l)); pvLoad(); }
+  if(m){ PV.mode=m.dataset.pvm; document.querySelectorAll("[data-pvm]").forEach(x=>x.classList.toggle("on",x===m)); pvLoad(); } });
+window.addEventListener("resize",()=>{ if(curTab==="tv") pvFit(); });
 // ---------- TV에 보여 줄 노선 (자동: 주일엔 두 노선, 평일엔 야탑역 셔틀만) ----------
 function drawTvRt(){ const v=["auto","both","yatap","park"].includes(A.config.tvRoutes)?A.config.tvRoutes:"auto";
   document.querySelectorAll("[data-tvrt]").forEach(b=>b.classList.toggle("on",b.dataset.tvrt===v)); }
@@ -1852,7 +2125,7 @@ async function loadDay(date){
     const [ls,bs]=await Promise.all([get(ref(db,"logs/"+date)),get(ref(db,"board/"+date))]);
     const logs=ls.val()||{}, board=bs.val()||{};
     const byRoute={yatap:sumAll(board.yatap), park:sumAll(board.park)};
-    $("stDelDay").classList.toggle("hide",!Object.keys(logs).length && !Object.keys(board).length);
+    $("stDelDay").classList.toggle("hide",!isSuper() || (!Object.keys(logs).length && !Object.keys(board).length));
     let h=`<div class="grid"><div class="stat"><b>${byRoute.yatap+byRoute.park}명</b><span>${date} 전체 탑승 (앱)</span></div>
       <div class="stat"><b>${byRoute.yatap}명</b><span>야탑역 셔틀</span></div><div class="stat"><b>${byRoute.park}명</b><span>파킹엔젤스</span></div>
       <div class="stat"><b>${Object.values(logs).filter(x=>RF().includes(x.route)).length}회</b><span>운행 횟수${A.rf==="all"?"":" · "+ROUTES[A.rf].name}</span></div></div>`;
@@ -1866,7 +2139,7 @@ async function loadDay(date){
         return `<tr><td>${l.k}회차</td><td>${esc(l.from)}${l.to?' → '+esc(l.to):''}</td><td>${hm(l.t)}</td><td>${hm(l.dep)}</td><td><b>${n}명</b> <span class="muted">(${ppl}건)</span></td></tr>`; }).join("");
       h+=`<div class="card"><h2><span class="chip" style="background:${busColor(s.route)}">${s.bus}호차</span> ${ROUTES[s.route]?.name||s.route} · ${esc(nm)}
         <small>${hm(s.start)} ~ ${s.end?hm(s.end):'(종료 안 누름)'} · 탑승 ${tot}명</small>
-        <button class="btn ghost" style="margin-left:auto;padding:6px 12px;font-size:13px;color:#B91C1C" data-delrun="${esc(s.sid)}" data-label="${esc(s.bus+'호차 '+hm(s.start))}">🗑 이 운행 지우기</button></h2>
+        ${!isSuper()?"":`<button class="btn ghost" style="margin-left:auto;padding:6px 12px;font-size:13px;color:#B91C1C" data-delrun="${esc(s.sid)}" data-label="${esc(s.bus+'호차 '+hm(s.start))}">🗑 이 운행 지우기</button>`}</h2>
         <div class="tblwrap"><table><tr><th>회차</th><th>출발 정류장 → 방향</th><th>도착/시작</th><th>출발</th><th>탑승 (앱)</th></tr>${rows}</table></div></div>`;
     });
     $("stOut").innerHTML=h;
@@ -1971,21 +2244,40 @@ $("tReset").onclick=async()=>{ const k=$("tKey").value;
   if(!confirm(`${DEF_TIMES[k][0]}를 교회 홈페이지 기본 시간표로 되돌릴까요?`)) return;
   try{ await remove(ref(db,"config/times/"+k)); $("tTimes").value=parseTimes(DEF_TIMES[k][1]).join(", "); toast("기본 시간표로 되돌렸습니다"); }catch(_){ toast("되돌리지 못했습니다"); } };
 
-// ---------- 관리자 ----------
+// ---------- 관리자 (최고 관리자만) : 권한 고르기 ----------
 function drawAdmins(){
   const list=Object.entries(A.admins).map(([k,v])=>({k,...(v&&typeof v==="object"?v:{email:k.replace(/,/g,".")})}));
-  const mine=emailKey(me.email);
-  $("aTbl").innerHTML=`<table><tr><th>이메일</th><th>이름</th><th></th></tr>`+list.map(a=>`<tr><td>${esc(a.email)}</td><td>${esc(a.name)}</td>
-    <td>${a.k===mine?'<span class="muted">나</span>':`<button class="btn red small" data-adel="${esc(a.k)}">삭제</button>`}</td></tr>`).join("")+`</table>
-    <p class="muted">추가된 분은 이 페이지 주소로 들어와 자기 구글 계정으로 로그인하면 됩니다.</p>`;
+  const mine=emailKey(me.email), supers=list.filter(a=>a.role!=="staff").length;
+  $("aTbl").innerHTML=list.map(a=>{ const sup=a.role!=="staff", perm=a.perm||{};
+    return `<div class="admrow">
+      <div class="admwho"><b>${esc(a.name||showId(a.email))}</b><small>${esc(showId(a.email))}${a.k===mine?' · 나':''}</small></div>
+      <div class="seg3 admrole"><button type="button" data-arole="super" data-k="${esc(a.k)}" class="${sup?'on':''}">최고 관리자</button><button type="button" data-arole="staff" data-k="${esc(a.k)}" class="${sup?'':'on'}">일반 관리자</button></div>
+      <div class="admperm">${sup?'<span class="muted">모든 메뉴 · 관리자 추가 · 기본 설정 · 기록 초기화</span>':PERM_LIST.map(([p,l])=>`<label><input type="checkbox" data-aperm="${p}" data-k="${esc(a.k)}" ${perm[p]?'checked':''}> ${l}</label>`).join("")}</div>
+      <div>${a.k===mine?'':`<button class="btn red small" data-adel="${esc(a.k)}">삭제</button>`}</div></div>`; }).join("")
+    +`<p class="muted" style="margin:10px 0 0">최고 관리자는 최소 1명이 있어야 합니다 (지금 ${supers}명).</p>`;
 }
-$("aAdd").onclick=async()=>{ const email=$("aEmail").value.trim().toLowerCase(), name=$("aName").value.trim();
-  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ toast("이메일을 확인해 주세요"); return; }
-  try{ await set(ref(db,"admins/"+emailKey(email)),{email,name,added:serverTimestamp(),by:me.email}); $("aEmail").value=""; $("aName").value=""; toast("관리자를 추가했습니다"); }
+$("aKind").onchange=()=>{ const id=$("aKind").value==="id"; $("aEmailL").textContent=id?"아이디":"구글 이메일"; $("aEmail").placeholder=id?"예: shuttle01 (영문·숫자)":"example@gmail.com"; $("aIdHelp").classList.toggle("hide",!id); };
+$("aAdd").onclick=async()=>{ const id=$("aKind").value==="id"; let email=$("aEmail").value.trim().toLowerCase(); const name=$("aName").value.trim(), role=$("aRole").value;
+  if(id){ if(!/^[a-z0-9._-]{3,30}$/.test(email)){ toast("아이디는 영문·숫자 3~30자로 적어 주세요"); return; } email+=ID_DOMAIN; }
+  else if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ toast("이메일을 확인해 주세요"); return; }
+  const v={email,name,role,added:serverTimestamp(),by:me.email}; if(role==="staff") v.perm={...STAFF_DEF};
+  try{ await set(ref(db,"admins/"+emailKey(email)),v); $("aEmail").value=""; $("aName").value="";
+    toast(id?"추가했습니다. Firebase 콘솔에서 같은 아이디로 계정을 만들어 주세요":"관리자를 추가했습니다"); }
   catch(_){ toast("추가하지 못했습니다"); } };
-$("aTbl").addEventListener("click",async e=>{ const b=e.target.closest("[data-adel]"); if(!b) return;
+$("aTbl").addEventListener("click",async e=>{
+  const r=e.target.closest("[data-arole]");
+  if(r){ const k=r.dataset.k, want=r.dataset.arole, cur=A.admins[k]||{};
+    if(want==="staff" && cur.role!=="staff"){ const supers=Object.values(A.admins).filter(a=>a&&a.role!=="staff").length;
+      if(supers<=1){ toast("최고 관리자는 최소 1명이 있어야 합니다"); return; }
+      if(k===emailKey(me.email) && !confirm("내 권한을 일반 관리자로 바꾸면 이 메뉴를 더 이상 쓸 수 없습니다. 바꿀까요?")) return; }
+    try{ await update(ref(db,"admins/"+k), want==="staff"?{role:"staff",perm:cur.perm||{...STAFF_DEF}}:{role:"super"}); toast(want==="staff"?"일반 관리자로 바꿨습니다":"최고 관리자로 바꿨습니다"); }catch(_){ toast("바꾸지 못했습니다"); }
+    return; }
+  const b=e.target.closest("[data-adel]"); if(!b) return;
+  const tgt=A.admins[b.dataset.adel]||{}; if(tgt.role!=="staff" && Object.values(A.admins).filter(a=>a&&a.role!=="staff").length<=1){ toast("마지막 최고 관리자는 지울 수 없습니다"); return; }
   if(!confirm("이 관리자를 삭제할까요?")) return;
   try{ await remove(ref(db,"admins/"+b.dataset.adel)); toast("삭제했습니다"); }catch(_){ toast("삭제하지 못했습니다"); } });
+$("aTbl").addEventListener("change",async e=>{ const c=e.target.closest("[data-aperm]"); if(!c) return;
+  try{ await set(ref(db,`admins/${c.dataset.k}/perm/${c.dataset.aperm}`),c.checked||null); toast("권한을 바꿨습니다"); }catch(_){ toast("바꾸지 못했습니다"); c.checked=!c.checked; } });
 </script>
 </body>
 </html>
