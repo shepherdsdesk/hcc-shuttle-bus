@@ -16,7 +16,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nanumsquareneo@0.0.5/nanumsquareneo.css">
-<style>@font-face{font-family:"GmarketSans";font-weight:700;font-display:swap;src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff") format("woff")}</style>
+<style>@font-face{font-family:"GmarketSans";font-weight:700;font-display:swap;src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff") format("woff")}@font-face{font-family:"GmarketSans";font-weight:300 600;font-display:swap;src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansLight.woff") format("woff")}</style>
 <style>
   :root{--navy:#1B2B5C;--teal:#0F766E;--ink:#0F172A;--sub:#5B6478;--line:#E2E6EE;--bg:#F3F5FA;--amber:#F59E0B;--red:#DC2626;--green:#15803D}
   *{box-sizing:border-box}
@@ -359,6 +359,9 @@
   .fontopt span{font-size:13px;font-weight:700}
   .fontopt small{font-size:11.5px;color:var(--sub)}
   .ff-gmarket{font-family:"GmarketSans","GmarketSansMedium",sans-serif}
+  #lkFont[data-w=normal] .fontopt b{font-weight:600}
+  #lkFont[data-w=light] .fontopt b{font-weight:400}
+  .pst-row.dim{opacity:.55}
   .ff-nanumsq{font-family:"NanumSquareNeo",sans-serif}
   .ff-suit{font-family:"SUIT Variable","SUIT",sans-serif}
   body[data-theme=dark] .tvsub button,body[data-theme=dark] .tvprev,body[data-theme=dark] .fontopt{background:#162033;color:var(--ink)}
@@ -645,7 +648,7 @@
           <input type="text" id="lkMotto" maxlength="60" placeholder="예: 2027년 교회 표어 · 일어나 빛을 발하라" style="flex:1;min-width:240px;margin:0">
           <button class="btn small" id="lkMottoSave">저장</button>
         </div>
-        <div class="lkrow" style="align-items:flex-start"><b style="padding-top:10px">글꼴</b><div class="fontgrid" id="lkFont"><button type="button" class="fontopt" data-font="pretendard"><b class="ff-pretendard">셔틀 9:30 도착</b><span>프리텐다드</span><small>깔끔하고 균형 잡힌 기본 글꼴</small></button><button type="button" class="fontopt" data-font="gmarket"><b class="ff-gmarket">셔틀 9:30 도착</b><span>G마켓 산스</span><small>굵고 또렷해 멀리서 잘 보임</small></button><button type="button" class="fontopt" data-font="nanumsq"><b class="ff-nanumsq">셔틀 9:30 도착</b><span>나눔스퀘어 네오</span><small>반듯하고 단정한 느낌</small></button><button type="button" class="fontopt" data-font="suit"><b class="ff-suit">셔틀 9:30 도착</b><span>SUIT</span><small>부드럽고 읽기 편함</small></button></div></div>
+        <div class="lkrow" style="align-items:flex-start"><b style="padding-top:10px">글꼴</b><div style="flex:1;display:flex;flex-direction:column;gap:10px"><div class="seg3" id="lkWeight" style="align-self:flex-start"><button type="button" data-fw="bold">굵게</button><button type="button" data-fw="normal">보통</button><button type="button" data-fw="light">가볍게</button></div><div class="fontgrid" id="lkFont"><button type="button" class="fontopt" data-font="pretendard"><b class="ff-pretendard">셔틀 9:30 도착</b><span>프리텐다드</span><small>깔끔하고 균형 잡힌 기본 글꼴</small></button><button type="button" class="fontopt" data-font="gmarket"><b class="ff-gmarket">셔틀 9:30 도착</b><span>G마켓 산스</span><small>굵고 또렷해 멀리서 잘 보임</small></button><button type="button" class="fontopt" data-font="nanumsq"><b class="ff-nanumsq">셔틀 9:30 도착</b><span>나눔스퀘어 네오</span><small>반듯하고 단정한 느낌</small></button><button type="button" class="fontopt" data-font="suit"><b class="ff-suit">셔틀 9:30 도착</b><span>SUIT</span><small>부드럽고 읽기 편함</small></button></div></div></div>
         <div class="lkrow"><b>날씨</b><label class="wcauto"><input type="checkbox" id="lkWx"> TV 맨 위에 오늘 날씨와 미세먼지 보이기</label>
           <small class="muted">TV가 날씨를 불러오지 못하면 자동으로 숨겨집니다 (교회 인터넷이 날씨 사이트를 막는 경우).</small></div>
       </div>
@@ -658,7 +661,14 @@
             <button type="button" data-pw="off">끄기</button>
           </div>
         </div>
-        <p class="muted" style="margin:-2px 0 6px"><b>항상 보이기</b>: 평일엔 오른쪽 칸에, 주일(두 노선)엔 시간표 칸과 20초씩 번갈아 나옵니다. 셔틀 정보는 가려지지 않습니다.</p>
+        <div class="pst-row" id="pstMixRow"><b>시간표 칸과</b>
+          <div class="seg3" id="pstMix">
+            <button type="button" data-pm="alt">번갈아 보이기 <small>(20초씩)</small></button>
+            <button type="button" data-pm="poster">포스터만</button>
+            <button type="button" data-pm="split">함께 보이기 <small>(위 시간표 · 아래 포스터)</small></button>
+          </div>
+        </div>
+        <p class="muted" style="margin:-2px 0 6px"><b>항상 보이기</b>를 고르면 운행 중에도 시간표 칸 자리에 포스터가 나옵니다. 지도와 도착 시간은 가려지지 않습니다.</p>
         <div class="pst-row"><b>보여 주는 방식</b>
           <div class="seg3" id="pstView">
             <button type="button" data-pv="one">한 장 <small>(포스터 색 액자)</small></button>
@@ -1686,12 +1696,15 @@ function showPane(k){ TVPANE=k; try{ localStorage.setItem("tvPane",k); }catch(_)
   document.querySelectorAll(".tvpane").forEach(p=>p.classList.toggle("hide",p.dataset.pane!==k)); }
 $("tvSub").addEventListener("click",e=>{ const b=e.target.closest("[data-pane]"); if(b) showPane(b.dataset.pane); });
 showPane(TVPANE);
-const lookCfg=()=>{ const c=A.config.tvLook||{}; return {mottoOn:!!c.mottoOn, motto:c.motto||"", font:["pretendard","gmarket","nanumsq","suit"].includes(c.font)?c.font:"pretendard", wx:c.wx!==false}; };
+const lookCfg=()=>{ const c=A.config.tvLook||{}; return {mottoOn:!!c.mottoOn, motto:c.motto||"", font:["pretendard","gmarket","nanumsq","suit"].includes(c.font)?c.font:"pretendard", wx:c.wx!==false, weight:c.weight}; };
 function drawLook(){
   const L=lookCfg();
   $("lkMottoOn").checked=L.mottoOn; if(document.activeElement!==$("lkMotto") && !$("lkMotto").dataset.dirty) $("lkMotto").value=L.motto;
   document.querySelectorAll("[data-font]").forEach(b=>b.classList.toggle("on",b.dataset.font===L.font));
   $("lkWx").checked=L.wx;
+  const pm=(A.config.tvPosters||{}).mix; document.querySelectorAll("[data-pm]").forEach(b=>b.classList.toggle("on",b.dataset.pm===(["alt","poster","split"].includes(pm)?pm:"alt")));
+  $("pstMixRow").classList.toggle("dim",(A.config.tvPosters||{}).when!=="always");
+  const fw=["bold","normal","light"].includes(L.weight)?L.weight:"bold"; document.querySelectorAll("[data-fw]").forEach(b=>b.classList.toggle("on",b.dataset.fw===fw)); $("lkFont").dataset.w=fw;
   const pv=(A.config.tvPosters||{}).view; document.querySelectorAll("[data-pv]").forEach(b=>b.classList.toggle("on",b.dataset.pv===(["one","two","stack"].includes(pv)?pv:"one")));
   // 작은 탭 상태
   const rt={auto:"자동",both:"두 노선",yatap:"야탑만",park:"파킹만"}[A.config.tvRoutes]||"자동";
@@ -1710,6 +1723,8 @@ $("lkMottoSave").onclick=()=>{ delete $("lkMotto").dataset.dirty; saveLook({mott
 $("lkWx").onchange=e=>saveLook({wx:e.target.checked},e.target.checked?"날씨를 보여 줍니다":"날씨를 숨겼습니다");
 document.addEventListener("click",e=>{
   const f=e.target.closest("[data-font]"); if(f){ saveLook({font:f.dataset.font},"글꼴을 바꿨습니다"); return; }
+  const w=e.target.closest("[data-fw]"); if(w){ saveLook({weight:w.dataset.fw},{bold:"굵은 글씨로 보여 줍니다",normal:"보통 굵기로 보여 줍니다",light:"가벼운 글씨로 보여 줍니다"}[w.dataset.fw]); return; }
+  const pm=e.target.closest("[data-pm]"); if(pm){ set(ref(db,"config/tvPosters/mix"),pm.dataset.pm).then(()=>toast({alt:"시간표와 20초씩 번갈아 보여 줍니다",poster:"시간표 칸에 포스터만 보여 줍니다",split:"시간표와 포스터를 함께 보여 줍니다"}[pm.dataset.pm])).catch(()=>toast("저장하지 못했습니다")); return; }
   const v=e.target.closest("[data-pv]"); if(v){ set(ref(db,"config/tvPosters/view"),v.dataset.pv).then(()=>toast({one:"한 장씩 보여 줍니다",two:"두 장씩 나란히 보여 줍니다",stack:"겹쳐 보기로 보여 줍니다"}[v.dataset.pv])).catch(()=>toast("저장하지 못했습니다")); return; }
 });
 // TV 미리 보기 (실제 TV 화면을 작게)
