@@ -108,12 +108,11 @@
   .mkc{position:absolute;left:0;top:0;transform:translate(-50%,-50%)}
   .pill{display:inline-flex;align-items:center;gap:.6vmin;white-space:nowrap;font-size:2.1vmin;font-weight:900;padding:.6vmin 1.3vmin .6vmin .7vmin;border-radius:999px;box-shadow:0 .4vmin 1.4vmin rgba(0,0,0,.5);border:.3vmin solid #0B1220;color:#fff}
   .pill .n{width:2.8vmin;height:2.8vmin;border-radius:50%;background:#fff;display:inline-grid;place-items:center;font-size:1.8vmin}
-  .pill.out{background:#C2410C!important;color:#fff}
-  .pill.out .n{color:#C2410C}
+  
   .pill.old{opacity:.45}
   .pill svg{width:2vmin;height:2vmin}
   .stopmk{position:relative;width:2.4vmin;height:2.4vmin;border-radius:50%;background:#0B1220;border:.6vmin solid var(--y);box-sizing:border-box}
-  .stoplab{position:absolute;bottom:calc(100% + .7vmin);left:50%;transform:translateX(-50%);white-space:nowrap;background:rgba(11,18,32,.9);border:.15vmin solid var(--line);font-size:1.7vmin;font-weight:800;padding:.3vmin .9vmin;border-radius:.8vmin;color:#E2E8F0}
+  .stoplab{position:absolute;bottom:calc(100% + .7vmin);left:50%;transform:translateX(-50%);white-space:nowrap;background:var(--lblBg,rgba(11,18,32,.9));border:.15vmin solid var(--line);font-size:1.7vmin;font-weight:800;padding:.3vmin .9vmin;border-radius:.8vmin;color:var(--lblInk,#E2E8F0)}
   /* 제목 띠 (장식 · 사진) */
   header{position:relative}
   header>*:not(.hdbg){position:relative;z-index:1}
@@ -138,9 +137,9 @@
   body.light .mmap{background:#E5E7EB}
   body.light .legend{background:rgba(255,255,255,.92);color:#334155}
   body.light .stopmk{background:#fff}
-  body.light .stoplab{background:rgba(255,255,255,.95);color:#0F172A}
+  body.light .stoplab{background:var(--lblBg,rgba(255,255,255,.95));color:var(--lblInk,#0F172A)}
   body.light .pill{border-color:#fff}
-  body.light .pill.out{background:#C2410C!important;color:#fff!important}
+  
   body.light .eta.soon b{color:#DC2626}
   body.light .notice{background:#FFF7E6;border-color:#F3C77A;color:#92400E}
   body.light .ctl{background:rgba(255,255,255,.95)}
@@ -1381,10 +1380,10 @@ const DAYNAME = {0:"주일",1:"월요일",2:"화요일",3:"수요일",4:"목요�
 const arrowR=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>`;
 const arrowL=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>`;
 function pillHtml(route,b){
-  const c=ROUTES[route].color, old=b.old?" old":"";
-  if(b.to==="교회") return `<div class="pill${old}" style="background:${c}"><span class="n" style="color:${c}">${b.bus}</span>교회행${arrowR}</div>`;
-  if(b.to) return `<div class="pill out${old}">${arrowL}<span class="n">${b.bus}</span>${esc(b.to)}행</div>`;
-  return `<div class="pill${old}" style="background:${c};padding-right:.7vmin"><span class="n" style="color:${c}">${b.bus}</span></div>`;
+  const c=mapColor(route), old=b.old?" old":"", ink=inkOn(c);
+  if(b.to==="교회") return `<div class="pill${old}" style="background:${c};color:${ink}"><span class="n" style="background:${ink};color:${c}">${b.bus}</span>교회행${arrowR}</div>`;
+  if(b.to){ const a=awayColor(), ai=inkOn(a); return `<div class="pill out${old}" style="background:${a};color:${ai}">${arrowL}<span class="n" style="background:${ai};color:${a}">${b.bus}</span>${esc(b.to)}행</div>`; }
+  return `<div class="pill${old}" style="background:${c};color:${ink};padding-right:.7vmin"><span class="n" style="background:${ink};color:${c}">${b.bus}</span></div>`;
 }
 let LIVE={yatap:{},park:{}}; const prev={};
 function liveBuses(route){
@@ -1515,6 +1514,19 @@ function ensureMaps(){
       try{ drawStopMarks(); drawTvPaths(); drawMap(); tvFit(); }catch(_){} })
     .catch(e=>{ M.pending=false; console.error(e); }); });
 }
+// ---- 지도 색 (관리자 → TV 화면 → 기본 → 지도 색, config/tvLook/mapc) ----
+let MAPC={};
+const hexOk=v=>/^#[0-9a-fA-F]{6}$/.test(v||"");
+const mapColor=r=>hexOk(MAPC[r])?MAPC[r]:ROUTES[r].color;
+const awayColor=()=>hexOk(MAPC.away)?MAPC.away:"#C2410C";
+function inkOn(h){ const n=parseInt(h.slice(1),16), L=(0.299*(n>>16&255)+0.587*(n>>8&255)+0.114*(n&255))/255; return L>0.62?"#0B1220":"#FFFFFF"; }
+function applyMapColors(m){
+  const nm={}; ["yatap","park","away","lblInk","lblBg"].forEach(k=>{ if(hexOk(m&&m[k])) nm[k]=m[k]; });
+  if(JSON.stringify(nm)===JSON.stringify(MAPC)) return; MAPC=nm;
+  const R=document.documentElement.style;
+  ["lblInk","lblBg"].forEach(k=>{ if(nm[k]) R.setProperty("--"+k,nm[k]); else R.removeProperty("--"+k); });
+  try{ drawStopMarks(); drawTvPaths(); drawMap(); }catch(_){}
+}
 const RESET_MS=30*1000;   // 손으로 확대·이동한 뒤 이 시간이 지나면 처음 크기로 돌아옴
 function fitOne(r){ const M=MAPS[r]; if(!M.map) return; M.touched=0;
   try{ M.map.resize(); M.map.fit(ROUTES[r].stops.map(s=>[s.lat,s.lng]),{top:70,left:60,right:60,bottom:70,maxZoom:17}); }catch(_){} }
@@ -1542,12 +1554,12 @@ async function initMap(){
 function drawTvPaths(){
   ["yatap","park"].forEach(r=>{ const M=MAPS[r]; if(!M.map||!M.map.line) return;
     M.lines.forEach(l=>l.remove()); M.lines=[]; if(!RT.includes(r)) return;
-    Object.values(PATHS[r]||{}).forEach(P=>M.lines.push(M.map.line(P.pts,{color:ROUTES[r].color,weight:5,opacity:.6}))); });
+    Object.values(PATHS[r]||{}).forEach(P=>M.lines.push(M.map.line(P.pts,{color:mapColor(r),weight:5,opacity:.6}))); });
 }
 function drawStopMarks(){
-  document.querySelectorAll(".mpane").forEach(p=>p.style.setProperty("--rc",ROUTES[p.dataset.r].color));
+  document.querySelectorAll(".mpane").forEach(p=>p.style.setProperty("--rc",mapColor(p.dataset.r)));
   ["yatap","park"].forEach(r=>{ const M=MAPS[r]; if(!M.stopL) return; M.stopL.clear(); if(!RT.includes(r)) return;
-    const bc=document.body.classList.contains("light")?ROUTES[r].color:(r==="park"?"#5EEAD4":"#93C5FD");
+    const bc=hexOk(MAPC[r])?MAPC[r]:(document.body.classList.contains("light")?ROUTES[r].color:(r==="park"?"#5EEAD4":"#93C5FD"));
     ROUTES[r].stops.forEach(s=>M.stopL.add(s.lat,s.lng,`<div class="stopmk" style="border-color:${bc}"><span class="stoplab">${esc(s.name)}</span></div>`,{z:2})); });
 }
 function drawMap(){
@@ -2013,6 +2025,7 @@ const FONT_CSS={gmarket:null, nanumsq:"https://cdn.jsdelivr.net/npm/nanumsquaren
 const FONT_FAM={pretendard:'"Pretendard Variable",Pretendard,"Noto Sans KR",system-ui,sans-serif', gmarket:'"GmarketSans","Pretendard Variable",sans-serif', nanumsq:'"NanumSquareNeo","Pretendard Variable",sans-serif', suit:'"SUIT Variable","SUIT","Pretendard Variable",sans-serif'};
 let WX_ON=true;
 function applyLook(L){
+  applyMapColors(L.mapc||{});
   const f=FONT_FAM[L.font]?L.font:"pretendard";
   if(FONT_CSS[f] && !document.getElementById("ff-"+f)){ const l=document.createElement("link"); l.rel="stylesheet"; l.id="ff-"+f; l.href=FONT_CSS[f]; document.head.appendChild(l); }
   if(f==="gmarket" && !document.getElementById("ff-gm")){ const st=document.createElement("style"); st.id="ff-gm"; st.textContent='@font-face{font-family:"GmarketSans";font-weight:300;font-display:swap;src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansLight.woff") format("woff")}@font-face{font-family:"GmarketSans";font-weight:400 600;font-display:swap;src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff") format("woff")}@font-face{font-family:"GmarketSans";font-weight:700 900;font-display:swap;src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff") format("woff")}'; document.head.appendChild(st); }

@@ -16,7 +16,12 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nanumsquareneo@0.0.5/nanumsquareneo.css">
-<style>@font-face{font-family:"GmarketSans";font-weight:700;font-display:swap;src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff") format("woff")}@font-face{font-family:"GmarketSans";font-weight:300 600;font-display:swap;src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansLight.woff") format("woff")}</style>
+<style>@font-face{font-family:"GmarketSans";font-weight:700;font-display:swap;src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff") format("woff")}@font-face{font-family:"GmarketSans";font-weight:300 600;font-display:swap;src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansLight.woff") format("woff")}.mcgrid{display:flex;flex-wrap:wrap;gap:10px}
+.mcr{display:flex;align-items:center;gap:10px;padding:6px 8px 6px 12px;border:1px solid var(--line,#E5E7EB);border-radius:12px;font-size:14px}
+.mcr.chg{border-color:#378ADD}
+.mcr input[type=color]{width:38px;height:30px;padding:0;border:1px solid var(--line,#E5E7EB);border-radius:8px;background:none;cursor:pointer}
+.mcr .btn{margin:0}
+</style>
 <style>
   :root{--navy:#1B2B5C;--teal:#0F766E;--ink:#0F172A;--sub:#5B6478;--line:#E2E6EE;--bg:#F3F5FA;--amber:#F59E0B;--red:#DC2626;--green:#15803D}
   *{box-sizing:border-box}
@@ -749,6 +754,12 @@
               <div class="seg3" id="fsAll"><button type="button" data-fsa="90">작게</button><button type="button" data-fsa="100">보통</button><button type="button" data-fsa="110">크게</button><button type="button" data-fsa="120">아주 크게</button></div></div>
             <div class="fsparts" id="fsParts"></div>
             <ul class="hint"><li>부분별 크기는 전체 크기에 더해집니다</li><li>칸 크기는 그대로라, 키우면 보이는 내용이 줄어듭니다</li><li>특정 TV만 키우려면 주소 끝에 <code>?fs=120</code> · <a href="#" id="fsReset">모두 보통으로</a></li></ul>
+          </div></div>
+        <div class="lkrow" style="align-items:flex-start"><b style="padding-top:8px">지도 색</b>
+          <div style="flex:1;display:flex;flex-direction:column;gap:10px">
+            <div class="mcgrid" id="mcGrid"></div>
+            <div><button type="button" class="btn small ghost" id="mcReset">모두 기본 색으로</button></div>
+            <ul class="hint"><li>TV 지도의 버스 표시 · 노선 줄 · 정류장 동그라미와 이름표 색입니다</li><li>색을 고르면 TV에 바로 반영되고, <b>기본</b>을 누르면 테마 색으로 돌아갑니다</li><li>버스 표시 안의 글자는 바탕색에 맞춰 흰색·검정이 자동으로 정해집니다</li><li>도착 시간 칸 등 지도 밖의 노선 색은 그대로입니다</li></ul>
           </div></div>
         <div class="lkrow"><b>하단 배너</b><label class="wcauto"><input type="checkbox" id="lkBanner"> TV 맨 아래 QR 안내와 셔틀 문의 전화 보이기</label></div>
         <div class="lkrow"><b>교회 표어</b>
@@ -1662,7 +1673,7 @@ async function startAdmin(){
   onValue(ref(db,"waitc"),s=>{A.waitc=s.val()||{}; drawNow();},()=>{});
   onValue(ref(db,"board/"+kstDate(now())),s=>{A.boardToday=s.val()||{}; drawNow();});
   onValue(ref(db,"admins"),s=>{A.admins=s.val()||{}; drawAdmins();});
-  onValue(ref(db,"config"),s=>{A.config=s.val()||{}; fillConfig(); drawWaitCfg(); drawNow(); drawTvRt(); drawPosterAdmin(); drawLook(); drawVideo(); drawFs(); drawCellOpts(); drawVa(); drawNames();});
+  onValue(ref(db,"config"),s=>{A.config=s.val()||{}; fillConfig(); drawWaitCfg(); drawNow(); drawTvRt(); drawPosterAdmin(); drawLook(); drawVideo(); drawFs(); drawCellOpts(); drawVa(); drawNames(); drawMapColors();});
   setInterval(drawNow,10000);
   initStats(); initTimes();
 }
@@ -1994,6 +2005,17 @@ document.addEventListener("click",e=>{
     saveLook({["fs/"+k.dataset.fsk]:v||null},FS_PARTS.find(x=>x[0]===k.dataset.fsk)[1]+": "+FS_LAB[v]); return; }
   if(e.target.id==="fsReset"){ e.preventDefault(); saveLook({fs:null},"글자 크기를 모두 보통으로 돌렸습니다"); }
 });
+
+// ---------- TV 지도 색 ----------
+const MC_PARTS=[["yatap","야탑역 셔틀 버스 · 줄"],["park","파킹엔젤스 버스 · 줄"],["away","반대 방향 버스"],["lblInk","정류장 이름 글자"],["lblBg","정류장 이름 바탕"]];
+const MC_DEF={yatap:"#3B5BA9",park:"#0D9488",away:"#C2410C",lblInk:"#E2E8F0",lblBg:"#0B1220"};
+const mcOk=v=>/^#[0-9a-fA-F]{6}$/.test(v||"");
+function drawMapColors(){ const g=$("mcGrid"); if(!g) return; const M=(A.config.tvLook||{}).mapc||{};
+  g.innerHTML=MC_PARTS.map(([k,t])=>{ const v=mcOk(M[k])?M[k]:"";
+    return `<div class="mcr${v?" chg":""}"><span>${t}</span><input type="color" data-mc="${k}" value="${v||MC_DEF[k]}" aria-label="${t} 색"><button type="button" class="btn small ghost" data-mcx="${k}" ${v?"":"disabled"}>기본</button></div>`; }).join(""); }
+document.addEventListener("change",e=>{ const i=e.target.closest&&e.target.closest("[data-mc]"); if(i) saveLook({["mapc/"+i.dataset.mc]:i.value},"지도 색을 바꿨습니다"); });
+document.addEventListener("click",e=>{ const x=e.target.closest("[data-mcx]"); if(x){ saveLook({["mapc/"+x.dataset.mcx]:null},"기본 색으로 돌렸습니다"); return; }
+  if(e.target.id==="mcReset") saveLook({mapc:null},"지도 색을 모두 기본으로 돌렸습니다"); });
 
 // ---------- 시간표 모양 · 시간표 칸 · 쉬는 날 안내 칸 구성 ----------
 const RS_NAME={next:["다음 운행","오늘 상태와 노선별 다음 첫차"],wor:["예배 안내","주일·평일 예배 시간"],week:["이번 주 셔틀","요일별 운행 시간 (같은 시간은 묶어서)"]};
