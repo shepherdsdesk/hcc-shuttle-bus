@@ -836,6 +836,16 @@ body.v2 .mpane{border:0;border-radius:2.6vmin;box-shadow:var(--v2sh)}
 .mtag .lgn{font-style:normal}
 body.light .mtag{background:rgba(255,255,255,.94);color:#0F172A}
 body.v2 .mtag{border:0;box-shadow:0 .2vmin 1vmin rgba(0,0,0,.12);font-weight:700}
+/* 지도 확대·축소 버튼 (TV에서 4초 동안 손대지 않으면 사라짐) */
+.mzoom{position:absolute;right:1.2vmin;bottom:1.2vmin;z-index:900;display:flex;flex-direction:column;gap:.8vmin;transition:opacity .3s;zoom:var(--Zmap)}
+.mzoom button{width:6vmin;height:6vmin;border:.2vmin solid var(--line);border-radius:1.6vmin;background:rgba(11,18,32,.88);color:#E2E8F0;font:inherit;font-size:3.6vmin;font-weight:800;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0;touch-action:manipulation}
+.mzoom button.fitb{font-size:1.7vmin;font-weight:800}
+.mzoom button:active{background:var(--navy);color:#fff}
+.mzoom button:focus-visible{outline:.4vmin solid #FCD34D;outline-offset:.2vmin}
+body.light .mzoom button{background:rgba(255,255,255,.94);color:#0F172A}
+body.v2 .mzoom button{border:0;box-shadow:0 .2vmin 1vmin rgba(0,0,0,.12)}
+body.idle .mzoom{opacity:0;pointer-events:none}
+body.preview .mzoom{display:none}
 </style>
 </head>
 <body>
@@ -856,8 +866,8 @@ body.v2 .mtag{border:0;box-shadow:0 .2vmin 1vmin rgba(0,0,0,.12);font-weight:700
   <div class="notice hide" id="notice"></div>
   <div class="main">
     <div class="mapbox" id="mapbox">
-      <div class="mpane" data-r="yatap"><div class="mmap" id="map-yatap"></div><div class="mtag" data-lg="yatap"><i></i><em class="lgn">야탑역 셔틀</em></div></div>
-      <div class="mpane" data-r="park"><div class="mmap" id="map-park"></div><div class="mtag" data-lg="park"><i></i><em class="lgn">파킹엔젤스</em></div></div>
+      <div class="mpane" data-r="yatap"><div class="mmap" id="map-yatap"></div><div class="mtag" data-lg="yatap"><i></i><em class="lgn">야탑역 셔틀</em></div><div class="mzoom"><button type="button" data-z="1" aria-label="확대">+</button><button type="button" data-z="-1" aria-label="축소">−</button><button type="button" data-z="0" class="fitb" aria-label="처음 크기로">맞춤</button></div></div>
+      <div class="mpane" data-r="park"><div class="mmap" id="map-park"></div><div class="mtag" data-lg="park"><i></i><em class="lgn">파킹엔젤스</em></div><div class="mzoom"><button type="button" data-z="1" aria-label="확대">+</button><button type="button" data-z="-1" aria-label="축소">−</button><button type="button" data-z="0" class="fitb" aria-label="처음 크기로">맞춤</button></div></div>
       <div class="legend" id="legend"><span>꽉 찬 표시 = 교회행</span><span>테두리 = 반대 방향</span></div>
     </div>
     <div class="boards" id="boards"></div>
@@ -1050,6 +1060,7 @@ const MapKit = (()=>{
       },
       center(lat,lng,keep){ map.setCenter(new K.LatLng(lat,lng)); if(!keep && map.getLevel()>4) map.setLevel(4); },
       resize(){ map.relayout(); },
+      zoom(d){ map.setLevel(map.getLevel()-d,{animate:true}); },
       onDrag(cb){ K.event.addListener(map,"dragstart",cb); },
       circle(lat,lng,r,color){ const c=new K.Circle({center:new K.LatLng(lat,lng),radius:r,strokeWeight:2,strokeColor:color,strokeOpacity:.9,strokeStyle:"dash",fillColor:color,fillOpacity:.12}); c.setMap(map);
         return { set(a,b,rr){ c.setPosition(new K.LatLng(a,b)); c.setRadius(rr); }, remove(){ c.setMap(null); } }; },
@@ -1084,6 +1095,7 @@ const MapKit = (()=>{
       },
       center(lat,lng,keep){ map.setView([lat,lng], keep? map.getZoom() : Math.max(map.getZoom()||15,15), {animate:false}); },
       resize(){ map.invalidateSize(); },
+      zoom(d){ map.setZoom(map.getZoom()+d,{animate:false}); },
       onDrag(cb){ map.on("dragstart",cb); },
       circle(lat,lng,r,color){ const c=L.circle([lat,lng],{radius:r,color,weight:2,dashArray:"6 5",fillColor:color,fillOpacity:.12,interactive:false}).addTo(map);
         return { set(a,b,rr){ c.setLatLng([a,b]); c.setRadius(rr); }, remove(){ map.removeLayer(c); } }; },
@@ -1503,10 +1515,22 @@ function ensureMaps(){
       try{ drawStopMarks(); drawTvPaths(); drawMap(); tvFit(); }catch(_){} })
     .catch(e=>{ M.pending=false; console.error(e); }); });
 }
-function tvFit(){
+const RESET_MS=30*1000;   // 손으로 확대·이동한 뒤 이 시간이 지나면 처음 크기로 돌아옴
+function fitOne(r){ const M=MAPS[r]; if(!M.map) return; M.touched=0;
+  try{ M.map.resize(); M.map.fit(ROUTES[r].stops.map(s=>[s.lat,s.lng]),{top:70,left:60,right:60,bottom:70,maxZoom:17}); }catch(_){} }
+function tvFit(force){
   RT.forEach(r=>{ const M=MAPS[r]; if(!M.map) return;
-    try{ M.map.resize(); M.map.fit(ROUTES[r].stops.map(s=>[s.lat,s.lng]),{top:70,left:60,right:60,bottom:70,maxZoom:17}); }catch(_){} });
+    if(force!==true && M.touched && Date.now()-M.touched<RESET_MS){ try{ M.map.resize(); }catch(_){} return; }
+    fitOne(r); });
 }
+function zoomMap(r,d){ const M=MAPS[r]; if(!M.map) return; if(d===0){ fitOne(r); return; } M.touched=Date.now(); try{ M.map.zoom(d); }catch(_){} }
+(function(){ const box=document.getElementById("mapbox");
+  box.addEventListener("click",e=>{ const bt=e.target.closest(".mzoom button"); if(!bt) return; zoomMap(bt.closest(".mpane").dataset.r,+bt.dataset.z); });
+  box.addEventListener("pointerdown",e=>{ const p=e.target.closest(".mpane"); if(p&&!e.target.closest(".mzoom")) MAPS[p.dataset.r].touched=Date.now(); },{passive:true});
+  box.addEventListener("wheel",e=>{ const p=e.target.closest(".mpane"); if(p) MAPS[p.dataset.r].touched=Date.now(); },{passive:true});
+  document.addEventListener("keydown",e=>{ const k=e.key, d=(k==="+"||k==="=")?1:(k==="-"||k==="_")?-1:(k==="0"?0:null); if(d===null) return; RT.forEach(r=>zoomMap(r,d)); });
+  setInterval(()=>{ ["yatap","park"].forEach(r=>{ const M=MAPS[r]; if(M.map && M.touched && Date.now()-M.touched>=RESET_MS && RT.includes(r)) fitOne(r); }); },5000);
+})();
 async function initMap(){
   KK=await getKakaoKey(db,ref,get);
   watchKakaoKey(db,ref,onValue,KK);
