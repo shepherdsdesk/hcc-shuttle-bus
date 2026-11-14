@@ -1126,10 +1126,23 @@ $("ride").addEventListener("click", async e=>{
   if(act==="board"){
     const list=liveBuses(S.route).filter(x=>!x.old && x.trip);
     if(!list.length){ toast("지금 운행 중인 버스가 없어요","버스에 타신 뒤 다시 눌러 주세요."); return; }
-    if(list.length===1){ openCount(list[0].bus); return; }
-    // 여러 대 운행 중이면 탄 버스를 먼저 고름 (가까운 순)
-    $("busBtns").innerHTML=list.map(x=>`<button data-bus="${x.bus}">${x.bus}호차${x.to?`<small>${esc(x.to)}행</small>`:''}</button>`).join("");
-    $("busModal").classList.add("show");
+    if(!("geolocation" in navigator)){ toast("위치를 쓸 수 없어요","탑승 확인에는 위치 사용이 필요합니다."); return; }
+    // 탑승 구역 확인: 정류장 근처이거나, 버스가 다니는 길(노선 줄) 근처에서만 누를 수 있음
+    const orig=b.innerHTML; b.disabled=true; b.firstChild.textContent="위치 확인 중…";
+    const restore=()=>{ b.disabled=false; b.innerHTML=orig; };
+    navigator.geolocation.getCurrentPosition(p=>{
+      restore();
+      const me={lat:p.coords.latitude,lng:p.coords.longitude};
+      const inStop=ROUTES[S.route].stops.some(x=>dist(me,x)<=waitR(x)+30);
+      const lm=waitCfgOf(S.route).lineM;
+      const onLine=Object.values(PATHS[S.route]||{}).some(P=>{ const q=projectOn(P,me); return q && q.off<=lm; });
+      if(!inStop && !onLine){ toast("탑승 구역 안에서만 누를 수 있어요","정류장이나 셔틀이 다니는 길 가까이에서 눌러 주세요."); return; }
+      if(list.length===1){ openCount(list[0].bus); return; }
+      // 여러 대 운행 중이면 탄 버스를 먼저 고름 (가까운 순)
+      $("busBtns").innerHTML=list.map(x=>`<button data-bus="${x.bus}">${x.bus}호차${x.to?`<small>${esc(x.to)}행</small>`:''}</button>`).join("");
+      $("busModal").classList.add("show");
+    }, err=>{ restore(); toast("위치를 확인하지 못했어요", err.code===1?"위치 사용을 허용해 주세요.":"잠시 후 다시 눌러 주세요."); },
+    {enableHighAccuracy:true, timeout:15000, maximumAge:15000});
   }
   if(act==="unboard"){
     const mb=S.myBoard; S.myBoard=null; storage.set("myBoard","null"); $("ride")._h=null; drawRide();
