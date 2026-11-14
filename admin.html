@@ -376,6 +376,9 @@
   .nmst{display:flex;align-items:center;gap:8px;padding:5px 6px 5px 10px;border-radius:9px;background:#F6F7FA;font-size:13.5px;font-weight:600;color:var(--ink)}
   .nmst .no{width:20px;height:20px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:11px;font-weight:800;color:#1B2B5C;flex:none}
   .nmst span{flex:1}
+  .nmst .nmin{display:flex;flex-direction:column;gap:4px;min-width:0}
+  .nmst .nmin input{padding:6px 9px!important;font-size:13.5px!important;font-weight:700}
+  .nmst .nmin input.nmd{font-weight:500;font-size:12.5px!important;color:var(--sub)}
   .nmst button{width:28px;height:28px;border-radius:8px;border:0;background:#fff;font:inherit;font-weight:800;cursor:pointer;color:#1B2B5C}
   .nmst button:disabled{opacity:.3;cursor:default}
   .nmtitles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
@@ -719,7 +722,7 @@
           <div style="flex:1;display:flex;flex-direction:column;gap:12px">
             <div class="nmgrid" id="nmRoutes"></div>
             <div class="nmtitles" id="nmTitles"></div>
-            <ul class="hint"><li>칸 이름은 비워 두면 기본 이름으로 돌아갑니다</li><li>정류장 순서는 TV의 도착 시간·다음 출발·시간표에 똑같이 적용됩니다</li><li>이 설정은 TV 화면에만 쓰입니다 (성도님·기사님 화면은 그대로)</li></ul>
+            <ul class="hint"><li>칸 이름은 비워 두면 기본 이름으로 돌아갑니다</li><li>정류장 이름·설명·순서는 TV의 도착 시간·다음 출발·시간표·지도에 똑같이 적용됩니다</li><li>이 설정은 TV 화면에만 쓰입니다 (성도님·기사님 화면은 그대로)</li></ul>
           </div></div>
         <div class="lkrow" style="align-items:flex-start"><b style="padding-top:8px">시간표 모양</b>
           <div style="flex:1;display:flex;flex-direction:column;gap:10px">
@@ -1977,7 +1980,7 @@ document.addEventListener("change",e=>{ const k=e.target.closest("[data-vpk]"); 
   saveVd({pick:Object.keys(pick).length?pick:{_none:true}},"예배를 골랐습니다"); });
 
 // ---------- TV 글자 크기 ----------
-const FS_PARTS=[["eta","도착 시간 숫자"],["next","다음 출발"],["name","정류장 이름"],["tt","시간표"],["tk","교회 소식 띠"],["clk","시계"]];
+const FS_PARTS=[["eta","도착 시간 숫자"],["next","다음 출발"],["name","정류장 이름"],["desc","정류장 설명"],["map","지도 글자"],["tt","시간표"],["tk","교회 소식 띠"],["clk","시계"]];
 const FS_LAB=new Proxy({},{get:(_,v)=>{ v=+v; return v===0?"보통":(v>0?"+":"−")+Math.abs(v); }});
 function drawFs(){
   const F=(A.config.tvLook||{}).fs||{}, all=[90,100,110,120].includes(+F.all)?+F.all:100;
@@ -2025,7 +2028,7 @@ document.addEventListener("click",e=>{
 
 // ---------- TV 이름 · 순서 ----------
 const NM_DEF={yatap:"야탑역 셔틀",park:"파킹엔젤스"}, NM_TDEF={next:"다음 출발",times:"오늘 운행 시간표",wor:"예배 안내",tk:"교회 소식"};
-const NM_SUB={byc:"교회 가는 버스",church:"",cdong:"교회 가는 버스",dmv:"교회 가는 버스"};
+const NM_DIR={yatap_byc:"교회 가는 버스",yatap_church:"야탑역 가는 버스",park_cdong:"교회 가는 버스",park_dmv:"교회 가는 버스",park_church:"C동 가는 버스"};
 function nmOrder(r){ const O=((A.config.tvLook||{}).order||{})[r], def=ROUTES[r].stops.map(x=>x.id);
   const o=Array.isArray(O)?O:(O&&typeof O==="object"?Object.keys(O).sort().map(k=>O[k]):null); if(!o) return def;
   return o.filter(id=>def.includes(id)).concat(def.filter(id=>!o.includes(id))); }
@@ -2034,14 +2037,15 @@ function drawNames(){
   const keep=document.activeElement&&document.activeElement.closest&&document.activeElement.closest("#nmRoutes,#nmTitles"); if(keep) return;
   $("nmRoutes").innerHTML=["yatap","park"].map(r=>{ const R=ROUTES[r], o=nmOrder(r);
     return `<div class="nmcard"><div class="nmh"><i style="background:${R.color}"></i><input type="text" maxlength="20" data-nmr="${r}" value="${esc(N[r]||"")}" placeholder="${NM_DEF[r]}"></div>`+
-      o.map((id,i)=>{ const st=R.stops.find(x=>x.id===id); return `<div class="nmst"><span class="no">${i+1}</span><span>${esc(st.name)}</span><button type="button" data-nmo="${r}" data-id="${id}" data-d="-1" aria-label="위로" ${i===0?"disabled":""}>↑</button><button type="button" data-nmo="${r}" data-id="${id}" data-d="1" aria-label="아래로" ${i===o.length-1?"disabled":""}>↓</button></div>`; }).join("")+`</div>`; }).join("");
+      o.map((id,i)=>{ const st=R.stops.find(x=>x.id===id), so=((L.stops||{})[r]||{})[id]||{}; return `<div class="nmst"><span class="no">${i+1}</span><span class="nmin"><input type="text" maxlength="20" data-nms="${r}" data-id="${id}" data-f="n" value="${esc(so.n||"")}" placeholder="${esc(st.name)}"><input type="text" maxlength="30" class="nmd" data-nms="${r}" data-id="${id}" data-f="d" value="${esc(so.d||"")}" placeholder="${NM_DIR[r+"_"+id]||"교회 가는 버스"} (설명)"></span><button type="button" data-nmo="${r}" data-id="${id}" data-d="-1" aria-label="위로" ${i===0?"disabled":""}>↑</button><button type="button" data-nmo="${r}" data-id="${id}" data-d="1" aria-label="아래로" ${i===o.length-1?"disabled":""}>↓</button></div>`; }).join("")+`</div>`; }).join("");
   $("nmTitles").innerHTML=Object.entries(NM_TDEF).map(([k,d])=>`<label>${d} 칸 제목<input type="text" maxlength="20" data-nmt="${k}" value="${esc(T[k]||"")}" placeholder="${d}"></label>`).join("");
 }
 document.addEventListener("change",e=>{
   const r=e.target.closest("[data-nmr]"); if(r){ const v=r.value.trim(); saveLook({["names/"+r.dataset.nmr]:v||null},v?`노선 이름: ${v}`:"기본 노선 이름으로 돌아갑니다"); return; }
+  const st=e.target.closest("[data-nms]"); if(st){ const v=st.value.trim(); saveLook({[`stops/${st.dataset.nms}/${st.dataset.id}/${st.dataset.f}`]:v||null},v?(st.dataset.f==="n"?"정류장 이름: ":"정류장 설명: ")+v:"기본값으로 돌아갑니다"); return; }
   const t=e.target.closest("[data-nmt]"); if(t){ const v=t.value.trim(); saveLook({["titles/"+t.dataset.nmt]:v||null},v?`칸 제목: ${v}`:"기본 제목으로 돌아갑니다"); }
 });
-document.addEventListener("keydown",e=>{ if(e.key==="Enter"&&e.target.closest&&e.target.closest("[data-nmr],[data-nmt]")) e.target.blur(); });
+document.addEventListener("keydown",e=>{ if(e.key==="Enter"&&e.target.closest&&e.target.closest("[data-nmr],[data-nmt],[data-nms]")) e.target.blur(); });
 document.addEventListener("click",e=>{ const b=e.target.closest("[data-nmo]"); if(!b) return;
   const r=b.dataset.nmo, o=nmOrder(r), i=o.indexOf(b.dataset.id), j=i+(+b.dataset.d); if(j<0||j>=o.length) return; [o[i],o[j]]=[o[j],o[i]];
   saveLook({["order/"+r]:o},"정류장 순서를 바꿨습니다"); });

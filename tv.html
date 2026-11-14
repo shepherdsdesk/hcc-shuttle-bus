@@ -555,7 +555,7 @@ body.v2:not(.w-light) .restbox h2{font-weight:700}
 .brandtx h1{display:inline-block}
 .brandtx small{display:block;width:max-content;white-space:nowrap}
 /* ---------- 글자 크기 (관리자 → TV 화면 → 기본 → 글자 크기) ---------- */
-:root{--Zg:1;--Zeta:1;--Znext:1;--Zname:1;--Ztt:1;--Ztk:1;--Zclk:1}
+:root{--Zg:1;--Zeta:1;--Znext:1;--Zname:1;--Zdesc:1;--Zmap:1;--Ztt:1;--Ztk:1;--Zclk:1}
 header h1,header small,.live,.wx,.hmotto,.rt h2,.times>h2,.nextbox h2,.notice,footer .ftxt,footer .credit,.rb-head h2,.rb-memo,.rb-sec h3,.wtile,.wk,.nx .lab,.nx small,.next,.rb-r,.rb-next small,.ttr h3{zoom:var(--Zg)}
 .nextbox{overflow:hidden}
 .rb-sec,.restbox{overflow:hidden}
@@ -563,7 +563,11 @@ header h1,header small,.live,.wx,.hmotto,.rt h2,.times>h2,.nextbox h2,.notice,fo
 .nx>b,.nx>em{zoom:var(--Znext)}
 .nx.done>b{font-size:3.2vmin!important;color:var(--sub)!important;font-weight:700!important;letter-spacing:0}
 .eta.none b{font-size:2.3vmin!important;font-weight:600!important;color:var(--sub)!important;opacity:.85}
-.stop .nm{zoom:var(--Zname)}
+.stop .nm b{zoom:var(--Zname)}
+.stop .nm>span{zoom:var(--Zdesc)}
+.stoplab,.legend{zoom:var(--Zmap)}
+.legend span{white-space:nowrap}
+.legend{flex-wrap:wrap;row-gap:.4vmin;max-width:calc(100% - 2.4vmin);box-sizing:border-box}
 .ttls,.ttr>.ttl{zoom:var(--Ztt)}
 .ticker{zoom:var(--Ztk)}
 .clock{zoom:var(--Zclk)}
@@ -904,12 +908,17 @@ const ROUTES = {
     tip:"주일에만 운행합니다. 테크노파크 C동 → 차량등록사업소 → 교회 순서로 돕니다." }
 };
 // 노선 이름 · 정류장(방향) 순서 · 칸 제목 — 관리자 → TV 화면 → 기본 → 이름 · 순서
+Object.values(ROUTES).forEach(R=>R.stops.forEach(s=>{ s._name=s.name; }));
+let STOP_DESC={yatap:{},park:{}};
 const DEF_NAME={yatap:ROUTES.yatap.name, park:ROUTES.park.name}, DEF_ORDER={yatap:ROUTES.yatap.stops.map(x=>x.id), park:ROUTES.park.stops.map(x=>x.id)};
 const DEF_TITLE={next:"다음 출발", times:"오늘 운행 시간표", wor:"예배 안내", tk:"교회 소식"};
 let TITLE={...DEF_TITLE};
 const TT=k=>esc(TITLE[k]||DEF_TITLE[k]);
 function applyNames(L){
-  const N=L.names||{}, O=L.order||{}, T=L.titles||{};
+  const N=L.names||{}, O=L.order||{}, T=L.titles||{}, S=L.stops||{}; let renamed=false;
+  ["yatap","park"].forEach(r=>{ STOP_DESC[r]={}; ROUTES[r].stops.forEach(st=>{ const o=(S[r]||{})[st.id]||{}, nm=String(o.n||"").trim()||st._name; if(nm!==st.name){ st.name=nm; renamed=true; } const d=String(o.d||"").trim(); if(d) STOP_DESC[r][st.id]=d; }); });
+  if(typeof DEP_ROWS!=="undefined") ["yatap","park"].forEach(r=>(DEP_ROWS[r]||[]).forEach(row=>{ if(!row._dest){ row._dest=row[1].split("→")[1].trim(); row._from=row[1].split("→")[0].trim(); } const st=ROUTES[r].stops.find(x=>x.id===row[0]); row[1]=(st.name!==st._name?st.name:row._from)+" → "+row._dest; }));
+  if(renamed) setTimeout(()=>{ try{ drawStopMarks(); }catch(_){} },0);
   ["yatap","park"].forEach(r=>{ const R=ROUTES[r]; R.name=String(N[r]||"").trim()||DEF_NAME[r];
     const ord=Array.isArray(O[r])?O[r]:(O[r]&&typeof O[r]==="object"?Object.keys(O[r]).sort().map(k=>O[r][k]):null), base=ord&&ord.length?ord:DEF_ORDER[r];
     const pos=id=>{ const i=base.indexOf(id); return i<0?99:i; };
@@ -1604,7 +1613,7 @@ function drawBoards(){
       else if(le) eta=`<div class="eta${le.eta<3?' soon':''}"><b>${le.eta<1?'곧 도착':`${Math.ceil(le.eta)}<small>분</small>`}</b><span>${le.bus}호차 · ${km(le.d)}</span></div>`;
       else if(ns!=null) eta=`<div class="eta sch"><b>${hhmm(ns)}</b><span>시간표 · ${inTxt(ns-min)}</span></div>`;
       else eta=`<div class="eta none"><b>운행 없음</b></div>`;
-      h+=`<div class="stop"><div class="nm"><b>${esc(s.name)}</b><span>${rideDir(r,s.id)}${wc[s.id]?` <em class="wc">${ic("user")}기다리는 분 ${wc[s.id]}명 이상</em>`:""}</span></div>${eta}</div>`;
+      h+=`<div class="stop"><div class="nm"><b>${esc(s.name)}</b><span>${STOP_DESC[r]&&STOP_DESC[r][s.id]?esc(STOP_DESC[r][s.id]):rideDir(r,s.id)}${wc[s.id]?` <em class="wc">${ic("user")}기다리는 분 ${wc[s.id]}명 이상</em>`:""}</span></div>${eta}</div>`;
     });
     h+=`</div></section>`;
   });
@@ -1971,9 +1980,9 @@ function applyLook(L){
   // 글자 크기: 전체 배율 × 부분별 단계 (TV 주소 끝 ?fs=110 으로 이 TV만 전체 배율을 바꿀 수도 있음)
   const F=L.fs||{}, ALL=[90,100,110,120], qf=+qs.get("fs"), g=(ALL.includes(qf)?qf:(ALL.includes(+F.all)?+F.all:100))/100;
   const st=v=>1+0.07*Math.max(-5,Math.min(5,Math.round(+v||0)));   // −5 … +5 (한 단계 7%)
-  const R=document.documentElement.style, fsig=[g,F.eta,F.next,F.name,F.tt,F.tk,F.clk].join();
+  const R=document.documentElement.style, fsig=[g,F.eta,F.next,F.name,F.desc,F.map,F.tt,F.tk,F.clk].join();
   if(fsig!==window.__fsig){ window.__fsig=fsig;
-    R.setProperty("--Zg",g); R.setProperty("--Zeta",(g*st(F.eta)).toFixed(3)); R.setProperty("--Znext",(g*st(F.next)).toFixed(3)); R.setProperty("--Zname",(g*st(F.name)).toFixed(3));
+    R.setProperty("--Zg",g); R.setProperty("--Zeta",(g*st(F.eta)).toFixed(3)); R.setProperty("--Znext",(g*st(F.next)).toFixed(3)); R.setProperty("--Zname",(g*st(F.name)).toFixed(3)); R.setProperty("--Zdesc",(g*st(F.desc)).toFixed(3)); R.setProperty("--Zmap",(g*st(F.map)).toFixed(3));
     R.setProperty("--Ztt",(g*st(F.tt)).toFixed(3)); R.setProperty("--Ztk",(g*st(F.tk)).toFixed(3)); R.setProperty("--Zclk",(g*st(F.clk)).toFixed(3));
     setTimeout(()=>{ try{ tkSig=""; drawTicker(); if(window.tvFit) tvFit(); fitVid(); fitSub(); }catch(_){} },150); }
   // 칸 안 배치: 정렬(위·가운데·아래·고르게) · 줄 간격(−2 ~ +2). 제목은 늘 위에 그대로
