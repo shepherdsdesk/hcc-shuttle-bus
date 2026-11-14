@@ -108,8 +108,8 @@
   .mkc{position:absolute;left:0;top:0;transform:translate(-50%,-50%)}
   .pill{display:inline-flex;align-items:center;gap:.6vmin;white-space:nowrap;font-size:2.1vmin;font-weight:900;padding:.6vmin 1.3vmin .6vmin .7vmin;border-radius:999px;box-shadow:0 .4vmin 1.4vmin rgba(0,0,0,.5);border:.3vmin solid #0B1220;color:#fff}
   .pill .n{width:2.8vmin;height:2.8vmin;border-radius:50%;background:#fff;display:inline-grid;place-items:center;font-size:1.8vmin}
-  .pill.out{background:#0B1220!important}
-  .pill.out .n{color:#fff}
+  .pill.out{background:#C2410C!important;color:#fff}
+  .pill.out .n{color:#C2410C}
   .pill.old{opacity:.45}
   .pill svg{width:2vmin;height:2vmin}
   .stopmk{position:relative;width:2.4vmin;height:2.4vmin;border-radius:50%;background:#0B1220;border:.6vmin solid var(--y);box-sizing:border-box}
@@ -140,7 +140,7 @@
   body.light .stopmk{background:#fff}
   body.light .stoplab{background:rgba(255,255,255,.95);color:#0F172A}
   body.light .pill{border-color:#fff}
-  body.light .pill.out{background:#fff!important;color:#14213D!important}
+  body.light .pill.out{background:#C2410C!important;color:#fff!important}
   body.light .eta.soon b{color:#DC2626}
   body.light .notice{background:#FFF7E6;border-color:#F3C77A;color:#92400E}
   body.light .ctl{background:rgba(255,255,255,.95)}
@@ -868,7 +868,7 @@ body.preview .mzoom{display:none}
     <div class="mapbox" id="mapbox">
       <div class="mpane" data-r="yatap"><div class="mmap" id="map-yatap"></div><div class="mtag" data-lg="yatap"><i></i><em class="lgn">야탑역 셔틀</em></div><div class="mzoom"><button type="button" data-z="1" aria-label="확대">+</button><button type="button" data-z="-1" aria-label="축소">−</button><button type="button" data-z="0" class="fitb" aria-label="처음 크기로">맞춤</button></div></div>
       <div class="mpane" data-r="park"><div class="mmap" id="map-park"></div><div class="mtag" data-lg="park"><i></i><em class="lgn">파킹엔젤스</em></div><div class="mzoom"><button type="button" data-z="1" aria-label="확대">+</button><button type="button" data-z="-1" aria-label="축소">−</button><button type="button" data-z="0" class="fitb" aria-label="처음 크기로">맞춤</button></div></div>
-      <div class="legend" id="legend"><span>꽉 찬 표시 = 교회행</span><span>테두리 = 반대 방향</span></div>
+
     </div>
     <div class="boards" id="boards"></div>
     <section class="times" id="times"></section>
@@ -1383,7 +1383,7 @@ const arrowL=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
 function pillHtml(route,b){
   const c=ROUTES[route].color, old=b.old?" old":"";
   if(b.to==="교회") return `<div class="pill${old}" style="background:${c}"><span class="n" style="color:${c}">${b.bus}</span>교회행${arrowR}</div>`;
-  if(b.to) return `<div class="pill out${old}" style="color:#fff;border-color:${c}">${arrowL}<span class="n" style="background:${c}">${b.bus}</span>${esc(b.to)}행</div>`;
+  if(b.to) return `<div class="pill out${old}">${arrowL}<span class="n">${b.bus}</span>${esc(b.to)}행</div>`;
   return `<div class="pill${old}" style="background:${c};padding-right:.7vmin"><span class="n" style="color:${c}">${b.bus}</span></div>`;
 }
 let LIVE={yatap:{},park:{}}; const prev={};
