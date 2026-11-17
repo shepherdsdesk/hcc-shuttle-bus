@@ -41,7 +41,7 @@
     <span class="live"><i></i>시연 중 · 실제 운행 아님</span>
     <span class="info" id="info"></span>
     <div class="sp">
-      <div class="seg" id="tvMode" role="group" aria-label="TV 화면 수"><button type="button" data-tv="1">TV 1대 (통합)</button><button type="button" data-tv="2">TV 2대 (노선별)</button></div>
+      <div class="seg" id="tvMode" role="group" aria-label="TV 화면 수"><button type="button" data-tv="1">TV 1대 (통합)</button><button type="button" data-tv="2">TV 2대 (노선별)</button><button type="button" data-tv="y">야탑역 전용</button><button type="button" data-tv="p">파킹엔젤스 전용</button></div>
       <button type="button" class="seg" id="restart" style="border:0;color:var(--ink);font:inherit;font-size:13px;font-weight:700;padding:8px 12px;cursor:pointer">처음부터</button>
       <a href="admin.html">관리자로</a>
     </div>
@@ -56,11 +56,10 @@
 const Q=new URLSearchParams(location.search);
 const P={demo:"1", d:Q.get("d")||"0", t:Q.get("t")||"10:20", sp:Q.get("sp")||"2", y:Q.get("y")||"1", p:Q.get("p")||"1", w:Q.get("w")||"1"};
 const SUN=P.d==="0", PARK=SUN && P.p!=="0";
-let TVN = Q.get("tv")==="1" ? 1 : (PARK ? 2 : 1);
+let TVN = ["1","2","y","p"].includes(Q.get("tv")) ? Q.get("tv") : (PARK ? "2" : "1"); if(!PARK && TVN!=="y") TVN="1";
 const DAY=["주일","월요일","화요일","수요일","목요일","금요일","토요일"][+P.d]||"주일";
 document.getElementById("info").textContent=`${DAY} ${P.t}부터 · ${P.sp}배속 · 야탑역 ${P.y}대${PARK?" · 파킹엔젤스 1대":""}`;
-const DR = Q.get("dr")==="park" && PARK ? "park" : (+P.y>0 ? "yatap" : (PARK?"park":"yatap"));
-document.getElementById("drvLab").textContent = DR==="park" ? "(파킹엔젤스 1호차)" : "(야탑역 셔틀 1호차)";
+const DR0 = Q.get("dr")==="park" && PARK ? "park" : (+P.y>0 ? "yatap" : (PARK?"park":"yatap"));
 const SIZE={tv:[1920,1080], ph:[390,844]};
 function url(page,extra,t0){ const q=new URLSearchParams({...P,t0}); return page+"?"+q+(extra||""); }
 function mk(box,kind,src,title){
@@ -73,15 +72,20 @@ function fit(box){ const f=box.querySelector(".frame"); if(!f) return; const [w,
   f.style.transform=`scale(${k})`; f.style.left=((box.clientWidth-w*k)/2)+"px"; f.style.top=((box.clientHeight-h*k)/2)+"px"; }
 function build(){
   const t0=Date.now(), col=document.getElementById("tvCol");
-  document.querySelectorAll("[data-tv]").forEach(b=>b.classList.toggle("on",+b.dataset.tv===TVN));
-  document.getElementById("tvMode").style.display = PARK ? "" : "none";
-  const tvs = TVN===2 ? [["야탑역 셔틀 TV","#3B5BA9","&route=yatap"],["파킹엔젤스 TV","#14B8A6","&route=park"]] : [["TV 화면","#60A5FA",""]];
+  document.querySelectorAll("[data-tv]").forEach(b=>{ b.classList.toggle("on",b.dataset.tv===TVN); b.style.display = (!PARK && b.dataset.tv!=="1" && b.dataset.tv!=="y") ? "none" : ""; });
+  // 노선 전용: TV·기사님·성도님 모두 그 노선으로
+  const DR = TVN==="y" ? "yatap" : TVN==="p" ? "park" : DR0, SR = TVN==="y" ? "yatap" : TVN==="p" ? "park" : "";
+  document.getElementById("drvLab").textContent = DR==="park" ? "(파킹엔젤스 1호차)" : "(야탑역 셔틀 1호차)";
+  const tvs = TVN==="2" ? [["야탑역 셔틀 TV","#3B5BA9","&route=yatap"],["파킹엔젤스 TV","#14B8A6","&route=park"]]
+            : TVN==="y" ? [["야탑역 셔틀 전용 TV","#3B5BA9","&route=yatap"]]
+            : TVN==="p" ? [["파킹엔젤스 전용 TV","#14B8A6","&route=park"]]
+            : [["TV 화면 (두 노선 함께)","#60A5FA",""]];
   col.innerHTML=tvs.map((x,i)=>`<div class="pane"><b><i style="background:${x[1]}"></i>${x[0]}</b><div class="box" data-kind="tv" id="bTv${i}"></div></div>`).join("");
   tvs.forEach((x,i)=>mk(document.getElementById("bTv"+i),"tv",url("tv.html",x[2]+"&layout=land",t0),x[0]));
   mk(document.getElementById("bDrv"),"ph",url("driver.html","&dr="+DR,t0),"기사님 화면 시연");
-  mk(document.getElementById("bSaint"),"ph",url("index.html","",t0),"성도님 화면 시연");
+  mk(document.getElementById("bSaint"),"ph",url("index.html",SR?"&sr="+SR:"",t0),"성도님 화면 시연");
 }
-document.getElementById("tvMode").onclick=e=>{ const b=e.target.closest("[data-tv]"); if(!b) return; TVN=+b.dataset.tv; build(); };
+document.getElementById("tvMode").onclick=e=>{ const b=e.target.closest("[data-tv]"); if(!b) return; TVN=b.dataset.tv; build(); };
 document.getElementById("restart").onclick=build;
 addEventListener("resize",()=>document.querySelectorAll(".box").forEach(fit));
 build();

@@ -1459,12 +1459,29 @@ function applyPaths(cfg){
 }
 // ---------- 시연: 가상 버스 ----------
 function demoMkPath(pts){ const cum=[0]; for(let i=1;i<pts.length;i++) cum.push(cum[i-1]+dist({lat:pts[i-1][0],lng:pts[i-1][1]},{lat:pts[i][0],lng:pts[i][1]})); return {pts,cum,len:cum[cum.length-1]}; }
-function demoPath(r,to){
-  const P=pathFor(r,to); if(P && P.len>100) return P;
+const DEMO_PC={};
+function demoPath(r,to){ const ck=r+to+"|"+PATHS_VER+"|"+ROUTES[r].stops.map(s=>s.lat+","+s.lng).join(";"); return DEMO_PC[ck]||(DEMO_PC[ck]=demoPath0(r,to)); }
+function demoPath0(r,to){
+  // 저장된 노선 줄을 따라감. 한쪽 방향만 있으면 반대 방향 줄을 뒤집어 씀.
+  // 기록된 줄에 정류장 밖으로 나간 부분(차고·우회로)이 있으면 두 정류장 사이만 잘라 씀.
+  const ends = r==="yatap" ? (to==="교회"?["byc","church"]:["church","byc"]) : (to==="C동"?["church","cdong"]:["cdong","church"]);
+  const back = r==="yatap" ? (to==="교회"?"야탑역":"교회") : (to==="C동"?"교회":"C동");
+  const st=id=>ROUTES[r].stops.find(x=>x.id===id);
+  const cut=Q=>{ if(!Q||Q.len<100) return null; const a=projectOn(Q,st(ends[0])), b=projectOn(Q,st(ends[1]));
+    if(!a||!b||a.off>250||b.off>250) return null;
+    const lo=Math.min(a.along,b.along), hi=Math.max(a.along,b.along); if(hi-lo<100) return null;
+    let pts=[demoAt(Q,lo)].map(p=>[p.lat,p.lng]); Q.pts.forEach((p,i)=>{ if(Q.cum[i]>lo && Q.cum[i]<hi) pts.push(p); }); const e=demoAt(Q,hi); pts.push([e.lat,e.lng]);
+    if(a.along>b.along) pts.reverse();
+    // 파킹엔젤스 C동 방향은 차량등록사업소를 꼭 지나야 함
+    if(r==="park" && to==="C동"){ const M=demoMkPath(pts), d=projectOn(M,st("dmv")); if(!d||d.off>250) return null; }
+    return demoMkPath(pts); };
+  const own=pathFor(r,to), rev=pathFor(r,back), revP=rev?demoMkPath(rev.pts.slice().reverse()):null;
+  const P=cut(own)||cut(revP); if(P) return P;
   const S=id=>{ const s=ROUTES[r].stops.find(x=>x.id===id); return [s.lat,s.lng]; };
   const ids = r==="yatap" ? (to==="교회"?["byc","church"]:["church","byc"]) : (to==="C동"?["church","dmv","cdong"]:["cdong","church"]);
   return demoMkPath(ids.map(S));
 }
+if(DEMO) window.__dp={demoPath:(...a)=>demoPath(...a),demoLive:()=>demoLive()};
 function demoAt(P,a){ a=Math.max(0,Math.min(P.len,a)); let i=1; while(i<P.cum.length-1 && P.cum[i]<a) i++;
   const f=(a-P.cum[i-1])/Math.max(1e-6,P.cum[i]-P.cum[i-1]), A=P.pts[i-1], B=P.pts[i];
   return {lat:A[0]+(B[0]-A[0])*f, lng:A[1]+(B[1]-A[1])*f, hd:bearingTo({lat:A[0],lng:A[1]},{lat:B[0],lng:B[1]})}; }
