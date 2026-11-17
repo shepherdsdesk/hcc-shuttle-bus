@@ -765,25 +765,25 @@ body.portrait .tl-axis{margin-left:calc(1.6vmin + 22vmin + 2vmin)}
 
 .wch{display:flex;align-items:center;gap:.6vmin;font-size:1.6vmin;font-weight:700;color:var(--sub);zoom:var(--Zg)}
 .wch .svi{width:1.9vmin;height:1.9vmin}
-.wc{display:grid;grid-auto-rows:4.6vmin;gap:.6vmin;zoom:var(--Ztt);align-content:start}
-body.mx-split .wc{grid-auto-rows:3.4vmin;gap:.4vmin}
+.wcp{display:grid;grid-auto-rows:4.6vmin;gap:.6vmin;zoom:var(--Ztt);align-content:start}
+body.mx-split .wcp{grid-auto-rows:3.4vmin;gap:.4vmin}
 body.mx-split .times.tc-both .wch{display:none}
 body.mx-split .times.tc-both .tc-sec+.tc-sec{padding-top:.7vmin}
 body.mx-split .times.tc-both .tc-times{gap:.8vmin}
-body.mx-split .wc em{font-size:1.45vmin}body.mx-split .wc b{font-size:1.7vmin}
+body.mx-split .wcp em{font-size:1.45vmin}body.mx-split .wcp b{font-size:1.7vmin}
 body.mx-split .cp-row{padding:.45vmin 1.2vmin}body.mx-split .cp{gap:.4vmin}
 body.mx-split .cp-row b{font-size:2.1vmin}
 body.mx-split .times.tc-both .tc-sec>h2{font-size:2.3vmin}
-body:not(.mx-split) .times.tc-both .wc{grid-auto-rows:5.6vmin}
-body:not(.mx-split) .times.tc-both .wc em{font-size:1.9vmin}body:not(.mx-split) .times.tc-both .wc b{font-size:2.4vmin}
-.wc span{display:flex;align-items:center;justify-content:space-between;gap:.6vmin;background:var(--chip);border-radius:1vmin;padding:.4vmin 1.1vmin;min-width:0;container-type:inline-size}
-.wc em{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-.wc b{white-space:nowrap}
+body:not(.mx-split) .times.tc-both .wcp{grid-auto-rows:5.6vmin}
+body:not(.mx-split) .times.tc-both .wcp em{font-size:1.9vmin}body:not(.mx-split) .times.tc-both .wcp b{font-size:2.4vmin}
+.wcp span{display:flex;align-items:center;justify-content:space-between;gap:.6vmin;background:var(--chip);border-radius:1vmin;padding:.4vmin 1.1vmin;min-width:0;container-type:inline-size}
+.wcp em{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.wcp b{white-space:nowrap}
 .times.tc-both{gap:1vmin}
 .times.tc-both .tc-sec+.tc-sec{padding-top:.9vmin}
-.wc em{font-style:normal;font-size:1.6vmin;font-weight:600}
-.wc b{font-size:1.9vmin;font-weight:800;font-variant-numeric:tabular-nums}
-.wc small{font-size:1.2vmin;color:var(--sub);font-weight:500;margin-right:.3vmin}
+.wcp em{font-style:normal;font-size:1.6vmin;font-weight:600}
+.wcp b{font-size:1.9vmin;font-weight:800;font-variant-numeric:tabular-nums}
+.wcp small{font-size:1.2vmin;color:var(--sub);font-weight:500;margin-right:.3vmin}
 
 /* ===== 세로 간격: 줄 사이를 넉넉하게, 남는 높이는 칸 안에 고르게 ===== */
 body:not(.mx-split) .times.tc-both .tc-times{flex:none}
@@ -791,7 +791,7 @@ body:not(.mx-split) .times.tc-both .tc-wor{flex:1 1 0}
 body:not(.mx-split) .times.tc-both .tc-sec+.tc-sec{padding-top:1.8vmin}
 body:not(.mx-split) .cp{flex:1;gap:1.2vmin;justify-content:flex-start}
 body:not(.mx-split) .cp-row{padding:1.5vmin 1.6vmin}
-body:not(.mx-split) .times.tc-both .wc{gap:1.2vmin;grid-auto-rows:6vmin}
+body:not(.mx-split) .times.tc-both .wcp{gap:1.2vmin;grid-auto-rows:6vmin}
 body:not(.mx-split) .times.tc-both .tc-wor{gap:1.2vmin}
 
 .rt h2{margin-bottom:.8vmin}
@@ -806,7 +806,7 @@ body:not(.mx-split) .times.tc-both .tc-wor{gap:1.2vmin}
 .tb,.tl,.rg{gap:calc(var(--vk) * 1vmin)!important}
 .cp{gap:calc(var(--vk) * .8vmin)!important}
 .cp-row{padding-top:calc(var(--vk) * .9vmin)!important;padding-bottom:calc(var(--vk) * .9vmin)!important}
-.wc{gap:calc(var(--vk) * .8vmin)!important}
+.wcp{gap:calc(var(--vk) * .8vmin)!important}
 .tc-sec>:not(h2):not(.wch){min-height:0}
 /* 고르게: 줄이 칸 높이에 고르게 퍼짐 (기본) */
 body.va-spread .rt .stops .stop{flex:1 1 0;max-height:13vmin}
@@ -823,6 +823,9 @@ body:not(.va-spread) .stops,body:not(.va-spread) .tb,body:not(.va-spread) .tl,bo
 body:not(.va-spread) .times:not(.tc-both) .tc-sec{justify-content:flex-start}
 body:not(.va-spread) .times.tc-wonly .tc-wor .r3-wg{flex:1;justify-content:var(--vjc);display:flex;flex-direction:column}
 .legend .lgn{font-style:normal}
+.stop .nm .sd{display:flex;align-items:center;gap:.6vmin;min-width:0;white-space:nowrap}
+.stop .nm .sd .sdt{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.stop .nm .sd .wc{flex:none;margin-left:0}
 </style>
 </head>
 <body>
@@ -1619,7 +1622,7 @@ function ringHtml(){
 function worChips(){ const {day}=nowKST(), map={0:"주일",1:"월",2:"화",3:"수",4:"목",5:"금",6:"토"};
   const W=worshipItems().filter(x=>x.d===map[day] || (x.d==="새벽 (월-금)"&&day>=1&&day<=5)), L0=W.length?W:worshipItems().filter(x=>x.d==="주일"), {min}=nowKST(), m2=x=>{ if(!x.t) return 0; const [h,mm]=x.t.split(":").map(Number); return ((h%12)+(x.ap==="오후"?12:0))*60+mm; }, up=L0.filter(x=>m2(x)>=min-30), L=(up.length?up:L0);
   const cols=Math.max(1,Math.ceil(L.length/2)), spare=cols*2-L.length;
-  return `<div class="wch">${ic("church")}${day===0?"오늘 남은 예배":"오늘 예배"}</div><div class="wc" style="grid-template-columns:repeat(${cols},minmax(0,1fr))">`+L.map((x,k)=>`<span${k===L.length-1&&spare?` style="grid-column:span ${1+spare}"`:""}><em>${esc(x.n)}</em><b>${x.ap?`<small>${x.ap}</small>`:""}${x.t}</b></span>`).join("")+`</div>`; }
+  return `<div class="wch">${ic("church")}${day===0?"오늘 남은 예배":"오늘 예배"}</div><div class="wcp" style="grid-template-columns:repeat(${cols},minmax(0,1fr))">`+L.map((x,k)=>`<span${k===L.length-1&&spare?` style="grid-column:span ${1+spare}"`:""}><em>${esc(x.n)}</em><b>${x.ap?`<small>${x.ap}</small>`:""}${x.t}</b></span>`).join("")+`</div>`; }
 // "둘 다"일 때: 방향마다 한 줄 (다음 차 · 남은 시간 · 그다음)
 function compactHtml(){ const {min}=nowKST();
   return `<div class="cp">`+dirRows().map(d=>`<div class="cp-row" style="--rc:${d.R.color}"><span class="tb-lab">${d.lab}</span>${d.next.length?`<b>${hhmm(d.next[0])}</b><em>${inTxt(d.next[0]-min)}</em><small>${d.next[1]!=null?"그다음 "+hhmm(d.next[1]):""}</small>`:`<span class="cp-none">${d.none}</span>`}</div>`).join("")+`</div>`; }
@@ -1672,7 +1675,7 @@ function drawBoards(){
       else if(le) eta=`<div class="eta${le.eta<3?' soon':''}"><b>${le.eta<1?'곧 도착':`${Math.ceil(le.eta)}<small>분</small>`}</b><span>${le.bus}호차 · ${km(le.d)}</span></div>`;
       else if(ns!=null) eta=`<div class="eta sch"><b>${hhmm(ns)}</b><span>시간표 · ${inTxt(ns-min)}</span></div>`;
       else eta=`<div class="eta none"><b>운행 없음</b></div>`;
-      h+=`<div class="stop"><div class="nm"><b>${esc(s.name)}</b><span>${STOP_DESC[r]&&STOP_DESC[r][s.id]?esc(STOP_DESC[r][s.id]):rideDir(r,s.id)}${wc[s.id]?` <em class="wc">${ic("user")}기다리는 분 ${wc[s.id]}명 이상</em>`:""}</span></div>${eta}</div>`;
+      h+=`<div class="stop"><div class="nm"><b>${esc(s.name)}</b><span class="sd"><span class="sdt">${STOP_DESC[r]&&STOP_DESC[r][s.id]?esc(STOP_DESC[r][s.id]):rideDir(r,s.id)}</span>${wc[s.id]?`<em class="wc">${ic("user")}${wc[s.id]}명 기다려요</em>`:""}</span></div>${eta}</div>`;
     });
     h+=`</div></section>`;
   });

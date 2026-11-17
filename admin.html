@@ -1314,7 +1314,7 @@ let curTab="now";
 $("tabs").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return;
   curTab=b.dataset.tab;
   document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("on",x===b));
-  ["now","drivers","notice","times","stops","tv","stats","admins","brand"].forEach(t=>$("tab-"+t).classList.toggle("hide",t!==curTab));
+  ["now","drivers","notice","times","stops","tv","stats","demo","admins","brand"].forEach(t=>$("tab-"+t).classList.toggle("hide",t!==curTab));
   $("pageTitle").textContent=TITLES[curTab]; $("pageSub").textContent= curTab==="now"? nowSub() : "";
   $("rf").classList.toggle("hide", !(curTab==="now"||curTab==="stats"));
   if(curTab==="now" && map) setTimeout(()=>{ map.resize(); fitRF(); },50);
