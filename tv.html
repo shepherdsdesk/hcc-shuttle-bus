@@ -855,6 +855,117 @@ body.light .mzoom button{background:rgba(255,255,255,.94);color:#0F172A}
 body.v2 .mzoom button{border:0;box-shadow:0 .2vmin 1vmin rgba(0,0,0,.12)}
 body.idle .mzoom{opacity:0;pointer-events:none}
 body.preview .mzoom{display:none}
+
+/* v.3 — 사이니지 안내판. 기존 데이터·미디어·자동 전환을 유지하는 독립 스킨. */
+body.v3{--mg:1.8vmin;--sign-head:#102039;--sign-gold:#D5B46B;--ry:#2964D8;--rp:#087D75;letter-spacing:-.025em}
+body.v3:not(.light){--ry:#719DFF;--rp:#46CFBC}
+body.v3 .tv{padding:1.8vmin 2.2vmin;gap:1.5vmin}
+body.v3 header{flex:none;min-height:10.5vmin;background:var(--sign-head);color:#fff;padding:1.5vmin 2.2vmin;border-radius:1.2vmin;gap:1.6vmin;overflow:hidden}
+body.v3 header h1{font-size:3.25vmin;letter-spacing:-.03em;font-weight:850}
+body.v3 header small{color:#D0D9E6;font-size:1.65vmin}
+body.v3 .logo{background:transparent;border:0;border-radius:1vmin;flex:none}
+body.v3 .live{color:#B8C5D6;font-size:1.5vmin;margin-left:.5vmin}
+body.v3 .live.ok{color:#9BE3C6}
+body.v3 .live.ok i{animation:none}
+body.v3 .clock b{font-size:5.2vmin;letter-spacing:-.04em;font-weight:850;color:#fff}
+body.v3 .clock span,body.v3 .wx .wd{color:#CAD5E5}
+body.v3 .wx .wt b{color:#fff}
+body.v3 .hmotto{padding:0 1vmin}
+body.v3 .hmotto span{background:transparent;border-radius:0;box-shadow:none;border-left:1px solid #687285;color:#FFF4DB;font-size:2.2vmin;font-weight:600;padding:.5vmin 1.5vmin;max-width:100%}
+body.v3 .hdbg{border:0;background:var(--sign-head)}
+body.v3 .hdbg .ph::after{background:linear-gradient(90deg,#102039 15%,#10203999 55%,#102039 100%)}
+body.v3 .hright{gap:1.8vmin;min-width:0}
+body.v3 .hdeco{width:12vmin;height:6vmin}
+body.v3 .wx{gap:.7vmin}
+body.v3 .main{gap:1.8vmin}
+body.v3:not(.rest):not(.portrait) .main{grid-template-columns:minmax(0,1.08fr) minmax(0,1.14fr) minmax(0,.9fr)!important}
+body.v3 .rt,body.v3 .times,body.v3 .nextbox,body.v3 .restbox,body.v3 .mapbox,body.v3 .poster{border:.12vmin solid var(--line);border-radius:1.4vmin;box-shadow:0 .2vmin .5vmin #10203906;min-width:0}
+body.v3 .rt{padding:0 1.7vmin 1vmin;gap:.5vmin;background:var(--cardA,var(--card))}
+body.v3 .rt h2{margin:0 -1.7vmin .3vmin;padding:1vmin 1.6vmin;background:var(--ry);color:#fff;font-size:2.6vmin;min-height:5.6vmin;gap:.8vmin;overflow:hidden}
+body.v3 .rt.park h2{background:var(--rp)}
+body.v3:not(.light) .rt h2{color:#091528}
+body.v3 .rt h2 small{color:inherit;opacity:.92;font-size:1.45vmin;font-weight:650}
+body.v3 .rtag{color:inherit!important;background:transparent!important;box-shadow:none;flex:none}
+body.v3 .rtag .svi{color:inherit!important}
+body.v3 .stop .nm b{font-size:2.4vmin;font-weight:800}
+body.v3 .stop .nm>span{font-size:1.65vmin;line-height:1.35}
+body.v3 .eta b{font-size:5.1vmin;font-weight:900;letter-spacing:-.04em}
+body.v3 .eta b small{font-size:2.35vmin;margin-left:.4vmin}
+body.v3 .eta span{font-size:1.5vmin;font-weight:650}
+body.v3 .eta.soon b{color:var(--ink)}
+body.v3 .eta.soon span{display:inline-block;background:#F9C34D;color:#3B2904;padding:.3vmin .8vmin;border-radius:.5vmin}
+body.v3 .stop .nm .wc{background:#FFF0C7;color:#704D00;border-radius:.6vmin;font-size:1.5vmin;padding:.2vmin .65vmin}
+body.v3 .eta.sch b{font-size:3.4vmin}
+body.v3 .next{font-size:1.5vmin;gap:.5vmin}
+body.v3 .next b{font-size:1.9vmin;border-radius:.5vmin}
+body.v3 .times,body.v3 .nextbox{padding:1.7vmin;gap:1.3vmin}
+body.v3 .times>h2,body.v3 .tc-sec>h2,body.v3 .nextbox h2{font-size:2.6vmin;font-weight:850}
+body.v3 .icb{background:transparent;box-shadow:none;color:var(--ink);border-radius:.5vmin;flex:none}
+body.v3 .tb-row,body.v3 .cp-row,body.v3 .rg-row,body.v3 .wc span{border-radius:.7vmin;background:var(--chip)}
+body.v3 .tb-t.first{background:var(--card);border-radius:.5vmin}
+body.v3 .legend{border:0;background:var(--card);color:var(--ink);border-radius:.7vmin;font-size:1.45vmin;padding:.7vmin 1vmin}
+body.v3 .notice{border:0;border-left:.6vmin solid #C08B19;background:#FFF0C7;color:#684400;border-radius:.8vmin;font-size:2.25vmin}
+body.v3 .ticker{border:0;border-top:.12vmin solid var(--line);border-bottom:.12vmin solid var(--line);border-radius:0;background:transparent;height:4.8vmin}
+body.v3 .ticker .tag{background:var(--sign-head);color:#fff;font-size:1.95vmin;padding:0 1.6vmin}
+body.v3 .ticker .tag i,body.v3 .ticker .shine{display:none}
+body.v3 .tk-track span{font-size:2.2vmin;font-weight:650}
+body.v3 .tk-track span::before{content:"·";color:var(--sub);font-size:2.2vmin;vertical-align:0}
+body.v3 footer{gap:1.3vmin;min-height:6.5vmin}
+body.v3 footer .qr{width:6.5vmin;height:6.5vmin;border-radius:.5vmin;padding:.4vmin}
+body.v3 footer .ft1{font-size:2vmin}
+body.v3 footer .ftxt span{font-size:1.5vmin}
+body.v3 footer .ftxt .site{font-size:1.1vmin}
+body.v3 footer .credit .tel{font-size:2.3vmin;font-weight:800}
+body.v3 footer .credit small{font-size:1.1vmin}
+body.v3.rest:not(.noposter):not(.portrait) .main{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)!important;grid-template-areas:"poster rest"!important}
+body.v3 .poster{border:0;background:var(--chip)}
+body.v3 .poster .pslides{inset:1.8vmin 1.8vmin 3.7vmin}
+body.v3 .poster .pslides img{object-fit:contain}
+body.v3 .pdots{bottom:.9vmin;background:#102039A6;padding:.5vmin .9vmin;gap:.7vmin}
+body.v3 .pdots i{width:.8vmin;height:.8vmin}
+body.v3 .restbox.r3box{padding:1.5vmin;gap:1.1vmin;background:var(--cardA,var(--card))}
+body.v3 .r3-head{background:var(--sign-head);color:#fff;padding:1.3vmin;border-radius:.8vmin}
+body.v3 .r3-tt h2{font-size:2.6vmin;color:#fff;line-height:1.3;font-weight:850}
+body.v3 .r3-tt p{color:#CED7E5;font-size:1.5vmin}
+body.v3 .r3-ic{background:#FFFFFF16;color:#fff;border-radius:.6vmin;width:4vmin;height:4vmin}
+body.v3 .r3-nr{background:#FFFFFF12;padding:.6vmin .8vmin;border-radius:.5vmin;flex-wrap:wrap}
+body.v3 .r3-rn{color:#D0D9E6;font-size:1.55vmin}
+body.v3 .r3-nr b{color:#F6D982;font-size:2vmin}
+body.v3 .r3 h3{font-size:2.2vmin;font-weight:850}
+body.v3 .r3-items{grid-template-columns:repeat(2,minmax(0,1fr))}
+body.v3 .r3-it{border-bottom:.1vmin solid var(--line);padding:.4vmin .2vmin}
+body.v3 .r3-it .n{font-size:1.8vmin}
+body.v3 .r3-it .t{font-size:2vmin}
+body.v3 .r3-wc{border-radius:.5vmin}
+body.v3 .r3row .r3band .r3-head{padding:1.2vmin}
+body.v3 .poster .pvid{inset:1.8vmin}
+body.v3.one:not(.rest) .nx{border-radius:.7vmin;background:var(--chip)}
+body.v3.one:not(.rest) .nx b{font-size:4.4vmin}
+body.v3.one:not(.rest) .nx em{font-size:2.25vmin}
+body.v3.portrait header{min-height:10vmin;padding:1.5vmin;gap:1vmin;row-gap:1vmin}
+body.v3.portrait header h1{font-size:3.4vmin}
+body.v3.portrait .clock b{font-size:4.8vmin}
+body.v3.portrait .live{display:none}
+body.v3.portrait .hmotto span{border:0;border-top:.1vmin solid #FFFFFF35;padding:.8vmin 1vmin 0;font-size:2.2vmin}
+body.v3.portrait:not(.rest) .main{grid-template-rows:minmax(0,1.05fr) minmax(0,1.12fr) minmax(0,.95fr)!important}
+body.v3.portrait .rt h2{font-size:2.5vmin}
+body.v3.portrait .rt h2 small{font-size:1.45vmin}
+body.v3.portrait .stop .nm b{font-size:2.65vmin}
+body.v3.portrait .eta b{font-size:5.2vmin}
+body.v3.portrait.rest:not(.noposter) .main{grid-template-rows:minmax(0,1.45fr) minmax(0,1fr)!important}
+body.v3.portrait .r3pair .r3-items{grid-template-columns:minmax(0,1fr)}
+body.v3.portrait .hright{margin-left:auto}
+body.v3 .eta.soon span{display:block;width:max-content;margin-left:auto;margin-top:.4vmin}
+body.v3 .poster .pslides{inset:1.8vmin 1.8vmin 3.7vmin!important}
+body.v3.portrait footer .credit .tel{font-size:2.4vmin}
+body.v3 .mapbox{border:0;border-radius:0;box-shadow:none;background:none}
+body.v3 .mpane{border:.12vmin solid var(--line);border-radius:1.4vmin}
+body.v3 .mtag{background:var(--card);color:var(--ink);border:0;border-radius:.7vmin;font-size:2vmin;padding:.7vmin 1vmin;box-shadow:0 .2vmin .6vmin #10203912}
+body.v3 .mzoom button{border:.12vmin solid var(--line);border-radius:.7vmin;background:var(--card);color:var(--ink)}
+body.v3 .eta b.now{font-size:3.2vmin!important}
+body.v3 .stop .nm>span .wc{display:inline-flex;height:auto;grid-auto-rows:initial;gap:.25vmin;align-items:center}
+@media(prefers-reduced-motion:reduce){body.v3 .poster .pslides img{transition:none}}
+
 </style>
 </head>
 <body>
@@ -1278,14 +1389,18 @@ function curThemeId(){
   return autoThemeFor(todayKST());
 }
 // ---------- 새 디자인 (관리자 → TV 화면 → 기본 → 화면 디자인) ----------
-let V2={on:false,color:"light"};
+let V2={on:false,color:"light",design:"classic"};
+const V3_PAL={
+light:{dark:false,v:{bg:"#F6F5F0",card:"#FFFFFF",line:"#DADDDC",ink:"#102039",sub:"#536174",acc:"#2964D8",chip:"#EDF1F6",deco:"#C8A862"}},
+dark:{dark:true,v:{bg:"#0A1322",card:"#142239",line:"#2B3B52",ink:"#F5F7FB",sub:"#B1BFD0",acc:"#719DFF",chip:"#1D304B",deco:"#D8BB75"}}
+};
 const V2_PAL={
   light:{dark:false, v:{bg:"#F3F1EC",card:"#FFFFFF",line:"#ECE9E3",ink:"#15171C",sub:"#5F6570",acc:"#2F4A9E",chip:"#F3F0EA",deco:"#B08D57"}},
   dark: {dark:true,  v:{bg:"#0B0F14",card:"#141A21",line:"#232B35",ink:"#F1F3F6",sub:"#A3ABB6",acc:"#3A57C9",chip:"#1B222B",deco:"#7C96FF"}}
 };
 function applyTheme(){
   const id=curThemeId(), T=TV_THEMES[id], b=document.body, r=document.documentElement.style;
-  const v2p = V2.on && V2.color!=="theme" ? V2_PAL[V2.color] : null;
+  const v2p = V2.on && V2.color!=="theme" ? (V2.design==="v3"?V3_PAL:V2_PAL)[V2.color] : null;
   const v = v2p ? v2p.v : T.v, TD = v2p ? v2p.dark : T.dark;
   r.setProperty("--bg",v.bg); r.setProperty("--card",v.card); r.setProperty("--line",v.line); r.setProperty("--ink",v.ink); r.setProperty("--sub",v.sub);
   r.setProperty("--navy",v.acc); r.setProperty("--chip",v.chip); r.setProperty("--deco",v.deco);
@@ -1301,7 +1416,7 @@ function applyTheme(){
   const fxOn = !v2p && THEME_CFG.fx!==false && !!FX_OF[id];
   r.setProperty("--cardA", fxOn ? hexA(v.card, TD?.8:.78) : v.card);
   setFx(fxOn ? (FX_OF[id]||"") : "", TD);
-  const sig=id+"|"+(v2p?V2.color:"");
+  const sig=id+"|"+(v2p?V2.color:"")+"|"+V2.design;
   if(sig!==THEME_ID){ THEME_ID=sig; if(typeof drawStopMarks==="function") drawStopMarks(); if(typeof drawTvPaths==="function") drawTvPaths(); $("boards")._h=null; $("times")._h=null; }
 }
 // ---------- 교회 이름 · 로고 (관리자 › 기본 설정, config/brand) ----------
@@ -1459,29 +1574,12 @@ function applyPaths(cfg){
 }
 // ---------- 시연: 가상 버스 ----------
 function demoMkPath(pts){ const cum=[0]; for(let i=1;i<pts.length;i++) cum.push(cum[i-1]+dist({lat:pts[i-1][0],lng:pts[i-1][1]},{lat:pts[i][0],lng:pts[i][1]})); return {pts,cum,len:cum[cum.length-1]}; }
-const DEMO_PC={};
-function demoPath(r,to){ const ck=r+to+"|"+PATHS_VER+"|"+ROUTES[r].stops.map(s=>s.lat+","+s.lng).join(";"); return DEMO_PC[ck]||(DEMO_PC[ck]=demoPath0(r,to)); }
-function demoPath0(r,to){
-  // 저장된 노선 줄을 따라감. 한쪽 방향만 있으면 반대 방향 줄을 뒤집어 씀.
-  // 기록된 줄에 정류장 밖으로 나간 부분(차고·우회로)이 있으면 두 정류장 사이만 잘라 씀.
-  const ends = r==="yatap" ? (to==="교회"?["byc","church"]:["church","byc"]) : (to==="C동"?["church","cdong"]:["cdong","church"]);
-  const back = r==="yatap" ? (to==="교회"?"야탑역":"교회") : (to==="C동"?"교회":"C동");
-  const st=id=>ROUTES[r].stops.find(x=>x.id===id);
-  const cut=Q=>{ if(!Q||Q.len<100) return null; const a=projectOn(Q,st(ends[0])), b=projectOn(Q,st(ends[1]));
-    if(!a||!b||a.off>250||b.off>250) return null;
-    const lo=Math.min(a.along,b.along), hi=Math.max(a.along,b.along); if(hi-lo<100) return null;
-    let pts=[demoAt(Q,lo)].map(p=>[p.lat,p.lng]); Q.pts.forEach((p,i)=>{ if(Q.cum[i]>lo && Q.cum[i]<hi) pts.push(p); }); const e=demoAt(Q,hi); pts.push([e.lat,e.lng]);
-    if(a.along>b.along) pts.reverse();
-    // 파킹엔젤스 C동 방향은 차량등록사업소를 꼭 지나야 함
-    if(r==="park" && to==="C동"){ const M=demoMkPath(pts), d=projectOn(M,st("dmv")); if(!d||d.off>250) return null; }
-    return demoMkPath(pts); };
-  const own=pathFor(r,to), rev=pathFor(r,back), revP=rev?demoMkPath(rev.pts.slice().reverse()):null;
-  const P=cut(own)||cut(revP); if(P) return P;
+function demoPath(r,to){
+  const P=pathFor(r,to); if(P && P.len>100) return P;
   const S=id=>{ const s=ROUTES[r].stops.find(x=>x.id===id); return [s.lat,s.lng]; };
   const ids = r==="yatap" ? (to==="교회"?["byc","church"]:["church","byc"]) : (to==="C동"?["church","dmv","cdong"]:["cdong","church"]);
   return demoMkPath(ids.map(S));
 }
-if(DEMO) window.__dp={demoPath:(...a)=>demoPath(...a),demoLive:()=>demoLive()};
 function demoAt(P,a){ a=Math.max(0,Math.min(P.len,a)); let i=1; while(i<P.cum.length-1 && P.cum[i]<a) i++;
   const f=(a-P.cum[i-1])/Math.max(1e-6,P.cum[i]-P.cum[i-1]), A=P.pts[i-1], B=P.pts[i];
   return {lat:A[0]+(B[0]-A[0])*f, lng:A[1]+(B[1]-A[1])*f, hd:bearingTo({lat:A[0],lng:A[1]},{lat:B[0],lng:B[1]})}; }
@@ -2121,9 +2219,9 @@ function applyLook(L){
   if(f==="gmarket" && !document.getElementById("ff-gm")){ const st=document.createElement("style"); st.id="ff-gm"; st.textContent='@font-face{font-family:"GmarketSans";font-weight:300;font-display:swap;src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansLight.woff") format("woff")}@font-face{font-family:"GmarketSans";font-weight:400 600;font-display:swap;src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff") format("woff")}@font-face{font-family:"GmarketSans";font-weight:700 900;font-display:swap;src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff") format("woff")}'; document.head.appendChild(st); }
   document.documentElement.style.setProperty("--ff",FONT_FAM[f]); setTimeout(fitSub,300); setTimeout(fitSub,1500); document.body.dataset.font=f;
   const w=["bold","normal","light"].includes(L.weight)?L.weight:"bold"; ["normal","light"].forEach(k=>document.body.classList.toggle("w-"+k,w===k));
-  const nv={on:L.design==="v2", color:["light","dark","theme"].includes(L.v2color)?L.v2color:"light"};
-  document.body.classList.toggle("v2",nv.on); document.body.classList.toggle("nobanner",L.banner===false);
-  if(nv.on!==V2.on || nv.color!==V2.color){ V2=nv; try{ applyTheme(); }catch(_){} $("boards")._h=null; $("times")._h=null; setTimeout(()=>{ try{ if(window.tvFit) tvFit(); }catch(_){} fitVid(); },150); }
+  const nv={on:["v2","v3"].includes(L.design), design:L.design==="v3"?"v3":L.design==="v2"?"v2":"classic", color:["light","dark","theme"].includes(L.v2color)?L.v2color:"light"};
+  document.body.classList.toggle("v2",nv.design==="v2"); document.body.classList.toggle("v3",nv.design==="v3"); document.body.classList.toggle("nobanner",L.banner===false);
+  if(nv.on!==V2.on || nv.color!==V2.color || nv.design!==V2.design){ V2=nv; try{ applyTheme(); }catch(_){} $("boards")._h=null; $("times")._h=null; setTimeout(()=>{ try{ if(window.tvFit) tvFit(); }catch(_){} fitVid(); },150); }
   // 글자 크기: 전체 배율 × 부분별 단계 (TV 주소 끝 ?fs=110 으로 이 TV만 전체 배율을 바꿀 수도 있음)
   const F=L.fs||{}, ALL=[90,100,110,120], qf=+qs.get("fs"), g=(ALL.includes(qf)?qf:(ALL.includes(+F.all)?+F.all:100))/100;
   const st=v=>1+0.07*Math.max(-5,Math.min(5,Math.round(+v||0)));   // −5 … +5 (한 단계 7%)
@@ -2140,6 +2238,29 @@ function applyLook(L){
   $("hMotto").classList.toggle("hide",!on); $("hMottoT").textContent=m; document.body.classList.toggle("hasmotto",on);
 }
 if(qs.get("preview")==="1") document.body.classList.add("preview");
+// v.3: 큰 글자 설정과 정류장 수가 많은 노선의 목록을 칸 안에 맞춤.
+(function(){
+  const main=document.querySelector('.main');if(!main)return;
+  let pending=0;
+  function fit(){
+    pending=0;
+    main.querySelectorAll('.rt').forEach(panel=>{
+      const list=panel.querySelector('.stops');if(!list)return;
+      list.style.zoom='';
+      if(!document.body.classList.contains('v3')||!panel.clientHeight)return;
+      let scale=1;
+      for(let i=0;i<6&&panel.scrollHeight>panel.clientHeight+2;i++){
+        scale=Math.max(.65,scale*.9);list.style.zoom=String(scale);
+      }
+    });
+  }
+  function schedule(){if(!pending)pending=requestAnimationFrame(fit);}
+  new MutationObserver(schedule).observe(main,{childList:true,subtree:true});
+  new MutationObserver(schedule).observe(document.body,{attributes:true,attributeFilter:['class']});
+  if('ResizeObserver' in window)new ResizeObserver(schedule).observe(main);
+  window.addEventListener('resize',schedule);schedule();
+})();
+
 // ---------- QR (성도님 주소) ----------
 try{
   const url=location.origin+location.pathname.replace(/[^/]*$/,"");

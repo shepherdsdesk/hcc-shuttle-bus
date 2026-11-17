@@ -724,7 +724,7 @@
         <ul class="hint"><li><b>자동</b> — 주일은 두 노선, 평일은 야탑역 셔틀만</li><li>평일에 파킹엔젤스가 실제로 운행하면 함께 나옵니다</li><li>노선을 정한 TV 주소(‘TV 주소’ 탭)는 이 설정과 상관없습니다</li></ul>
         <div class="lkrow" style="align-items:flex-start"><b style="padding-top:8px">화면 디자인</b>
           <div style="flex:1;display:flex;flex-direction:column;gap:10px">
-            <div class="seg3" id="lkDesign" style="align-self:flex-start"><button type="button" data-dsg="classic">v.1 <small>기본</small></button><button type="button" data-dsg="v2">v.2 <small>세련된 화면</small></button></div>
+            <div class="seg3" id="lkDesign" style="align-self:flex-start;flex-wrap:wrap"><button type="button" data-dsg="classic">v.1 <small>기본</small></button><button type="button" data-dsg="v2">v.2 <small>세련된 화면</small></button><button type="button" data-dsg="v3">v.3 <small>사이니지 안내판</small></button></div>
             <div class="seg3" id="lkV2c" style="align-self:flex-start"><button type="button" data-v2c="light">밝게</button><button type="button" data-v2c="dark">어둡게</button><button type="button" data-v2c="theme">절기·계절 테마</button></div>
             <ul class="hint" id="lkV2note"><li><b>v.2</b> — 테두리 없이 면과 그림자로 칸을 나누고, 칸 크기를 똑같이 맞춥니다</li><li><b>절기·계절 테마</b> — 꾸미기 탭의 색·장식·계절 효과를 그대로 씁니다</li></ul>
           </div></div>
@@ -1924,7 +1924,7 @@ function showPane(k){ TVPANE=k; try{ localStorage.setItem("tvPane",k); }catch(_)
   document.querySelectorAll(".tvpane").forEach(p=>p.classList.toggle("hide",p.dataset.pane!==k)); }
 $("tvSub").addEventListener("click",e=>{ const b=e.target.closest("[data-pane]"); if(b) showPane(b.dataset.pane); });
 showPane(TVPANE);
-const lookCfg=()=>{ const c=A.config.tvLook||{}; return {mottoOn:!!c.mottoOn, motto:c.motto||"", font:["pretendard","gmarket","nanumsq","suit"].includes(c.font)?c.font:"pretendard", wx:c.wx!==false, weight:c.weight, design:c.design==="v2"?"v2":"classic", v2color:["light","dark","theme"].includes(c.v2color)?c.v2color:"light", banner:c.banner!==false}; };
+const lookCfg=()=>{ const c=A.config.tvLook||{}; return {mottoOn:!!c.mottoOn, motto:c.motto||"", font:["pretendard","gmarket","nanumsq","suit"].includes(c.font)?c.font:"pretendard", wx:c.wx!==false, weight:c.weight, design:["v2","v3"].includes(c.design)?c.design:"classic", v2color:["light","dark","theme"].includes(c.v2color)?c.v2color:"light", banner:c.banner!==false}; };
 function drawLook(){
   const L=lookCfg();
   $("lkMottoOn").checked=L.mottoOn; if(document.activeElement!==$("lkMotto") && !$("lkMotto").dataset.dirty) $("lkMotto").value=L.motto;
@@ -1932,7 +1932,8 @@ function drawLook(){
   $("lkWx").checked=L.wx; $("lkBanner").checked=L.banner;
   document.querySelectorAll("[data-dsg]").forEach(b=>b.classList.toggle("on",b.dataset.dsg===L.design));
   document.querySelectorAll("[data-v2c]").forEach(b=>b.classList.toggle("on",b.dataset.v2c===L.v2color));
-  $("lkV2c").classList.toggle("dim",L.design!=="v2");
+  $("lkV2c").classList.toggle("dim",!["v2","v3"].includes(L.design));
+  $("lkV2note").innerHTML=L.design==="v3" ? "<li><b>v.3 사이니지 안내판</b> — 짙은 제목 띠, 노선별 컬러 안내판, 큰 도착 숫자와 포스터 중심의 비운행 화면</li><li>가로·세로, 한 노선·두 노선, 포스터·예배 영상과 기존 글자 크기 설정을 함께 사용합니다</li><li>밝게·어둡게·절기 테마를 선택할 수 있습니다. 선택하면 바로 반영됩니다.</li>" : "<li><b>v.2</b> — 테두리 없이 면과 그림자로 칸을 나누고, 칸 크기를 똑같이 맞춥니다</li><li><b>절기·계절 테마</b> — 꾸미기 탭의 색·장식·계절 효과를 그대로 씁니다</li>";
   const pm=(A.config.tvPosters||{}).mix; document.querySelectorAll("[data-pm]").forEach(b=>b.classList.toggle("on",b.dataset.pm===(["alt","poster","split"].includes(pm)?pm:"alt")));
   $("pstMixRow").classList.toggle("dim",(A.config.tvPosters||{}).when!=="always");
   const fw=["bold","normal","light"].includes(L.weight)?L.weight:"bold"; document.querySelectorAll("[data-fw]").forEach(b=>b.classList.toggle("on",b.dataset.fw===fw)); $("lkFont").dataset.w=fw;
@@ -1943,7 +1944,7 @@ function drawLook(){
   const today=kstDate(now()), nd=Object.keys((A.config.tvRest||{}).dates||{}).filter(d=>d>=today).length;
   const nw=WOR.list.length, th=(A.config.tvTheme||{}).mode;
   const set_=(k,t)=>{ const e=$("tss-"+k); if(e) e.textContent=t; };
-  set_("basic",(L.design==="v2"?"v.2 · ":"v.1 · ")+rt+(L.mottoOn?" · 표어":"")); set_("poster",`${np}장 · ${np?pw:"없음"}`); set_("rest",nd?`쉬는 날 ${nd}일`:"자동"); set_("worship",`${nw}개`);
+  set_("basic",({classic:"v.1 · ",v2:"v.2 · ",v3:"v.3 · "}[L.design])+rt+(L.mottoOn?" · 표어":"")); set_("poster",`${np}장 · ${np?pw:"없음"}`); set_("rest",nd?`쉬는 날 ${nd}일`:"자동"); set_("worship",`${nw}개`);
   set_("look",(TV_THEMES[th]&&TV_THEMES[th].name)||"절기 자동"); set_("links","링크");
 }
 async function saveLook(patch,msg){ try{ await update(ref(db,"config/tvLook"),patch); toast(msg||"TV에 바로 반영됩니다"); }catch(_){ toast("저장하지 못했습니다"); } }
@@ -1955,8 +1956,8 @@ $("lkBanner").onchange=e=>saveLook({banner:e.target.checked},e.target.checked?"�
 $("lkWx").onchange=e=>saveLook({wx:e.target.checked},e.target.checked?"날씨를 보여 줍니다":"날씨를 숨겼습니다");
 document.addEventListener("click",e=>{
   const f=e.target.closest("[data-font]"); if(f){ saveLook({font:f.dataset.font},"글꼴을 바꿨습니다"); return; }
-  const dg=e.target.closest("[data-dsg]"); if(dg){ saveLook({design:dg.dataset.dsg},dg.dataset.dsg==="v2"?"v.2 화면으로 바꿨습니다":"v.1 화면으로 돌아갑니다"); return; }
-  const vc=e.target.closest("[data-v2c]"); if(vc){ saveLook({v2color:vc.dataset.v2c, design:"v2"},{light:"v.2 · 밝게",dark:"v.2 · 어둡게",theme:"v.2 · 절기·계절 테마"}[vc.dataset.v2c]); return; }
+  const dg=e.target.closest("[data-dsg]"); if(dg){ saveLook({design:dg.dataset.dsg},({classic:"v.1 화면으로 돌아갑니다",v2:"v.2 화면으로 바꿨습니다",v3:"v.3 사이니지 안내판으로 바꿨습니다"}[dg.dataset.dsg])); return; }
+  const vc=e.target.closest("[data-v2c]"); if(vc){ const design=lookCfg().design==="v3"?"v3":"v2"; saveLook({v2color:vc.dataset.v2c,design},(design==="v3"?"v.3 · ":"v.2 · ")+({light:"밝게",dark:"어둡게",theme:"절기·계절 테마"}[vc.dataset.v2c])); return; }
   const w=e.target.closest("[data-fw]"); if(w){ saveLook({weight:w.dataset.fw},{bold:"굵은 글씨로 보여 줍니다",normal:"보통 굵기로 보여 줍니다",light:"가벼운 글씨로 보여 줍니다"}[w.dataset.fw]); return; }
   const pm=e.target.closest("[data-pm]"); if(pm){ set(ref(db,"config/tvPosters/mix"),pm.dataset.pm).then(()=>toast({alt:"시간표와 20초씩 번갈아 보여 줍니다",poster:"시간표 칸에 포스터만 보여 줍니다",split:"시간표와 포스터를 함께 보여 줍니다"}[pm.dataset.pm])).catch(()=>toast("저장하지 못했습니다")); return; }
   const v=e.target.closest("[data-pv]"); if(v){ set(ref(db,"config/tvPosters/view"),v.dataset.pv).then(()=>toast({one:"한 장씩 보여 줍니다",two:"두 장씩 나란히 보여 줍니다",stack:"겹쳐 보기로 보여 줍니다"}[v.dataset.pv])).catch(()=>toast("저장하지 못했습니다")); return; }
