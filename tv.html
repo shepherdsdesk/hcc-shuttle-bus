@@ -57,8 +57,8 @@
   body.rot-r .tv{top:0;left:100vw;transform:rotate(90deg)}
   body.rot-l .tv{top:100vh;left:0;transform:rotate(-90deg)}
   .mapbox{position:relative;border-radius:2vmin;overflow:hidden;border:.2vmin solid var(--line);min-height:0}
-  #map{position:absolute;inset:0;background:#111A2B}
-  #map .leaflet-tile-pane,#map.is-kakao img{filter:invert(1) hue-rotate(180deg) brightness(.82) contrast(.92)}
+  .mmap{position:absolute;inset:0;background:#111A2B}
+  .mmap .leaflet-tile-pane,.mmap.is-kakao img{filter:invert(1) hue-rotate(180deg) brightness(.82) contrast(.92)}
   .legend{position:absolute;left:1.2vmin;bottom:1.2vmin;z-index:900;display:flex;gap:1.4vmin;align-items:center;background:rgba(11,18,32,.86);border:.2vmin solid var(--line);border-radius:1.2vmin;padding:.9vmin 1.4vmin;font-size:1.7vmin;font-weight:700;color:#CBD5E1}
   .legend span{display:inline-flex;align-items:center;gap:.7vmin}
   .legend i{width:1.6vmin;height:1.6vmin;border-radius:.4vmin;display:inline-block}
@@ -108,12 +108,11 @@
   .mkc{position:absolute;left:0;top:0;transform:translate(-50%,-50%)}
   .pill{display:inline-flex;align-items:center;gap:.6vmin;white-space:nowrap;font-size:2.1vmin;font-weight:900;padding:.6vmin 1.3vmin .6vmin .7vmin;border-radius:999px;box-shadow:0 .4vmin 1.4vmin rgba(0,0,0,.5);border:.3vmin solid #0B1220;color:#fff}
   .pill .n{width:2.8vmin;height:2.8vmin;border-radius:50%;background:#fff;display:inline-grid;place-items:center;font-size:1.8vmin}
-  .pill.out{background:#0B1220!important}
-  .pill.out .n{color:#fff}
+  
   .pill.old{opacity:.45}
   .pill svg{width:2vmin;height:2vmin}
   .stopmk{position:relative;width:2.4vmin;height:2.4vmin;border-radius:50%;background:#0B1220;border:.6vmin solid var(--y);box-sizing:border-box}
-  .stoplab{position:absolute;bottom:calc(100% + .7vmin);left:50%;transform:translateX(-50%);white-space:nowrap;background:rgba(11,18,32,.9);border:.15vmin solid var(--line);font-size:1.7vmin;font-weight:800;padding:.3vmin .9vmin;border-radius:.8vmin;color:#E2E8F0}
+  .stoplab{position:absolute;bottom:calc(100% + .7vmin);left:50%;transform:translateX(-50%);white-space:nowrap;background:var(--lblBg,rgba(11,18,32,.9));border:.15vmin solid var(--line);font-size:1.7vmin;font-weight:800;padding:.3vmin .9vmin;border-radius:.8vmin;color:var(--lblInk,#E2E8F0)}
   /* 제목 띠 (장식 · 사진) */
   header{position:relative}
   header>*:not(.hdbg){position:relative;z-index:1}
@@ -134,13 +133,13 @@
   /* 밝은 테마 */
   body.light .live{color:#B91C1C}
   body.light .live.ok{color:#15803D}
-  body.light #map .leaflet-tile-pane, body.light #map.is-kakao img{filter:none}
-  body.light #map{background:#E5E7EB}
+  body.light .mmap .leaflet-tile-pane, body.light .mmap.is-kakao img{filter:none}
+  body.light .mmap{background:#E5E7EB}
   body.light .legend{background:rgba(255,255,255,.92);color:#334155}
   body.light .stopmk{background:#fff}
-  body.light .stoplab{background:rgba(255,255,255,.95);color:#0F172A}
+  body.light .stoplab{background:var(--lblBg,rgba(255,255,255,.95));color:var(--lblInk,#0F172A)}
   body.light .pill{border-color:#fff}
-  body.light .pill.out{background:#fff!important;color:#14213D!important}
+  
   body.light .eta.soon b{color:#DC2626}
   body.light .notice{background:#FFF7E6;border-color:#F3C77A;color:#92400E}
   body.light .ctl{background:rgba(255,255,255,.95)}
@@ -826,6 +825,36 @@ body:not(.va-spread) .times.tc-wonly .tc-wor .r3-wg{flex:1;justify-content:var(-
 .stop .nm .sd{display:flex;align-items:center;gap:.6vmin;min-width:0;white-space:nowrap}
 .stop .nm .sd .sdt{min-width:0;overflow:hidden;text-overflow:ellipsis}
 .stop .nm .sd .wc{flex:none;margin-left:0}
+body.one.many:not(.rest):not(.portrait) .main{grid-template-areas:"map boards times" "map boards times"!important}
+body.one.many.pside.mx-split:not(.rest):not(.portrait) .main{grid-template-areas:"map boards times" "map boards ptr"!important}
+body.portrait.one.many:not(.rest) .main{grid-template-areas:"map map" "boards boards" "times times"!important}
+body.portrait.one.many.pside.mx-split:not(.rest) .main{grid-template-areas:"map map" "boards boards" "times ptr"!important}
+.eta b.now{font-size:3vmin!important;letter-spacing:-.02em;white-space:nowrap}
+body.one .eta b.now{font-size:3.6vmin!important}
+.stop{min-width:0}.stop .nm{flex:1;min-width:0}.stop .eta{flex:none}
+/* ===== 지도 따로 보기: 야탑역 셔틀 지도 · 파킹엔젤스 지도를 각각 한 칸씩 ===== */
+.mapbox{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:repeat(2,minmax(0,1fr));gap:var(--mg,1.6vmin);border:0;border-radius:0;overflow:visible;background:none}
+body.v2 .mapbox{box-shadow:none;border-radius:0}
+body.one .mapbox{grid-template-rows:minmax(0,1fr)}
+body.portrait:not(.one) .mapbox{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:minmax(0,1fr)}
+.mpane{position:relative;min-width:0;min-height:0;overflow:hidden;border-radius:2vmin;border:.2vmin solid var(--line);background:#111A2B}
+body.light .mpane{background:#E5E7EB}
+body.v2 .mpane{border:0;border-radius:2.6vmin;box-shadow:var(--v2sh)}
+.mtag{position:absolute;left:1.2vmin;top:1.2vmin;z-index:900;display:inline-flex;align-items:center;gap:.9vmin;white-space:nowrap;background:rgba(11,18,32,.88);border:.2vmin solid var(--line);border-radius:99vmin;padding:.7vmin 1.7vmin .7vmin 1.2vmin;font-size:2.2vmin;font-weight:800;color:#E2E8F0;zoom:var(--Zmap)}
+.mtag i{width:1.5vmin;height:1.5vmin;border-radius:50%;background:var(--rc,#3B5BA9);flex:none}
+.mtag .lgn{font-style:normal}
+body.light .mtag{background:rgba(255,255,255,.94);color:#0F172A}
+body.v2 .mtag{border:0;box-shadow:0 .2vmin 1vmin rgba(0,0,0,.12);font-weight:700}
+/* 지도 확대·축소 버튼 (TV에서 4초 동안 손대지 않으면 사라짐) */
+.mzoom{position:absolute;right:1.2vmin;bottom:1.2vmin;z-index:900;display:flex;flex-direction:column;gap:.8vmin;transition:opacity .3s;zoom:var(--Zmap)}
+.mzoom button{width:6vmin;height:6vmin;border:.2vmin solid var(--line);border-radius:1.6vmin;background:rgba(11,18,32,.88);color:#E2E8F0;font:inherit;font-size:3.6vmin;font-weight:800;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0;touch-action:manipulation}
+.mzoom button.fitb{font-size:1.7vmin;font-weight:800}
+.mzoom button:active{background:var(--navy);color:#fff}
+.mzoom button:focus-visible{outline:.4vmin solid #FCD34D;outline-offset:.2vmin}
+body.light .mzoom button{background:rgba(255,255,255,.94);color:#0F172A}
+body.v2 .mzoom button{border:0;box-shadow:0 .2vmin 1vmin rgba(0,0,0,.12)}
+body.idle .mzoom{opacity:0;pointer-events:none}
+body.preview .mzoom{display:none}
 </style>
 </head>
 <body>
@@ -845,8 +874,10 @@ body:not(.va-spread) .times.tc-wonly .tc-wor .r3-wg{flex:1;justify-content:var(-
   </header>
   <div class="notice hide" id="notice"></div>
   <div class="main">
-    <div class="mapbox"><div id="map"></div>
-      <div class="legend" id="legend"><span data-lg="yatap"><i style="background:#3B5BA9"></i><em class="lgn">야탑역 셔틀</em></span><span data-lg="park"><i style="background:#14B8A6"></i><em class="lgn">파킹엔젤스</em></span><span>꽉 찬 표시 = 교회행</span><span>테두리 = 반대 방향</span></div>
+    <div class="mapbox" id="mapbox">
+      <div class="mpane" data-r="yatap"><div class="mmap" id="map-yatap"></div><div class="mtag" data-lg="yatap"><i></i><em class="lgn">야탑역 셔틀</em></div><div class="mzoom"><button type="button" data-z="1" aria-label="확대">+</button><button type="button" data-z="-1" aria-label="축소">−</button><button type="button" data-z="0" class="fitb" aria-label="처음 크기로">맞춤</button></div></div>
+      <div class="mpane" data-r="park"><div class="mmap" id="map-park"></div><div class="mtag" data-lg="park"><i></i><em class="lgn">파킹엔젤스</em></div><div class="mzoom"><button type="button" data-z="1" aria-label="확대">+</button><button type="button" data-z="-1" aria-label="축소">−</button><button type="button" data-z="0" class="fitb" aria-label="처음 크기로">맞춤</button></div></div>
+
     </div>
     <div class="boards" id="boards"></div>
     <section class="times" id="times"></section>
@@ -871,7 +902,7 @@ body:not(.va-spread) .times.tc-wonly .tc-wor .r3-wg{flex:1;justify-content:var(-
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import { getDatabase, ref, onValue, set as fbSet, update as fbUpdate, push, remove as fbRemove, get, onDisconnect, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+import { getDatabase, ref, onValue, set as fbSet, update as fbUpdate, push, remove as fbRemove, get, onDisconnect as fbOnDisconnect, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 // ================= 시연 모드 (관리자 → 시연) =================
 // 주소에 ?demo=1&d=요일(0=주일)&t=HH:MM&sp=배속&y=야탑역 버스 수&p=파킹엔젤스(0/1)&w=기다리는 성도(0/1)
 //  · 화면 안의 시계를 그 요일·시각으로 맞추고, 가상 버스를 노선 줄 따라 움직입니다
@@ -882,12 +913,13 @@ const DEMO_CFG = (()=>{ if(!DEMO) return null;
   const d=Math.max(0,Math.min(6,parseInt(DQ.get("d")??"0",10)||0)), tm=(DQ.get("t")||"10:20").match(/^(\d{1,2}):(\d{2})$/)||[0,10,20];
   const sp=[1,2,4,8].includes(+DQ.get("sp"))?+DQ.get("sp"):2, y=Math.max(0,Math.min(2,parseInt(DQ.get("y")??"1",10))), p=DQ.get("p")!=="0" && d===0, w=DQ.get("w")!=="0";
   return {d,h:+tm[1],m:+tm[2],sp,y,p,w}; })();
+const DEMO_T0 = +DQ.get("t0") || Date.now();   // 한 화면 시연: 여러 화면이 같은 시계·같은 버스 위치를 쓰도록 시작 시각을 맞춤
 const DEMO_OFF = (()=>{ if(!DEMO) return 0;
-  const k=new Date(Date.now()+9*3600e3), shift=(DEMO_CFG.d-k.getUTCDay()+7)%7;
+  const k=new Date(DEMO_T0+9*3600e3), shift=(DEMO_CFG.d-k.getUTCDay()+7)%7;
   const target=Date.UTC(k.getUTCFullYear(),k.getUTCMonth(),k.getUTCDate()+shift,DEMO_CFG.h,DEMO_CFG.m)-9*3600e3;
-  return target-Date.now(); })();
-const DEMO_T0=Date.now();
+  return target-DEMO_T0; })();
 // 시연 중에는 아무것도 저장하지 않음
+const onDisconnect=r=>DEMO?{remove:async()=>{},cancel:async()=>{},set:async()=>{},update:async()=>{}}:fbOnDisconnect(r);
 const set=(...a)=>DEMO?Promise.resolve():fbSet(...a), update=(...a)=>DEMO?Promise.resolve():fbUpdate(...a), remove=(...a)=>DEMO?Promise.resolve():fbRemove(...a);
 
 
@@ -1056,6 +1088,7 @@ const MapKit = (()=>{
       },
       center(lat,lng,keep){ map.setCenter(new K.LatLng(lat,lng)); if(!keep && map.getLevel()>4) map.setLevel(4); },
       resize(){ map.relayout(); },
+      zoom(d){ map.setLevel(map.getLevel()-d,{animate:true}); },
       onDrag(cb){ K.event.addListener(map,"dragstart",cb); },
       circle(lat,lng,r,color){ const c=new K.Circle({center:new K.LatLng(lat,lng),radius:r,strokeWeight:2,strokeColor:color,strokeOpacity:.9,strokeStyle:"dash",fillColor:color,fillOpacity:.12}); c.setMap(map);
         return { set(a,b,rr){ c.setPosition(new K.LatLng(a,b)); c.setRadius(rr); }, remove(){ c.setMap(null); } }; },
@@ -1090,6 +1123,7 @@ const MapKit = (()=>{
       },
       center(lat,lng,keep){ map.setView([lat,lng], keep? map.getZoom() : Math.max(map.getZoom()||15,15), {animate:false}); },
       resize(){ map.invalidateSize(); },
+      zoom(d){ map.setZoom(map.getZoom()+d,{animate:false}); },
       onDrag(cb){ map.on("dragstart",cb); },
       circle(lat,lng,r,color){ const c=L.circle([lat,lng],{radius:r,color,weight:2,dashArray:"6 5",fillColor:color,fillOpacity:.12,interactive:false}).addTo(map);
         return { set(a,b,rr){ c.setLatLng([a,b]); c.setRadius(rr); }, remove(){ map.removeLayer(c); } }; },
@@ -1150,11 +1184,12 @@ function computeRT(){
 }
 let RT = ROUTES[ONLY] ? [ONLY] : ["yatap","park"];
 document.body.classList.toggle("one",RT.length===1);
-function drawLegend(){ document.querySelectorAll("[data-lg]").forEach(x=>x.classList.toggle("hide",!RT.includes(x.dataset.lg))); }
+function drawLegend(){ document.querySelectorAll("[data-lg]").forEach(x=>x.classList.toggle("hide",!RT.includes(x.dataset.lg)));
+  document.querySelectorAll(".mpane").forEach(x=>x.classList.toggle("hide",!RT.includes(x.dataset.r))); }
 function applyRT(){
   const n=computeRT(); if(n.join()===RT.join()){ try{ applyMode(); }catch(_){} return; }
   RT=n; document.body.classList.toggle("one",RT.length===1); drawLegend();
-  try{ drawStopMarks(); drawTvPaths(); drawMap(); if(window.tvFit) tvFit(); }catch(_){}
+  try{ ensureMaps(); drawStopMarks(); drawTvPaths(); drawMap(); if(window.tvFit) tvFit(); }catch(_){}
   const b=document.getElementById("boards"); if(b) b._h=null; try{ drawBoards(); }catch(_){}
   try{ applyMode(); }catch(_){}
 }
@@ -1374,10 +1409,10 @@ const DAYNAME = {0:"주일",1:"월요일",2:"화요일",3:"수요일",4:"목요�
 const arrowR=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>`;
 const arrowL=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>`;
 function pillHtml(route,b){
-  const c=ROUTES[route].color, old=b.old?" old":"";
-  if(b.to==="교회") return `<div class="pill${old}" style="background:${c}"><span class="n" style="color:${c}">${b.bus}</span>교회행${arrowR}</div>`;
-  if(b.to) return `<div class="pill out${old}" style="color:#fff;border-color:${c}">${arrowL}<span class="n" style="background:${c}">${b.bus}</span>${esc(b.vt||b.to)}행</div>`;
-  return `<div class="pill${old}" style="background:${c};padding-right:.7vmin"><span class="n" style="color:${c}">${b.bus}</span></div>`;
+  const c=mapColor(route), old=b.old?" old":"", ink=inkOn(c);
+  if(b.to==="교회") return `<div class="pill${old}" style="background:${c};color:${ink}"><span class="n" style="background:${ink};color:${c}">${b.bus}</span>교회행${arrowR}</div>`;
+  if(b.to){ const a=awayColor(), ai=inkOn(a); return `<div class="pill out${old}" style="background:${a};color:${ai}">${arrowL}<span class="n" style="background:${ai};color:${a}">${b.bus}</span>${esc(b.vt||b.to)}행</div>`; }
+  return `<div class="pill${old}" style="background:${c};color:${ink};padding-right:.7vmin"><span class="n" style="background:${ink};color:${c}">${b.bus}</span></div>`;
 }
 let LIVE={yatap:{},park:{}}; const prev={};
 function liveBuses(route){
@@ -1444,6 +1479,7 @@ function demoBus(r,legs,phase,n){
   const to = moving ? lg.to : L[(k+1)%L.length].to;
   return {lat:+pos.lat.toFixed(6), lng:+pos.lng.toFixed(6), ts:serverNow(), spd:moving?30:0, hd:Math.round(pos.hd), to, vt:moving?vt:(r==="park"&&to==="C동"?"차량등록사업소":""), trip:`demo_${r}_${n}`, uid:"demo"};
 }
+function demoBusOf(r,n){ return r==="yatap" ? demoBus("yatap",["교회","야탑역"],n===2?.68:.18,n) : demoBus("park",["C동","교회"],.08,1); }
 function demoLive(){
   const out={yatap:{},park:{}};
   if(DEMO_CFG.y>=1) out.yatap["1"]=demoBus("yatap",["교회","야탑역"],.18,1);
@@ -1540,40 +1576,69 @@ function drawTicker(){
 }
 window.addEventListener("resize",()=>{ tkSig=""; setTimeout(drawTicker,300); });
 
-// ---------- 지도 ----------
-let map, busL, markers={};
-async function initMap(){
-  const kk=await getKakaoKey(db,ref,get);
-  map=await MapKit.create("map",{kakaoKey: kk});
-  watchKakaoKey(db,ref,onValue,kk);
-  stopL=map.layer(); drawStopMarks();
-  busL=map.layer();
-  const fit=()=>{ const pts=[]; RT.forEach(r=>ROUTES[r].stops.forEach(s=>pts.push([s.lat,s.lng]))); map.resize(); map.fit(pts,{top:60,left:60,right:60,bottom:70}); };
-  window.tvFit=fit;
-  fit(); window.addEventListener("resize",()=>setTimeout(fit,200));
-  if("ResizeObserver" in window) new ResizeObserver(()=>fit()).observe($("map"));
+// ---------- 지도 (노선마다 지도 한 장씩) ----------
+const MAPS={yatap:{markers:{},lines:[]},park:{markers:{},lines:[]}};
+let KK="";
+function ensureMaps(){
+  RT.forEach(r=>{ const M=MAPS[r]; if(M.map||M.pending) return; M.pending=true;
+    MapKit.create("map-"+r,{kakaoKey:KK}).then(m=>{ M.map=m; M.stopL=m.layer(); M.busL=m.layer(); M.pending=false;
+      try{ drawStopMarks(); drawTvPaths(); drawMap(); tvFit(); }catch(_){} })
+    .catch(e=>{ M.pending=false; console.error(e); }); });
 }
-let stopL, tvLines=[];
-// 노선 줄: 두 노선 모두 노선색으로
+// ---- 지도 색 (관리자 → TV 화면 → 기본 → 지도 색, config/tvLook/mapc) ----
+let MAPC={};
+const hexOk=v=>/^#[0-9a-fA-F]{6}$/.test(v||"");
+const mapColor=r=>hexOk(MAPC[r])?MAPC[r]:ROUTES[r].color;
+const awayColor=()=>hexOk(MAPC.away)?MAPC.away:"#C2410C";
+function inkOn(h){ const n=parseInt(h.slice(1),16), L=(0.299*(n>>16&255)+0.587*(n>>8&255)+0.114*(n&255))/255; return L>0.62?"#0B1220":"#FFFFFF"; }
+function applyMapColors(m){
+  const nm={}; ["yatap","park","away","lblInk","lblBg"].forEach(k=>{ if(hexOk(m&&m[k])) nm[k]=m[k]; });
+  if(JSON.stringify(nm)===JSON.stringify(MAPC)) return; MAPC=nm;
+  const R=document.documentElement.style;
+  ["lblInk","lblBg"].forEach(k=>{ if(nm[k]) R.setProperty("--"+k,nm[k]); else R.removeProperty("--"+k); });
+  try{ drawStopMarks(); drawTvPaths(); drawMap(); }catch(_){}
+}
+const RESET_MS=30*1000;   // 손으로 확대·이동한 뒤 이 시간이 지나면 처음 크기로 돌아옴
+function fitOne(r){ const M=MAPS[r]; if(!M.map) return; M.touched=0;
+  try{ M.map.resize(); M.map.fit(ROUTES[r].stops.map(s=>[s.lat,s.lng]),{top:70,left:60,right:60,bottom:70,maxZoom:17}); }catch(_){} }
+function tvFit(force){
+  RT.forEach(r=>{ const M=MAPS[r]; if(!M.map) return;
+    if(force!==true && M.touched && Date.now()-M.touched<RESET_MS){ try{ M.map.resize(); }catch(_){} return; }
+    fitOne(r); });
+}
+function zoomMap(r,d){ const M=MAPS[r]; if(!M.map) return; if(d===0){ fitOne(r); return; } M.touched=Date.now(); try{ M.map.zoom(d); }catch(_){} }
+(function(){ const box=document.getElementById("mapbox");
+  box.addEventListener("click",e=>{ const bt=e.target.closest(".mzoom button"); if(!bt) return; zoomMap(bt.closest(".mpane").dataset.r,+bt.dataset.z); });
+  box.addEventListener("pointerdown",e=>{ const p=e.target.closest(".mpane"); if(p&&!e.target.closest(".mzoom")) MAPS[p.dataset.r].touched=Date.now(); },{passive:true});
+  box.addEventListener("wheel",e=>{ const p=e.target.closest(".mpane"); if(p) MAPS[p.dataset.r].touched=Date.now(); },{passive:true});
+  document.addEventListener("keydown",e=>{ const k=e.key, d=(k==="+"||k==="=")?1:(k==="-"||k==="_")?-1:(k==="0"?0:null); if(d===null) return; RT.forEach(r=>zoomMap(r,d)); });
+  setInterval(()=>{ ["yatap","park"].forEach(r=>{ const M=MAPS[r]; if(M.map && M.touched && Date.now()-M.touched>=RESET_MS && RT.includes(r)) fitOne(r); }); },5000);
+})();
+async function initMap(){
+  KK=await getKakaoKey(db,ref,get);
+  watchKakaoKey(db,ref,onValue,KK);
+  window.tvFit=tvFit; ensureMaps();
+  window.addEventListener("resize",()=>setTimeout(tvFit,200));
+  if("ResizeObserver" in window){ const ro=new ResizeObserver(()=>tvFit()); ["map-yatap","map-park"].forEach(id=>ro.observe($(id))); }
+}
+// 노선 줄: 그 노선 지도에만, 노선색으로
 function drawTvPaths(){
-  if(!map || !map.line) return; tvLines.forEach(l=>l.remove()); tvLines=[];
-  RT.forEach(r=>Object.values(PATHS[r]||{}).forEach(P=>tvLines.push(map.line(P.pts,{color:ROUTES[r].color,weight:5,opacity:.6}))));
+  ["yatap","park"].forEach(r=>{ const M=MAPS[r]; if(!M.map||!M.map.line) return;
+    M.lines.forEach(l=>l.remove()); M.lines=[]; if(!RT.includes(r)) return;
+    Object.values(PATHS[r]||{}).forEach(P=>M.lines.push(M.map.line(P.pts,{color:mapColor(r),weight:5,opacity:.6}))); });
 }
 function drawStopMarks(){
-  if(!stopL) return; stopL.clear();
-  RT.forEach(r=>ROUTES[r].stops.forEach(s=>{
-    if(r==="park" && s.id==="church" && RT.includes("yatap")) return;
-    stopL.add(s.lat,s.lng,`<div class="stopmk" style="border-color:${document.body.classList.contains("light")?ROUTES[r].color:(r==="park"?"#5EEAD4":"#93C5FD")}"><span class="stoplab">${esc(s.name)}</span></div>`,{z:2});
-  }));
+  document.querySelectorAll(".mpane").forEach(p=>p.style.setProperty("--rc",mapColor(p.dataset.r)));
+  ["yatap","park"].forEach(r=>{ const M=MAPS[r]; if(!M.stopL) return; M.stopL.clear(); if(!RT.includes(r)) return;
+    const bc=hexOk(MAPC[r])?MAPC[r]:(document.body.classList.contains("light")?ROUTES[r].color:(r==="park"?"#5EEAD4":"#93C5FD"));
+    ROUTES[r].stops.forEach(s=>M.stopL.add(s.lat,s.lng,`<div class="stopmk" style="border-color:${bc}"><span class="stoplab">${esc(s.name)}</span></div>`,{z:2})); });
 }
 function drawMap(){
-  if(!map) return; const seen={};
-  RT.forEach(r=>liveBuses(r).forEach(b=>{
-    const k=r+b.bus, html=pillHtml(r,b); seen[k]=1;
-    if(!markers[k]){ markers[k]=busL.add(b.lat,b.lng,html,{z:10}); markers[k]._h=html; }
-    else { markers[k].move(b.lat,b.lng); if(markers[k]._h!==html){ markers[k].html(html); markers[k]._h=html; } }
-  }));
-  Object.keys(markers).forEach(k=>{ if(!seen[k]){ markers[k].remove(); delete markers[k]; } });
+  ["yatap","park"].forEach(r=>{ const M=MAPS[r]; if(!M.map) return; const seen={};
+    if(RT.includes(r)) liveBuses(r).forEach(b=>{ const k=String(b.bus), html=pillHtml(r,b); seen[k]=1;
+      if(!M.markers[k]){ M.markers[k]=M.busL.add(b.lat,b.lng,html,{z:10}); M.markers[k]._h=html; }
+      else { M.markers[k].move(b.lat,b.lng); if(M.markers[k]._h!==html){ M.markers[k].html(html); M.markers[k]._h=html; } } });
+    Object.keys(M.markers).forEach(k=>{ if(!seen[k]){ M.markers[k].remove(); delete M.markers[k]; } }); });
 }
 
 // ---------- 안내판 ----------
@@ -1672,7 +1737,7 @@ function drawBoards(){
       const le=liveEta(r,s), ns=nextList(r,s.id,1)[0];
       let eta;
       if(le && le.arrived) eta=`<div class="eta soon"><b>도착</b><span>${le.bus}호차가 와 있어요</span></div>`;
-      else if(le) eta=`<div class="eta${le.eta<3?' soon':''}"><b>${le.eta<1?'곧 도착':`${Math.ceil(le.eta)}<small>분</small>`}</b><span>${le.bus}호차 · ${km(le.d)}</span></div>`;
+      else if(le) eta=`<div class="eta${le.eta<3?' soon':''}"><b${le.eta<1?' class="now"':''}>${le.eta<1?'곧 도착':`${Math.ceil(le.eta)}<small>분</small>`}</b><span>${le.bus}호차 · ${km(le.d)}</span></div>`;
       else if(ns!=null) eta=`<div class="eta sch"><b>${hhmm(ns)}</b><span>시간표 · ${inTxt(ns-min)}</span></div>`;
       else eta=`<div class="eta none"><b>운행 없음</b></div>`;
       h+=`<div class="stop"><div class="nm"><b>${esc(s.name)}</b><span class="sd"><span class="sdt">${STOP_DESC[r]&&STOP_DESC[r][s.id]?esc(STOP_DESC[r][s.id]):rideDir(r,s.id)}</span>${wc[s.id]?`<em class="wc">${ic("user")}${wc[s.id]}명 기다려요</em>`:""}</span></div>${eta}</div>`;
@@ -1753,7 +1818,9 @@ function applyMode(){
   if(!(pal||palt)) b.classList.remove("pshow");
   ["poster"].forEach(id=>$(id).classList.toggle("hide",!(rest||pal||palt) || !(posters.length||vidOn)));
   $("restBox").classList.toggle("hide",!rest);
-  $("nextBox").classList.toggle("hide",rest || !one);
+  // 정류장이 3곳 이상인 노선 하나만(예: 파킹엔젤스 전용 TV): 도착 칸을 2줄 높이로, 다음 출발 칸은 시간표에 있으므로 숨김
+  const many = one && RT[0] && ROUTES[RT[0]].stops.length>2; document.body.classList.toggle("many",many);
+  $("nextBox").classList.toggle("hide",rest || !one || many);
   drawPosters(posters);
   if(rest) drawRest(); else if(one) drawNext();
   if(sig!==MODE_SIG){ MODE_SIG=sig; setTimeout(()=>{ try{ if(window.tvFit) tvFit(); }catch(_){} fitVid(); },120); }
@@ -2031,6 +2098,7 @@ const FONT_CSS={gmarket:null, nanumsq:"https://cdn.jsdelivr.net/npm/nanumsquaren
 const FONT_FAM={pretendard:'"Pretendard Variable",Pretendard,"Noto Sans KR",system-ui,sans-serif', gmarket:'"GmarketSans","Pretendard Variable",sans-serif', nanumsq:'"NanumSquareNeo","Pretendard Variable",sans-serif', suit:'"SUIT Variable","SUIT","Pretendard Variable",sans-serif'};
 let WX_ON=true;
 function applyLook(L){
+  applyMapColors(L.mapc||{});
   const f=FONT_FAM[L.font]?L.font:"pretendard";
   if(FONT_CSS[f] && !document.getElementById("ff-"+f)){ const l=document.createElement("link"); l.rel="stylesheet"; l.id="ff-"+f; l.href=FONT_CSS[f]; document.head.appendChild(l); }
   if(f==="gmarket" && !document.getElementById("ff-gm")){ const st=document.createElement("style"); st.id="ff-gm"; st.textContent='@font-face{font-family:"GmarketSans";font-weight:300;font-display:swap;src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansLight.woff") format("woff")}@font-face{font-family:"GmarketSans";font-weight:400 600;font-display:swap;src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff") format("woff")}@font-face{font-family:"GmarketSans";font-weight:700 900;font-display:swap;src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff") format("woff")}'; document.head.appendChild(st); }

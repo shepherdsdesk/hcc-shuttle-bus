@@ -16,7 +16,12 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nanumsquareneo@0.0.5/nanumsquareneo.css">
-<style>@font-face{font-family:"GmarketSans";font-weight:700;font-display:swap;src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff") format("woff")}@font-face{font-family:"GmarketSans";font-weight:300 600;font-display:swap;src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansLight.woff") format("woff")}</style>
+<style>@font-face{font-family:"GmarketSans";font-weight:700;font-display:swap;src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff") format("woff")}@font-face{font-family:"GmarketSans";font-weight:300 600;font-display:swap;src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansLight.woff") format("woff")}.mcgrid{display:flex;flex-wrap:wrap;gap:10px}
+.mcr{display:flex;align-items:center;gap:10px;padding:6px 8px 6px 12px;border:1px solid var(--line,#E5E7EB);border-radius:12px;font-size:14px}
+.mcr.chg{border-color:#378ADD}
+.mcr input[type=color]{width:38px;height:30px;padding:0;border:1px solid var(--line,#E5E7EB);border-radius:8px;background:none;cursor:pointer}
+.mcr .btn{margin:0}
+</style>
 <style>
   :root{--navy:#1B2B5C;--teal:#0F766E;--ink:#0F172A;--sub:#5B6478;--line:#E2E6EE;--bg:#F3F5FA;--amber:#F59E0B;--red:#DC2626;--green:#15803D}
   *{box-sizing:border-box}
@@ -370,6 +375,7 @@
   .pst-row.dim,.seg3.dim{opacity:.55}
   .dmgo{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
   .dmgo .btn{text-decoration:none;display:inline-flex;align-items:center}
+  .dmgo .btn.dim{opacity:.45}
 
   .nmgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
   .nmcard{border:1.5px solid var(--line);border-radius:12px;padding:10px;background:#fff;display:flex;flex-direction:column;gap:8px}
@@ -754,6 +760,12 @@
             <div class="fsparts" id="fsParts"></div>
             <ul class="hint"><li>부분별 크기는 전체 크기에 더해집니다</li><li>칸 크기는 그대로라, 키우면 보이는 내용이 줄어듭니다</li><li>특정 TV만 키우려면 주소 끝에 <code>?fs=120</code> · <a href="#" id="fsReset">모두 보통으로</a></li></ul>
           </div></div>
+        <div class="lkrow" style="align-items:flex-start"><b style="padding-top:8px">지도 색</b>
+          <div style="flex:1;display:flex;flex-direction:column;gap:10px">
+            <div class="mcgrid" id="mcGrid"></div>
+            <div><button type="button" class="btn small ghost" id="mcReset">모두 기본 색으로</button></div>
+            <ul class="hint"><li>TV 지도의 버스 표시 · 노선 줄 · 정류장 동그라미와 이름표 색입니다</li><li>색을 고르면 TV에 바로 반영되고, <b>기본</b>을 누르면 테마 색으로 돌아갑니다</li><li>버스 표시 안의 글자는 바탕색에 맞춰 흰색·검정이 자동으로 정해집니다</li><li>도착 시간 칸 등 지도 밖의 노선 색은 그대로입니다</li></ul>
+          </div></div>
         <div class="lkrow"><b>하단 배너</b><label class="wcauto"><input type="checkbox" id="lkBanner"> TV 맨 아래 QR 안내와 셔틀 문의 전화 보이기</label></div>
         <div class="lkrow"><b>교회 표어</b>
           <label class="wcauto"><input type="checkbox" id="lkMottoOn"> TV 맨 위 가운데에 보이기</label>
@@ -959,14 +971,19 @@
             <label class="wcauto"><input type="checkbox" id="dmW" checked> 정류장에 기다리는 성도 표시</label>
           </div></div>
         <div class="dmgo">
-          <a class="btn" id="dmTv" target="_blank" rel="noopener">TV 화면 시연</a>
+          <a class="btn" id="dmAll" target="_blank" rel="noopener">한 화면에 모두 보기 <small style="opacity:.8;margin-left:4px">TV · 기사님 · 성도님</small></a>
+          <a class="btn ghost" id="dmTv" target="_blank" rel="noopener">TV 화면 시연</a>
           <a class="btn ghost" id="dmTvP" target="_blank" rel="noopener">TV 세로 시연</a>
+          <a class="btn ghost" id="dmTvY" target="_blank" rel="noopener">야탑역 전용 TV 시연</a>
+          <a class="btn ghost" id="dmTvK" target="_blank" rel="noopener">파킹엔젤스 전용 TV 시연</a>
           <a class="btn ghost" id="dmSaint" target="_blank" rel="noopener">성도님 화면 시연</a>
           <button type="button" class="btn ghost" id="dmCopy">시연 주소 복사</button>
         </div>
         <ul class="hint">
           <li>새 창에서 열리며, 화면 위에 빨간 <b>‘시연 중’</b> 표시가 붙습니다 · ‘끝내기’를 누르면 실제 화면으로 돌아갑니다</li>
           <li>가상 버스는 그 화면 안에서만 보입니다 — 실제 TV·성도님 휴대폰에는 나타나지 않고, 운행 기록·통계에도 남지 않습니다</li>
+          <li><b>한 화면에 모두 보기</b> — 왼쪽 TV(주일엔 노선별 2대), 가운데 기사님 화면, 오른쪽 성도님 화면이 같은 시계·같은 버스로 함께 움직입니다</li>
+          <li><b>전용 TV 시연</b> — ‘TV 주소’ 탭의 노선별 화면(주일에 TV 두 대로 나눠 거는 화면)과 똑같습니다. 두 창을 나란히 띄우면 실제 주일 모습이 됩니다</li>
           <li>시연 주소를 회의 자리 TV나 다른 분 휴대폰에서 열어도 똑같이 보입니다</li>
           <li>포스터·영상·쉬는 날·테마 등 지금 설정이 그대로 적용됩니다 (예: 월요일을 고르면 쉬는 날 화면)</li>
         </ul>
@@ -1694,7 +1711,7 @@ async function startAdmin(){
   onValue(ref(db,"waitc"),s=>{A.waitc=s.val()||{}; drawNow();},()=>{});
   onValue(ref(db,"board/"+kstDate(now())),s=>{A.boardToday=s.val()||{}; drawNow();});
   onValue(ref(db,"admins"),s=>{A.admins=s.val()||{}; drawAdmins();});
-  onValue(ref(db,"config"),s=>{A.config=s.val()||{}; fillConfig(); drawWaitCfg(); drawNow(); drawTvRt(); drawPosterAdmin(); drawLook(); drawVideo(); drawFs(); drawCellOpts(); drawVa(); drawNames();});
+  onValue(ref(db,"config"),s=>{A.config=s.val()||{}; fillConfig(); drawWaitCfg(); drawNow(); drawTvRt(); drawPosterAdmin(); drawLook(); drawVideo(); drawFs(); drawCellOpts(); drawVa(); drawNames(); drawMapColors();});
   setInterval(drawNow,10000);
   initStats(); initTimes();
 }
@@ -2027,6 +2044,17 @@ document.addEventListener("click",e=>{
   if(e.target.id==="fsReset"){ e.preventDefault(); saveLook({fs:null},"글자 크기를 모두 보통으로 돌렸습니다"); }
 });
 
+// ---------- TV 지도 색 ----------
+const MC_PARTS=[["yatap","야탑역 셔틀 버스 · 줄"],["park","파킹엔젤스 버스 · 줄"],["away","반대 방향 버스"],["lblInk","정류장 이름 글자"],["lblBg","정류장 이름 바탕"]];
+const MC_DEF={yatap:"#3B5BA9",park:"#0D9488",away:"#C2410C",lblInk:"#E2E8F0",lblBg:"#0B1220"};
+const mcOk=v=>/^#[0-9a-fA-F]{6}$/.test(v||"");
+function drawMapColors(){ const g=$("mcGrid"); if(!g) return; const M=(A.config.tvLook||{}).mapc||{};
+  g.innerHTML=MC_PARTS.map(([k,t])=>{ const v=mcOk(M[k])?M[k]:"";
+    return `<div class="mcr${v?" chg":""}"><span>${t}</span><input type="color" data-mc="${k}" value="${v||MC_DEF[k]}" aria-label="${t} 색"><button type="button" class="btn small ghost" data-mcx="${k}" ${v?"":"disabled"}>기본</button></div>`; }).join(""); }
+document.addEventListener("change",e=>{ const i=e.target.closest&&e.target.closest("[data-mc]"); if(i) saveLook({["mapc/"+i.dataset.mc]:i.value},"지도 색을 바꿨습니다"); });
+document.addEventListener("click",e=>{ const x=e.target.closest("[data-mcx]"); if(x){ saveLook({["mapc/"+x.dataset.mcx]:null},"기본 색으로 돌렸습니다"); return; }
+  if(e.target.id==="mcReset") saveLook({mapc:null},"지도 색을 모두 기본으로 돌렸습니다"); });
+
 // ---------- 시간표 모양 · 시간표 칸 · 쉬는 날 안내 칸 구성 ----------
 const RS_NAME={next:["다음 운행","오늘 상태와 노선별 다음 첫차"],wor:["예배 안내","주일·평일 예배 시간"],week:["이번 주 셔틀","요일별 운행 시간 (같은 시간은 묶어서)"]};
 function rsCfg(){ const sc=(A.config.tvRest||{}).secs||{}; const oo=Array.isArray(sc.order)?sc.order:(sc.order&&typeof sc.order==="object"?Object.keys(sc.order).sort().map(k=>sc.order[k]):null), o=oo&&oo.length===3?oo.slice():["next","wor","week"]; return {order:o, off:sc.off||{}}; }
@@ -2091,7 +2119,8 @@ function drawDemo(){
   document.querySelectorAll("[data-ds]").forEach(b=>b.classList.toggle("on",+b.dataset.ds===DM.sp));
   document.querySelectorAll("[data-dy]").forEach(b=>b.classList.toggle("on",+b.dataset.dy===DM.y));
   $("dmP").disabled=DM.d!==0; $("dmP").closest("label").style.opacity=DM.d===0?"1":".5";
-  $("dmTv").href=dmUrl("tv.html"); $("dmTvP").href=dmUrl("tv.html","&layout=port-r"); $("dmSaint").href=dmUrl("index.html");
+  $("dmTv").href=dmUrl("tv.html"); $("dmTvP").href=dmUrl("tv.html","&layout=port-r"); $("dmSaint").href=dmUrl("index.html"); $("dmAll").href=dmUrl("demo.html"); $("dmTvY").href=dmUrl("tv.html","&route=yatap"); $("dmTvK").href=dmUrl("tv.html","&route=park");
+  $("dmTvK").classList.toggle("dim",DM.d!==0||!$("dmP").checked);
 }
 document.addEventListener("click",e=>{
   const d=e.target.closest("[data-dd]"); if(d){ DM.d=+d.dataset.dd; drawDemo(); return; }

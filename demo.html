@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>시연 · 한 화면에 모두 보기 · HCC 셔틀버스</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{--bg:#0F172A;--card:#1E293B;--ink:#F1F5F9;--sub:#94A3B8;--line:#334155}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:Pretendard,system-ui,sans-serif}
+  .wrap{height:100%;display:flex;flex-direction:column;padding:14px 18px 18px;gap:12px}
+  header{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  header h1{margin:0;font-size:20px;font-weight:800;letter-spacing:-.01em}
+  header .live{display:inline-flex;align-items:center;gap:6px;background:#DC2626;color:#fff;font-size:13px;font-weight:800;padding:5px 11px;border-radius:99px}
+  header .live i{width:7px;height:7px;border-radius:50%;background:#fff;animation:bl 1.4s infinite}
+  @keyframes bl{50%{opacity:.3}}
+  header .info{color:var(--sub);font-size:14px}
+  header .sp{margin-left:auto;display:flex;gap:8px;align-items:center}
+  .seg{display:inline-flex;background:var(--card);border-radius:10px;padding:3px}
+  .seg button{border:0;background:transparent;color:var(--sub);font:inherit;font-size:13px;font-weight:700;padding:6px 11px;border-radius:8px;cursor:pointer}
+  .seg button.on{background:#F1F5F9;color:#0F172A}
+  header a{color:var(--sub);font-size:13px;font-weight:700;text-decoration:none;border:1px solid var(--line);padding:6px 11px;border-radius:9px}
+  .grid{flex:1;min-height:0;display:grid;grid-template-columns:4fr 1fr 1fr;gap:16px}
+  .col{min-height:0;display:flex;flex-direction:column;gap:12px}
+  .pane{flex:1;min-height:0;display:flex;flex-direction:column;gap:6px}
+  .pane>b{font-size:13px;font-weight:700;color:var(--sub);display:flex;align-items:center;gap:6px}
+  .pane>b i{width:8px;height:8px;border-radius:50%}
+  .box{flex:1;min-height:0;position:relative;display:flex;align-items:center;justify-content:center}
+  .frame{position:absolute;transform-origin:0 0;overflow:hidden;background:#000}
+  .frame iframe{border:0;display:block;background:#fff}
+  .frame.tv{border-radius:10px;box-shadow:0 0 0 2px #475569,0 14px 34px rgba(0,0,0,.45)}
+  .frame.ph{border-radius:44px;box-shadow:0 0 0 10px #020617,0 0 0 12px #475569,0 18px 40px rgba(0,0,0,.5)}
+  @media (max-width:1100px){ .grid{grid-template-columns:1fr;overflow:auto} .col{min-height:70vh} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>HCC 셔틀버스 시연</h1>
+    <span class="live"><i></i>시연 중 · 실제 운행 아님</span>
+    <span class="info" id="info"></span>
+    <div class="sp">
+      <div class="seg" id="tvMode" role="group" aria-label="TV 화면 수"><button type="button" data-tv="1">TV 1대 (통합)</button><button type="button" data-tv="2">TV 2대 (노선별)</button></div>
+      <button type="button" class="seg" id="restart" style="border:0;color:var(--ink);font:inherit;font-size:13px;font-weight:700;padding:8px 12px;cursor:pointer">처음부터</button>
+      <a href="admin.html">관리자로</a>
+    </div>
+  </header>
+  <div class="grid">
+    <div class="col" id="tvCol"></div>
+    <div class="col"><div class="pane"><b><i style="background:#F59E0B"></i>기사님 화면 <span id="drvLab"></span></b><div class="box" data-kind="ph" id="bDrv"></div></div></div>
+    <div class="col"><div class="pane"><b><i style="background:#22C55E"></i>성도님 화면</b><div class="box" data-kind="ph" id="bSaint"></div></div></div>
+  </div>
+</div>
+<script>
+const Q=new URLSearchParams(location.search);
+const P={demo:"1", d:Q.get("d")||"0", t:Q.get("t")||"10:20", sp:Q.get("sp")||"2", y:Q.get("y")||"1", p:Q.get("p")||"1", w:Q.get("w")||"1"};
+const SUN=P.d==="0", PARK=SUN && P.p!=="0";
+let TVN = Q.get("tv")==="1" ? 1 : (PARK ? 2 : 1);
+const DAY=["주일","월요일","화요일","수요일","목요일","금요일","토요일"][+P.d]||"주일";
+document.getElementById("info").textContent=`${DAY} ${P.t}부터 · ${P.sp}배속 · 야탑역 ${P.y}대${PARK?" · 파킹엔젤스 1대":""}`;
+const DR = Q.get("dr")==="park" && PARK ? "park" : (+P.y>0 ? "yatap" : (PARK?"park":"yatap"));
+document.getElementById("drvLab").textContent = DR==="park" ? "(파킹엔젤스 1호차)" : "(야탑역 셔틀 1호차)";
+const SIZE={tv:[1920,1080], ph:[390,844]};
+function url(page,extra,t0){ const q=new URLSearchParams({...P,t0}); return page+"?"+q+(extra||""); }
+function mk(box,kind,src,title){
+  box.innerHTML=""; const f=document.createElement("div"); f.className="frame "+kind;
+  const [w,h]=SIZE[kind]; const ifr=document.createElement("iframe"); ifr.src=src; ifr.title=title; ifr.width=w; ifr.height=h; ifr.setAttribute("allow","autoplay; geolocation");
+  f.style.width=w+"px"; f.style.height=h+"px"; f.appendChild(ifr); box.appendChild(f); fit(box);
+}
+function fit(box){ const f=box.querySelector(".frame"); if(!f) return; const [w,h]=SIZE[box.dataset.kind], pad=box.dataset.kind==="ph"?14:4;
+  const W=box.clientWidth-pad*2, H=box.clientHeight-pad*2, k=Math.max(.05,Math.min(W/w,H/h));
+  f.style.transform=`scale(${k})`; f.style.left=((box.clientWidth-w*k)/2)+"px"; f.style.top=((box.clientHeight-h*k)/2)+"px"; }
+function build(){
+  const t0=Date.now(), col=document.getElementById("tvCol");
+  document.querySelectorAll("[data-tv]").forEach(b=>b.classList.toggle("on",+b.dataset.tv===TVN));
+  document.getElementById("tvMode").style.display = PARK ? "" : "none";
+  const tvs = TVN===2 ? [["야탑역 셔틀 TV","#3B5BA9","&route=yatap"],["파킹엔젤스 TV","#14B8A6","&route=park"]] : [["TV 화면","#60A5FA",""]];
+  col.innerHTML=tvs.map((x,i)=>`<div class="pane"><b><i style="background:${x[1]}"></i>${x[0]}</b><div class="box" data-kind="tv" id="bTv${i}"></div></div>`).join("");
+  tvs.forEach((x,i)=>mk(document.getElementById("bTv"+i),"tv",url("tv.html",x[2]+"&layout=land",t0),x[0]));
+  mk(document.getElementById("bDrv"),"ph",url("driver.html","&dr="+DR,t0),"기사님 화면 시연");
+  mk(document.getElementById("bSaint"),"ph",url("index.html","",t0),"성도님 화면 시연");
+}
+document.getElementById("tvMode").onclick=e=>{ const b=e.target.closest("[data-tv]"); if(!b) return; TVN=+b.dataset.tv; build(); };
+document.getElementById("restart").onclick=build;
+addEventListener("resize",()=>document.querySelectorAll(".box").forEach(fit));
+build();
+</script>
+</body>
+</html>

@@ -481,23 +481,24 @@ body.dmoving .wbadge{display:none}
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import { getDatabase, ref, onValue, set as fbSet, update as fbUpdate, push, remove as fbRemove, get, onDisconnect, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+import { getDatabase, ref, onValue, set as fbSet, update as fbUpdate, push, remove as fbRemove, get, onDisconnect as fbOnDisconnect, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 // ================= 시연 모드 (관리자 → 시연) =================
 // 주소에 ?demo=1&d=요일(0=주일)&t=HH:MM&sp=배속&y=야탑역 버스 수&p=파킹엔젤스(0/1)&w=기다리는 성도(0/1)
 //  · 화면 안의 시계를 그 요일·시각으로 맞추고, 가상 버스를 노선 줄 따라 움직입니다
 //  · 실제 데이터에는 아무것도 쓰지 않습니다 (실제 버스·성도님 기록과 섞이지 않음)
 const DQ=new URLSearchParams(location.search);
-const DEMO = DQ.has("demo") && !/driver/.test(location.pathname);
+const DEMO = DQ.has("demo");
 const DEMO_CFG = (()=>{ if(!DEMO) return null;
   const d=Math.max(0,Math.min(6,parseInt(DQ.get("d")??"0",10)||0)), tm=(DQ.get("t")||"10:20").match(/^(\d{1,2}):(\d{2})$/)||[0,10,20];
   const sp=[1,2,4,8].includes(+DQ.get("sp"))?+DQ.get("sp"):2, y=Math.max(0,Math.min(2,parseInt(DQ.get("y")??"1",10))), p=DQ.get("p")!=="0" && d===0, w=DQ.get("w")!=="0";
   return {d,h:+tm[1],m:+tm[2],sp,y,p,w}; })();
+const DEMO_T0 = +DQ.get("t0") || Date.now();   // 한 화면 시연: 여러 화면이 같은 시계·같은 버스 위치를 쓰도록 시작 시각을 맞춤
 const DEMO_OFF = (()=>{ if(!DEMO) return 0;
-  const k=new Date(Date.now()+9*3600e3), shift=(DEMO_CFG.d-k.getUTCDay()+7)%7;
+  const k=new Date(DEMO_T0+9*3600e3), shift=(DEMO_CFG.d-k.getUTCDay()+7)%7;
   const target=Date.UTC(k.getUTCFullYear(),k.getUTCMonth(),k.getUTCDate()+shift,DEMO_CFG.h,DEMO_CFG.m)-9*3600e3;
-  return target-Date.now(); })();
-const DEMO_T0=Date.now();
+  return target-DEMO_T0; })();
 // 시연 중에는 아무것도 저장하지 않음
+const onDisconnect=r=>DEMO?{remove:async()=>{},cancel:async()=>{},set:async()=>{},update:async()=>{}}:fbOnDisconnect(r);
 const set=(...a)=>DEMO?Promise.resolve():fbSet(...a), update=(...a)=>DEMO?Promise.resolve():fbUpdate(...a), remove=(...a)=>DEMO?Promise.resolve():fbRemove(...a);
 
 
@@ -872,6 +873,7 @@ function demoBus(r,legs,phase,n){
   const to = moving ? lg.to : L[(k+1)%L.length].to;
   return {lat:+pos.lat.toFixed(6), lng:+pos.lng.toFixed(6), ts:serverNow(), spd:moving?30:0, hd:Math.round(pos.hd), to, vt:moving?vt:(r==="park"&&to==="C동"?"차량등록사업소":""), trip:`demo_${r}_${n}`, uid:"demo"};
 }
+function demoBusOf(r,n){ return r==="yatap" ? demoBus("yatap",["교회","야탑역"],n===2?.68:.18,n) : demoBus("park",["C동","교회"],.08,1); }
 function demoLive(){
   const out={yatap:{},park:{}};
   if(DEMO_CFG.y>=1) out.yatap["1"]=demoBus("yatap",["교회","야탑역"],.18,1);
@@ -1185,10 +1187,23 @@ $("ride").addEventListener("click", async e=>{
   if(act==="board"){
     const list=liveBuses(S.route).filter(x=>!x.old && x.trip);
     if(!list.length){ toast("지금 운행 중인 버스가 없어요","버스에 타신 뒤 다시 눌러 주세요."); return; }
-    if(list.length===1){ openCount(list[0].bus); return; }
-    // 여러 대 운행 중이면 탄 버스를 먼저 고름 (가까운 순)
-    $("busBtns").innerHTML=list.map(x=>`<button data-bus="${x.bus}">${x.bus}호차${x.to?`<small>${esc(x.to)}행</small>`:''}</button>`).join("");
-    $("busModal").classList.add("show");
+    if(!("geolocation" in navigator)){ toast("위치를 쓸 수 없어요","탑승 확인에는 위치 사용이 필요합니다."); return; }
+    // 탑승 구역 확인: 정류장 근처이거나, 버스가 다니는 길(노선 줄) 근처에서만 누를 수 있음
+    const orig=b.innerHTML; b.disabled=true; b.firstChild.textContent="위치 확인 중…";
+    const restore=()=>{ b.disabled=false; b.innerHTML=orig; };
+    navigator.geolocation.getCurrentPosition(p=>{
+      restore();
+      const me={lat:p.coords.latitude,lng:p.coords.longitude};
+      const inStop=ROUTES[S.route].stops.some(x=>dist(me,x)<=waitR(x)+30);
+      const lm=waitCfgOf(S.route).lineM;
+      const onLine=Object.values(PATHS[S.route]||{}).some(P=>{ const q=projectOn(P,me); return q && q.off<=lm; });
+      if(!inStop && !onLine){ toast("탑승 구역 안에서만 누를 수 있어요","정류장이나 셔틀이 다니는 길 가까이에서 눌러 주세요."); return; }
+      if(list.length===1){ openCount(list[0].bus); return; }
+      // 여러 대 운행 중이면 탄 버스를 먼저 고름 (가까운 순)
+      $("busBtns").innerHTML=list.map(x=>`<button data-bus="${x.bus}">${x.bus}호차${x.to?`<small>${esc(x.to)}행</small>`:''}</button>`).join("");
+      $("busModal").classList.add("show");
+    }, err=>{ restore(); toast("위치를 확인하지 못했어요", err.code===1?"위치 사용을 허용해 주세요.":"잠시 후 다시 눌러 주세요."); },
+    {enableHighAccuracy:true, timeout:15000, maximumAge:15000});
   }
   if(act==="unboard"){
     const mb=S.myBoard; S.myBoard=null; storage.set("myBoard","null"); $("ride")._h=null; drawRide();
@@ -1235,7 +1250,7 @@ async function autoRemove(keepDb){ if(!AW.written) return; const r=AW.route; AW.
   if(keepDb) return;
   try{ await authReady; const w=waitingNow(); if(!(w&&w.route===r)) await remove(ref(db,`waitc/${r}/${uid}`)); }catch(_){} }
 function autoStart(){
-  if(isDriverPage || !autoOn() || !anyAutoRoute() || document.hidden || !("geolocation" in navigator)) { autoStop(); return; }
+  if(DEMO || isDriverPage || !autoOn() || !anyAutoRoute() || document.hidden || !("geolocation" in navigator)) { autoStop(); return; }
   if(AW.watch!==null) return;
   try{ AW.watch=navigator.geolocation.watchPosition(p=>{ AW.pos=p; autoEval(); }, ()=>{}, {enableHighAccuracy:true, maximumAge:15000, timeout:30000}); }catch(_){}
   if(!AW.tick) AW.tick=setInterval(autoEval,30000);
@@ -1555,7 +1570,7 @@ async function initDrvMap(){
   if(D.unWait) D.unWait(); if(D.unWaitC) D.unWaitC();
   D.waitDots={}; D.waitC={};
   D.unWait = onValue(ref(db,`wait/${D.route}`), s=>{ D.waitDots=s.val()||{}; drvWaitDraw(); }, ()=>{});
-  D.unWaitC = onValue(ref(db,`waitc/${D.route}`), s=>{ D.waitC=s.val()||{}; drvWaitDraw(); }, ()=>{});
+  D.unWaitC = onValue(ref(db,`waitc/${D.route}`), s=>{ if(DEMO) return; D.waitC=s.val()||{}; drvWaitDraw(); }, ()=>{});
 }
 // 기다리는 분: 정류장별 인원(지도 정류장 옆 숫자 + 아래 줄) + 길 위 주황 점(‘어디서나’ 노선만)
 function drvStopHtml(s,c,n){ return `<div class="stopmk" style="border-color:${c}"><span class="stoplab">${esc(s.name)}${n?` <b class="wbadge">🙋${n}</b>`:""}</span></div>`; }
@@ -1706,7 +1721,7 @@ $("startBtn").onclick=async()=>{
     await authReady;
     D.busRef=ref(db,`live/${D.route}/${D.bus}`);
     const cur=(await get(D.busRef)).val();
-    if(cur && cur.uid!==uid && serverNow()-(cur.ts||0) < STALE_MS){
+    if(!DEMO && cur && cur.uid!==uid && serverNow()-(cur.ts||0) < STALE_MS){
       $("startErr").textContent=`지금 다른 휴대폰에서 ${ROUTES[D.route].name} ${D.bus}호차가 운행 중입니다. 셔틀 담당자에게 확인해 주세요.`;
       $("startBtn").disabled=false; return;
     }
@@ -1776,6 +1791,7 @@ async function startDriver(){
   onValue(ref(db,"config/stops"), s=>{ if(applyStops(s.val()) && D.map && D.stopL){ drvDrawStops(); } }, ()=>{});
   onValue(ref(db,"config/waitCfg"), s=>{ WAIT_CFG=s.val()||{}; if(D.waitL) drvWaitDraw(); }, ()=>{});
   onValue(ref(db,"config/buses"), s=>{ CFG_BUSES=s.val(); if(!$("drvSetup").classList.contains("hide")) drawDrvSetup(); }, ()=>{});
+  if(DEMO){ demoDriver(); return; }
   const code=codeFromLink();
   try{
     let ok=await loadMe();
@@ -1821,6 +1837,17 @@ async function loadMe(){
     if(!v){ if(!D.on){ $("pinErr").textContent="인증번호가 바뀌었습니다. 문자로 받으신 새 인증번호를 입력해 주세요."; drvShow("drvPin"); } return; }
     applyPin(v); if(!D.on && !$("drvSetup").classList.contains("hide")) drawDrvSetup(); }, ()=>{});
   return true;
+}
+// 시연: 인증번호 없이 가상 기사님으로 바로 운행 — 휴대폰 위치 대신 가상 버스 위치를 보냄 (저장은 하지 않음)
+function demoDriver(){
+  const r = DQ.get("dr")==="park" && DEMO_CFG.p ? "park" : "yatap";
+  applyPin({name:"시연", route:r, bus:1});
+  const g=navigator.geolocation;
+  g.watchPosition=(ok)=>{ const f=()=>{ const b=demoBusOf(r,1); ok({coords:{latitude:b.lat,longitude:b.lng,accuracy:6,speed:b.spd/3.6,heading:b.hd},timestamp:Date.now()}); }; f(); return setInterval(f,1000); };
+  g.clearWatch=id=>clearInterval(id);
+  setInterval(()=>{ try{ D.waitC=demoWait()[r]||{}; drvWaitDraw(); }catch(_){} demoBanner(); },1000);
+  drvShow("drvSetup"); drawDrvSetup();
+  setTimeout(()=>{ try{ $("startBtn").click(); }catch(_){} },1200);
 }
 function applyPin(p){
   const o = p && typeof p==="object" ? p : {};
