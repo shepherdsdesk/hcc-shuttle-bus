@@ -1863,7 +1863,10 @@ function demoDriver(){
   const g=navigator.geolocation;
   g.watchPosition=(ok)=>{ const f=()=>{ const b=demoBusOf(r,1); ok({coords:{latitude:b.lat,longitude:b.lng,accuracy:6,speed:b.spd/3.6,heading:b.hd},timestamp:Date.now()}); }; f(); return setInterval(f,1000); };
   g.clearWatch=id=>clearInterval(id);
-  setInterval(()=>{ try{ D.waitC=demoWait()[r]||{}; drvWaitDraw(); }catch(_){} demoBanner(); },1000);
+  setInterval(()=>{ try{ D.waitC=demoWait()[r]||{}; drvWaitDraw(); }catch(_){}
+    // 시연: 기사님 화면의 방향도 가상 버스가 실제로 가는 쪽과 똑같이
+    try{ if(D.on){ const b=demoBusOf(r,1), via=r==="park"&&b.to==="C동"?!b.vt:false; if(D.to!==b.to || D.viaDone!==via){ D.to=b.to; D.viaDone=via; showLeg(); } } }catch(_){}
+    demoBanner(); },1000);
   drvShow("drvSetup"); drawDrvSetup();
   setTimeout(()=>{ try{ $("startBtn").click(); }catch(_){} },1200);
 }
