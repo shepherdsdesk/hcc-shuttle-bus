@@ -521,10 +521,10 @@ const ROUTES = {
             {id:"church", name:"할렐루야교회", sub:"교회 입구", lat:37.40990, lng:127.15590, r:120} ],
     tip:"중간 구간은 손을 들면 세워 드려요. 지도에서 버스 위치를 보고 미리 나와 계세요." },
   park:{ name:"파킹엔젤스", color:"#0F766E", buses:4,
-    stops:[ {id:"cdong", name:"테크노파크 C동", sub:"주차 후 탑승", lat:37.40500, lng:127.15521, r:60},
-            {id:"dmv", name:"차량등록사업소 주차장", sub:"경유 · 주차장에서 탑승", lat:37.40691, lng:127.15397, r:80},
+    stops:[ {id:"dmv", name:"차량등록사업소 주차장", sub:"경유 · 주차장에서 탑승", lat:37.40691, lng:127.15397, r:80},
+            {id:"cdong", name:"테크노파크 C동", sub:"주차 후 탑승", lat:37.40500, lng:127.15521, r:60},
             {id:"church", name:"할렐루야교회", sub:"교회 입구", lat:37.40990, lng:127.15590, r:120} ],
-    tip:"주일에만 운행합니다. 테크노파크 C동 → 차량등록사업소 → 교회 순서로 돕니다." }
+    tip:"주일에만 운행합니다. 교회 → 차량등록사업소 → 테크노파크 C동 → 교회 순서로 돕니다." }
 };
 // 정류장 위치·도착 반경: 관리자가 지도에서 고친 값(config/stops/정류장id)이 있으면 그걸 씀
 Object.values(ROUTES).forEach(R=>R.stops.forEach(s=>{ s._def={lat:s.lat,lng:s.lng,r:s.r}; }));
@@ -779,7 +779,7 @@ const arrowL=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke
 function pillHtml(route,b){
   const c=ROUTES[route].color, old=b.old?" old":"";
   if(b.to==="교회") return `<div class="pill${old}" style="background:${c}"><span class="n" style="color:${c}">${b.bus}</span>교회행${arrowR}</div>`;
-  if(b.to) return `<div class="pill out${old}" style="color:${c};border-color:${c}">${arrowL}<span class="n" style="background:${c}">${b.bus}</span>${esc(b.to)}행</div>`;
+  if(b.to) return `<div class="pill out${old}" style="color:${c};border-color:${c}">${arrowL}<span class="n" style="background:${c}">${b.bus}</span>${esc(b.vt||b.to)}행</div>`;
   return `<div class="pill${old}" style="background:${c};padding-right:6px"><span class="n" style="color:${c}">${b.bus}</span></div>`;
 }
 function drawBusesOnMap(){
@@ -807,8 +807,8 @@ function nextScheduled(route,stopId){
   return {t:n, inMin:n-min};
 }
 // 이 정류장에서 타는 버스가 가는 곳 (종점·경유지)
-function stopDest(route,stopId){ return ({yatap:{church:"교회", byc:"야탑역"}, park:{church:"교회", cdong:"C동", dmv:"교회"}})[route]?.[stopId]||null; }
-function rideDir(route,stopId){ return ({yatap:{byc:"교회 가는 버스", church:"야탑역 가는 버스"}, park:{cdong:"교회 가는 버스", dmv:"교회 가는 버스", church:"C동 가는 버스"}})[route]?.[stopId]||""; }
+function stopDest(route,stopId){ return ({yatap:{church:"교회", byc:"야탑역"}, park:{church:"교회", cdong:"C동", dmv:"C동"}})[route]?.[stopId]||null; }
+function rideDir(route,stopId){ return ({yatap:{byc:"교회 가는 버스", church:"야탑역 가는 버스"}, park:{cdong:"교회 가는 버스", dmv:"C동 거쳐 교회 가는 버스", church:"차량등록사업소·C동 가는 버스"}})[route]?.[stopId]||""; }
 // ---------- 이 버스가 이 정류장으로 오는 버스인가? ----------
 // · 행선지(to)가 반대인 버스는 빼기. 단, 종점 안에 '멈춰 있는' 버스는 다음 운행을 기다리는 버스라 보여 줌
 // · 원 안에 들어와도 빠르게 달리고 있으면(반대편 도로를 지나가는 경우 등) '도착'으로 보지 않음
@@ -1127,23 +1127,10 @@ $("ride").addEventListener("click", async e=>{
   if(act==="board"){
     const list=liveBuses(S.route).filter(x=>!x.old && x.trip);
     if(!list.length){ toast("지금 운행 중인 버스가 없어요","버스에 타신 뒤 다시 눌러 주세요."); return; }
-    if(!("geolocation" in navigator)){ toast("위치를 쓸 수 없어요","탑승 확인에는 위치 사용이 필요합니다."); return; }
-    // 탑승 구역 확인: 정류장 근처이거나, 버스가 다니는 길(노선 줄) 근처에서만 누를 수 있음
-    const orig=b.innerHTML; b.disabled=true; b.firstChild.textContent="위치 확인 중…";
-    const restore=()=>{ b.disabled=false; b.innerHTML=orig; };
-    navigator.geolocation.getCurrentPosition(p=>{
-      restore();
-      const me={lat:p.coords.latitude,lng:p.coords.longitude};
-      const inStop=ROUTES[S.route].stops.some(x=>dist(me,x)<=waitR(x)+30);
-      const lm=waitCfgOf(S.route).lineM;
-      const onLine=Object.values(PATHS[S.route]||{}).some(P=>{ const q=projectOn(P,me); return q && q.off<=lm; });
-      if(!inStop && !onLine){ toast("탑승 구역 안에서만 누를 수 있어요","정류장이나 셔틀이 다니는 길 가까이에서 눌러 주세요."); return; }
-      if(list.length===1){ openCount(list[0].bus); return; }
-      // 여러 대 운행 중이면 탄 버스를 먼저 고름 (가까운 순)
-      $("busBtns").innerHTML=list.map(x=>`<button data-bus="${x.bus}">${x.bus}호차${x.to?`<small>${esc(x.to)}행</small>`:''}</button>`).join("");
-      $("busModal").classList.add("show");
-    }, err=>{ restore(); toast("위치를 확인하지 못했어요", err.code===1?"위치 사용을 허용해 주세요.":"잠시 후 다시 눌러 주세요."); },
-    {enableHighAccuracy:true, timeout:15000, maximumAge:15000});
+    if(list.length===1){ openCount(list[0].bus); return; }
+    // 여러 대 운행 중이면 탄 버스를 먼저 고름 (가까운 순)
+    $("busBtns").innerHTML=list.map(x=>`<button data-bus="${x.bus}">${x.bus}호차${x.to?`<small>${esc(x.to)}행</small>`:''}</button>`).join("");
+    $("busModal").classList.add("show");
   }
   if(act==="unboard"){
     const mb=S.myBoard; S.myBoard=null; storage.set("myBoard","null"); $("ride")._h=null; drawRide();
@@ -1433,8 +1420,9 @@ function watchBoard(){
 }
 function showLeg(from){
   $("liveRoute").textContent=`${ROUTES[D.route].name} · ${D.leg}회차`;
-  $("liveFrom").textContent=from||"";
-  $("liveDir").textContent= D.to ? `${D.to}행` : "방향 확인 중";
+  if(from!==undefined) $("liveFrom").textContent=from||"";
+  // 파킹엔젤스: 교회에서 내려갈 때는 차량등록사업소를 먼저 들른 뒤 C동으로
+  $("liveDir").textContent= D.to ? (D.route==="park" && D.to==="C동" ? (D.viaDone ? "C동행 (차량등록사업소 지남)" : "차량등록사업소 → C동행") : `${D.to}행`) : "방향 확인 중";
 }
 // 운행 경로 기록: 20m 넘게 움직일 때마다 점을 모아 30초마다 저장 → 관리자가 '노선 줄'로 저장할 수 있음
 function pathAdd(c){
@@ -1451,13 +1439,21 @@ function pathFlush(){
 }
 function newLeg(stop){
   pathFlush(); D.path=[{lat:stop.lat,lng:stop.lng}]; D.pathT=0;
-  D.leg++; D.legFrom=stop.id; D.trip=`${D.sid}_${D.leg}`; D.to=DEST[D.route][stop.id]||"";
+  D.leg++; D.legFrom=stop.id; D.trip=`${D.sid}_${D.leg}`; D.to=DEST[D.route][stop.id]||""; D.viaDone=false;
   set(ref(db,logPath("legs",D.leg)),{from:stop.name, to:D.to, t:serverTimestamp()}).catch(()=>{});
   showLeg(stop.name+" 출발"); watchBoard();
   D.lastSent=0; // 회차·방향이 바뀌면 바로 알림
 }
 // 종점(정류장 80m 안)에 들어오면 새 회차, 150m 밖으로 나가면 출발 시각 기록
+// 파킹엔젤스: 교회 → 차량등록사업소 → 테크노파크 C동 → 교회. 교회에서 내려갈 때는 차량등록사업소를 지나야 'C동행'
+function viaCheck(lat,lng){
+  if(D.route!=="park" || D.to!=="C동" || D.viaDone) return;
+  const v=ROUTES.park.stops.find(s=>s.id==="dmv"); if(!v) return;
+  if(dist({lat,lng},v)<Math.max(80,stopR(v))){ D.viaDone=true; showLeg(); D.lastSent=0; }
+}
+function viaLabel(){ return D.route==="park" && D.to==="C동" && !D.viaDone ? "차량등록사업소" : ""; }
 function legCheck(lat,lng,spd){
+  try{ viaCheck(lat,lng); }catch(_){}
   const stops=ROUTES[D.route].stops.filter(s=>TERMINALS[D.route].includes(s.id));
   let near=null; stops.forEach(s=>{ const d=dist({lat,lng},s); if(!near||d<near.d) near={s,d}; });
   if(!near) return;
@@ -1634,7 +1630,7 @@ async function sendPos(p){
   try{
     await set(D.busRef,{lat:+c.latitude.toFixed(6), lng:+c.longitude.toFixed(6), acc:Math.round(c.accuracy||0),
       spd: mv.spd, hd: mv.hd,
-      ts:serverTimestamp(), uid, trip:D.trip, to:D.to||""});
+      ts:serverTimestamp(), uid, trip:D.trip, to:D.to||"", vt:viaLabel()});
     D.count++; $("liveCount").textContent=D.count+"회";
     $("liveAcc").textContent= c.accuracy ? `약 ${Math.round(c.accuracy)}m` : "-";
     liveState("전송 중",false);
@@ -1660,7 +1656,7 @@ $("startBtn").onclick=async()=>{
     D.date=kstDate(serverNow());
     const sref=push(ref(db,`logs/${D.date}`)); D.sid=sref.key;
     await set(sref,{uid, pin:D.pin||"", name:D.name||"", route:D.route, bus:D.bus, start:serverTimestamp()});
-    D.leg=1; D.legFrom=null; D.atT=null; D.trip=`${D.sid}_1`; D.to=""; D.guess=null;
+    D.leg=1; D.legFrom=null; D.atT=null; D.trip=`${D.sid}_1`; D.to=""; D.guess=null; D.viaDone=false;
     await set(ref(db,logPath("legs",1)),{from:"운행 시작", t:serverTimestamp()});
   }catch(e){
     $("startErr").textContent="이 차량을 운행할 권한이 없습니다. 배정이 바뀌었을 수 있으니 셔틀 담당자에게 확인해 주세요.";
