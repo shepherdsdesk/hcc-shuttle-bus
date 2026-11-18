@@ -149,6 +149,10 @@
       },
       "tvVideo": {
         ".write": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && (root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff' || root.child('admins').child(auth.token.email.replace('.', ',')).child('perm').child('tv').val() === true))"
+      },
+      "reqCfg": {
+        ".write": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && (root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff' || root.child('admins').child(auth.token.email.replace('.', ',')).child('perm').child('req').val() === true))",
+        ".validate": "newData.child('on').isBoolean()"
       }
     },
     "tvmedia": {
@@ -161,6 +165,29 @@
         "$id": {
           ".validate": "!newData.exists() || (newData.child('data').isString() && newData.child('data').val().beginsWith('data:image/') && newData.child('data').val().length < 900000)"
         }
+      }
+    },
+    "adminLog": {
+      ".read": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff')",
+      "$date": {
+        ".write": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff') && !newData.exists()",
+        "$id": {
+          ".write": "(auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && !data.exists()",
+          ".validate": "newData.child('by').val() === auth.token.email && newData.child('ts').val() === now && newData.child('act').isString() && newData.child('act').val().length <= 10 && newData.child('what').isString() && newData.child('what').val().length <= 40 && (!newData.child('p').exists() || (newData.child('p').isString() && newData.child('p').val().length <= 80))"
+        }
+      }
+    },
+    "requests": {
+      ".read": "((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && (root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff' || root.child('admins').child(auth.token.email.replace('.', ',')).child('perm').child('req').val() === true))",
+      "$id": {
+        ".write": "(auth != null && !data.exists() && newData.child('uid').val() === auth.uid) || (((auth != null && auth.token.email != null && (auth.token.email_verified == true || auth.token.email.endsWith('@hccshuttle.app')) && root.child('admins').child(auth.token.email.replace('.', ',')).exists()) && (root.child('admins').child(auth.token.email.replace('.', ',')).child('role').val() !== 'staff' || root.child('admins').child(auth.token.email.replace('.', ',')).child('perm').child('req').val() === true)) && data.exists() && newData.exists())",
+        ".validate": "newData.child('cat').isString() && newData.child('cat').val().length <= 30 && (newData.child('route').val() === 'yatap' || newData.child('route').val() === 'park') && newData.child('ts').isNumber() && (!newData.child('text').exists() || (newData.child('text').isString() && newData.child('text').val().length <= 200)) && (!newData.child('name').exists() || (newData.child('name').isString() && newData.child('name').val().length <= 20)) && (!newData.child('phone').exists() || (newData.child('phone').isString() && newData.child('phone').val().length <= 20)) && (!newData.child('st').exists() || newData.child('st').val() === 'new' || newData.child('st').val() === 'seen' || newData.child('st').val() === 'done') && (!newData.child('memo').exists() || (newData.child('memo').isString() && newData.child('memo').val().length <= 300)) && (data.exists() ? (newData.child('uid').val() === data.child('uid').val() && newData.child('ts').val() === data.child('ts').val() && newData.child('cat').val() === data.child('cat').val()) : (root.child('config').child('reqCfg').child('on').val() === true && newData.child('ts').val() === now && !newData.child('st').exists() && !newData.child('memo').exists() && newData.parent().parent().child('reqLast').child(auth.uid).val() === now && (!root.child('reqLast').child(auth.uid).exists() || root.child('reqLast').child(auth.uid).val() < now - 60000)))"
+      }
+    },
+    "reqLast": {
+      "$uid": {
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.isNumber() && newData.val() === now"
       }
     }
   }

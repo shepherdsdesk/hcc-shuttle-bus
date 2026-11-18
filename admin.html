@@ -369,7 +369,22 @@
   .fontopt b{font-size:19px;font-weight:800}
   .fontopt span{font-size:13px;font-weight:700}
   .fontopt small{font-size:11.5px;color:var(--sub)}
-  .ff-gmarket{font-family:"GmarketSans","GmarketSansMedium",sans-serif}
+  .rqn{margin-left:auto;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:#E5484D;color:#fff;font-size:12px;font-weight:700;display:inline-grid;place-items:center}
+.lglist{display:flex;flex-direction:column;max-height:520px;overflow:auto;border:1px solid var(--line);border-radius:12px}
+.lgrow{display:grid;grid-template-columns:120px 150px 1fr;gap:10px;padding:9px 14px;border-bottom:1px solid var(--line);font-size:14px;align-items:center}
+.lgrow:last-child{border-bottom:0}.lgrow .t{color:var(--sub);font-variant-numeric:tabular-nums}.lgrow .w{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lgday{padding:7px 14px;background:var(--bg);font-size:13px;font-weight:700;color:var(--sub)}
+.rqlist{display:flex;flex-direction:column;gap:10px}
+.rqc{border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.rqc.st-new{border-color:#F5B544;background:rgba(245,181,68,.06)}
+.rqh{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--sub)}
+.rqh .cat{font-weight:700;color:var(--ink);font-size:15px}
+.rqh .rqchip{padding:2px 8px;border-radius:8px;background:#EEF1F6;color:var(--sub);font-weight:600}
+.rqt{font-size:15px;line-height:1.55;white-space:pre-wrap;word-break:keep-all}
+.rqa{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.rqa input{flex:1;min-width:180px}
+@media(max-width:700px){.lgrow{grid-template-columns:1fr;gap:2px}}
+.ff-gmarket{font-family:"GmarketSans","GmarketSansMedium",sans-serif}
   #lkFont[data-w=normal] .fontopt b{font-weight:600}
   #lkFont[data-w=light] .fontopt b{font-weight:400}
   .pst-row.dim,.seg3.dim{opacity:.55}
@@ -492,6 +507,7 @@
         <button data-tab="stops">정류장 · 노선</button>
         <button data-tab="tv">TV 화면</button>
         <button data-tab="stats">통계</button>
+        <button data-tab="req">성도 요청<span class="rqn hide" id="reqBadge"></span></button>
         <button data-tab="demo">시연</button>
         <button data-tab="admins">관리자</button>
         <button data-tab="brand">기본 설정</button>
@@ -1046,6 +1062,28 @@
           <li><b>처음 한 번만</b> Firebase 콘솔 → Authentication → 로그인 방법에서 <b>이메일/비밀번호</b>를 켜 두세요. (설정 → 사용자 작업의 ‘생성(가입) 사용 설정’은 켜진 채로 둡니다. 관리자 목록에 없는 계정은 로그인해도 아무것도 할 수 없습니다.)</li></ul></div>
       </div>
       <div class="card"><h2>관리자 목록 <small>일반 관리자는 체크한 메뉴만 볼 수 있습니다</small></h2><div id="aTbl"></div></div>
+      <div class="card"><h2>활동 기록 <small>관리자가 무엇을 언제 바꿨는지 · 최고 관리자만 봅니다</small></h2>
+        <div class="row" style="gap:8px;flex-wrap:wrap;margin-bottom:10px">
+          <select id="lgWho" style="width:auto"><option value="">모든 관리자</option></select>
+          <select id="lgDays" style="width:auto"><option value="1">오늘</option><option value="7" selected>최근 7일</option><option value="30">최근 30일</option><option value="183">최근 6개월</option></select>
+          <span class="muted" id="lgCount" style="align-self:center"></span>
+          <button class="btn ghost small" id="lgClean" style="margin-left:auto">6개월 지난 기록 정리</button>
+        </div>
+        <div id="lgList" class="lglist"></div>
+        <ul class="hint"><li>저장·삭제·로그인을 자동으로 남깁니다. 같은 일을 1분 안에 여러 번 하면 한 줄로 남습니다.</li><li>기록은 고치거나 지울 수 없고, 6개월이 지난 기록만 정리할 수 있습니다.</li></ul>
+      </div>
+    </section>
+    <section id="tab-req" class="hide">
+      <div class="card"><h2>성도 요청 <small>성도님 화면의 ‘셔틀 요청하기’로 들어온 의견</small></h2>
+        <div class="row" style="gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;padding:12px 14px;border:1px solid var(--line);border-radius:12px">
+          <b style="font-size:15px">성도님 화면에 ‘셔틀 요청하기’</b>
+          <div class="rf" id="rqOnSeg" style="margin:0;display:inline-flex;background:var(--bg)"><button data-rqon="1">보이기</button><button data-rqon="0" class="on">잠그기</button></div>
+          <span class="muted" id="rqOnMsg" style="font-size:13px">잠겨 있으면 성도님 화면에 버튼이 보이지 않고, 요청도 들어오지 않습니다.</span>
+        </div>
+        <div class="rf" id="rqFilter" style="margin:0 0 12px;display:inline-flex;background:var(--bg)"><button class="on" data-rq="new">새 요청</button><button data-rq="seen">확인함</button><button data-rq="done">처리 완료</button><button data-rq="all">전체</button></div>
+        <div id="rqList" class="rqlist"></div>
+        <ul class="hint"><li>이름 없이 온 요청이 대부분입니다. ‘답을 받고 싶어요’를 고른 분만 이름·전화번호가 보입니다.</li><li>‘확인함’ → ‘처리 완료’ 순서로 눌러 주시고, 메모에 처리 내용을 남겨 두세요.</li></ul>
+      </div>
     </section>
     <p class="muted" style="text-align:center;margin-top:24px">만든 사람 AI목양지원센터 · 이세진 목사 · <a href="./" style="color:inherit">성도님 화면</a> · <a href="./driver.html" style="color:inherit">드라이버 화면</a></p>
     </div>
@@ -1065,7 +1103,23 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence, signInWithEmailAndPassword, createUserWithEmailAndPassword, inMemoryPersistence, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import { getDatabase, ref, onValue, get, set, update, remove, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+import { getDatabase, ref, onValue, get, set as _set, update as _update, remove as _remove, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+// ---------- 관리자 활동 기록: 바꾸는 일은 모두 한 줄씩 남김 (최고 관리자만 봄) ----------
+const refPath=r=>{ if(r&&typeof r.path==="string") return r.path; try{ return decodeURIComponent(new URL(r.toString()).pathname).replace(/^\//,""); }catch(_){ return ""; } };
+const LOG_LABEL=[["config/noticeTemplates","공지 예문"],["config/notice","공지"],["config/news","교회 소식"],["config/parkTimes","파킹엔젤스 시간표"],["config/times","야탑역 셔틀 시간표"],["config/stops","정류장"],["config/pathInfo","노선 줄"],["config/paths","노선 줄"],["config/waitCfg","기다려요 설정"],["config/buses","차량(호차)"],["config/tvPosterList","TV 포스터 목록"],["config/tvPosters","TV 포스터 설정"],["config/tvVideo","TV 영상"],["config/tvRest","TV 쉬는 날"],["config/tvRoutes","TV 노선"],["config/tvTheme","TV 꾸미기"],["config/tvLook","TV 화면 모양"],["config/brand","기본 설정"],["config/kakaoKey","지도 설정"],["config/reqCfg","성도 요청 켜기·잠그기"],["config","설정"],["tvmedia/posters","TV 포스터 사진"],["tvmedia","TV 사진"],["pins","기사님 인증번호"],["drivers","기사님"],["admins","관리자"],["live","운행 현황(버스 내리기)"],["logs","운행 기록"],["board","탑승 기록"],["stats","통계"],["waitpeak","기다림 통계"],["waitc","기다리는 인원"],["wait","기다리는 위치"],["requests","성도 요청"]];
+const logLabel=p=>{ const x=LOG_LABEL.find(([k])=>p===k||p.startsWith(k+"/")); return x?x[1]:p.split("/")[0]; };
+const LOG_LAST={}; let CUR_U=null; const curUser=()=>auth.currentUser||CUR_U;
+function alog(kind,path){
+  try{ const u=curUser(); if(!u||!u.email||!path||path.startsWith("adminLog")||path.startsWith("stats/days")) return;
+    const what=logLabel(path), key=kind+what, t=Date.now(); if(LOG_LAST[key] && t-LOG_LAST[key]<60e3) return; LOG_LAST[key]=t;   // 1분 안 같은 일은 한 줄로
+    const d=new Date(t+9*3600e3).toISOString().slice(0,10);
+    _set(push(ref(db,"adminLog/"+d)),{by:u.email,ts:serverTimestamp(),act:kind,what,p:path.slice(0,80)}).catch(()=>{});
+  }catch(_){}
+}
+const set=(r,v)=>_set(r,v).then(x=>{ alog(v==null?"삭제":"저장",refPath(r)); return x; });
+const remove=r=>_remove(r).then(x=>{ alog("삭제",refPath(r)); return x; });
+const update=(r,v)=>_update(r,v).then(x=>{ const base=refPath(r); const ks=Object.keys(v||{}); const del=ks.length&&ks.every(k=>v[k]==null);
+  alog(del?"삭제":"저장",(base?base+"/":"")+(ks[0]||"")); return x; });
 
 const firebaseConfig = {
   apiKey: "AIzaSyBwaQjrMr0AwBYW-RagoQ3XrQDxXc8UGn0",
@@ -1263,7 +1317,7 @@ $("loginBtn").onclick=async()=>{ $("loginErr").textContent="";
 const doLogout=()=>signOut(auth);
 $("logoutBtn2").onclick=doLogout;
 
-onAuthStateChanged(auth, async u=>{
+onAuthStateChanged(auth, async u=>{ CUR_U=u;
   ["gateLogin","gateDenied","main"].forEach(id=>$(id).classList.add("hide"));
   if(!u || u.isAnonymous){ $("who").innerHTML=""; $("gateLogin").classList.remove("hide"); return; }
   me=u;
@@ -1287,12 +1341,12 @@ onAuthStateChanged(auth, async u=>{
 const ID_DOMAIN="@hccshuttle.app";
 const isIdAcct=e=>String(e||"").toLowerCase().endsWith(ID_DOMAIN);
 const showId=e=>isIdAcct(e)?String(e).slice(0,-ID_DOMAIN.length)+" (아이디)":String(e||"");
-const PERM_LIST=[["now","운행 현황"],["drivers","기사님 관리"],["notice","공지 · 교회 소식"],["times","시간표"],["stops","정류장 · 노선"],["tv","TV 화면"],["stats","통계"]];
-const STAFF_DEF={now:true,drivers:true,stops:true,stats:true};
+const PERM_LIST=[["now","운행 현황"],["drivers","기사님 관리"],["notice","공지 · 교회 소식"],["times","시간표"],["stops","정류장 · 노선"],["tv","TV 화면"],["stats","통계"],["req","성도 요청"]];
+const STAFF_DEF={now:true,drivers:true,stops:true,stats:true,req:true};
 let ME={role:"super",perm:{}};
 const isSuper=()=>ME.role!=="staff";
 const can=p=>isSuper() || !!(ME.perm&&ME.perm[p]);
-const TAB_PERM={now:"now",drivers:"drivers",notice:"notice",times:"times",stops:"stops",tv:"tv",stats:"stats",demo:"now",admins:"*",brand:"*"};
+const TAB_PERM={now:"now",drivers:"drivers",notice:"notice",times:"times",stops:"stops",tv:"tv",stats:"stats",req:"req",demo:"now",admins:"*",brand:"*"};
 function applyPerms(){
   document.querySelectorAll("#tabs button").forEach(b=>{ const p=TAB_PERM[b.dataset.tab]; b.classList.toggle("hide", p==="*" ? !isSuper() : !can(p)); });
   document.querySelectorAll(".superOnly").forEach(el=>el.classList.toggle("hide",!isSuper()));
@@ -1313,6 +1367,7 @@ const TAB_ICON={
   stops:'<circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h7a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h7"/>',
   tv:'<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M8 3l4 3 4-3"/>',
   stats:'<path d="M5 20V11M11 20V5M17 20v-6M3 20h18"/>',
+  req:'<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/>',
   demo:'<circle cx="12" cy="12" r="9"/><path d="M10 8.5v7l6-3.5z"/>',
   admins:'<path d="M12 3l7 3v6c0 4.6-3 7.7-7 9-4-1.3-7-4.4-7-9V6z"/><path d="M9 12l2 2 4-4"/>',
   brand:'<circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M2.5 12h3M18.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/>'};
@@ -1334,13 +1389,13 @@ $("themeDots").addEventListener("click",e=>{ const b=e.target.closest("[data-th]
 try{ setTheme(localStorage.getItem("adminTheme")||"navy"); }catch(_){ setTheme("navy"); }
 
 // ---------- 탭 ----------
-const TITLES={now:"운행 현황",drivers:"기사님 관리",notice:"공지 · 교회 소식",times:"시간표",stops:"정류장 · 노선",tv:"TV 화면",stats:"통계",demo:"시연",admins:"관리자",brand:"기본 설정"};
+const TITLES={now:"운행 현황",drivers:"기사님 관리",notice:"공지 · 교회 소식",times:"시간표",stops:"정류장 · 노선",tv:"TV 화면",stats:"통계",req:"성도 요청",demo:"시연",admins:"관리자",brand:"기본 설정"};
 function nowSub(){ const d=new Date(now()+9*3600e3); return `${d.getUTCMonth()+1}월 ${d.getUTCDate()}일 ${["주일","월요일","화요일","수요일","목요일","금요일","토요일"][d.getUTCDay()]} · ${d.getUTCHours()}:${String(d.getUTCMinutes()).padStart(2,"0")} 기준`; }
 let curTab="now";
 $("tabs").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return;
   curTab=b.dataset.tab;
   document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("on",x===b));
-  ["now","drivers","notice","times","stops","tv","stats","demo","admins","brand"].forEach(t=>$("tab-"+t).classList.toggle("hide",t!==curTab));
+  ["now","drivers","notice","times","stops","tv","stats","req","demo","admins","brand"].forEach(t=>$("tab-"+t).classList.toggle("hide",t!==curTab));
   $("pageTitle").textContent=TITLES[curTab]; $("pageSub").textContent= curTab==="now"? nowSub() : "";
   $("rf").classList.toggle("hide", !(curTab==="now"||curTab==="stats"));
   if(curTab==="now" && map) setTimeout(()=>{ map.resize(); fitRF(); },50);
@@ -1704,8 +1759,69 @@ document.addEventListener("click",async e=>{
 
 // ---------- 시작 ----------
 let started=false, map, busLayer, waitLayer;
+
+// ---------- 활동 기록 보기 (최고 관리자) ----------
+const LG={all:{},names:{}};
+function kstDay(t){ return new Date(t+9*3600e3).toISOString().slice(0,10); }
+function drawLog(){
+  if(!$("lgList")) return;
+  const who=$("lgWho").value, days=+$("lgDays").value, from=kstDay(now()-(days-1)*864e5);
+  const rows=[]; Object.entries(LG.all).forEach(([d,o])=>{ if(d<from) return; Object.values(o||{}).forEach(r=>{ if(!who||r.by===who) rows.push(r); }); });
+  rows.sort((a,b)=>(b.ts||0)-(a.ts||0));
+  const nm=e=>{ const a=(A.admins||{})[emailKey(e)]; return (a&&a.name)?`${a.name} · ${showId(e)}`:showId(e); };
+  let h="", last="";
+  rows.slice(0,500).forEach(r=>{ const d=kstDay(r.ts||0); if(d!==last){ last=d; const dd=new Date(d+"T00:00:00Z"); h+=`<div class="lgday">${dd.getUTCMonth()+1}월 ${dd.getUTCDate()}일 ${["주일","월","화","수","목","금","토"][dd.getUTCDay()]}${dd.getUTCDay()?"요일":""}</div>`; }
+    const k=new Date((r.ts||0)+9*3600e3); h+=`<div class="lgrow"><span class="t">${String(k.getUTCHours()).padStart(2,"0")}:${String(k.getUTCMinutes()).padStart(2,"0")}</span><span class="w" title="${esc(r.by)}">${esc(nm(r.by))}</span><span>${esc(r.what||"")} ${r.act==="로그인"?"":"· "}${esc(r.act==="로그인"?"로그인":r.act==="삭제"?"삭제함":"저장함")}</span></div>`; });
+  $("lgList").innerHTML=h||'<div class="lgrow"><span class="muted">기록이 없습니다</span></div>';
+  $("lgCount").textContent=rows.length?`${rows.length}건`:"";
+  const ppl=[...new Set(Object.values(LG.all).flatMap(o=>Object.values(o||{}).map(r=>r.by)))].sort();
+  const cur=$("lgWho").value; $("lgWho").innerHTML='<option value="">모든 관리자</option>'+ppl.map(e=>`<option value="${esc(e)}" ${e===cur?"selected":""}>${esc(nm(e))}</option>`).join("");
+}
+function startLog(){
+  if(!isSuper()||startLog.on) return; startLog.on=true;
+  onValue(ref(db,"adminLog"),s=>{ LG.all=s.val()||{}; drawLog(); },()=>{});
+  $("lgWho").onchange=drawLog; $("lgDays").onchange=drawLog;
+  $("lgClean").onclick=async()=>{ const cut=kstDay(now()-183*864e5); const old=Object.keys(LG.all).filter(d=>d<cut);
+    if(!old.length){ toast("6개월 지난 기록이 없습니다"); return; }
+    if(!confirm(`${old.length}일치 기록(6개월 지난 것)을 정리할까요? 되돌릴 수 없습니다.`)) return;
+    const u={}; old.forEach(d=>u["adminLog/"+d]=null); try{ await _update(ref(db),u); toast("오래된 기록을 정리했습니다"); }catch(_){ toast("정리하지 못했습니다"); } };
+}
+// ---------- 성도 요청 ----------
+const RQ={all:{},f:"new"};
+const RQ_ST={new:"새 요청",seen:"확인함",done:"처리 완료"};
+function drawReq(){
+  const list=Object.entries(RQ.all).map(([k,v])=>({k,...v})).sort((a,b)=>(b.ts||0)-(a.ts||0));
+  const n=list.filter(r=>(r.st||"new")==="new").length; const bd=$("reqBadge"); if(bd){ bd.textContent=n; bd.classList.toggle("hide",!n); }
+  if(!$("rqList")) return;
+  const rows=list.filter(r=>RQ.f==="all"||(r.st||"new")===RQ.f);
+  $("rqList").innerHTML=rows.map(r=>{ const st=r.st||"new", k=new Date((r.ts||0)+9*3600e3);
+    const when=`${k.getUTCMonth()+1}/${k.getUTCDate()} ${String(k.getUTCHours()).padStart(2,"0")}:${String(k.getUTCMinutes()).padStart(2,"0")}`;
+    const rt=r.route&&ROUTES[r.route]?ROUTES[r.route].name:"";
+    const who=(r.name||r.phone)?`<span class="rqchip">답 요청 · ${esc(r.name||"")} ${r.phone?`<a href="tel:${esc(String(r.phone).replace(/[^0-9]/g,""))}">${esc(r.phone)}</a>`:""}</span>`:'<span class="rqchip">이름 없음</span>';
+    return `<div class="rqc st-${st}" data-rk="${esc(r.k)}"><div class="rqh"><span class="cat">${esc(r.cat||"기타")}</span>${rt?`<span class="rqchip">${esc(rt)}</span>`:""}<span>${when}</span>${who}<span class="rqchip" style="margin-left:auto">${RQ_ST[st]}</span></div>
+      ${r.text?`<div class="rqt">${esc(r.text)}</div>`:""}
+      <div class="rqa"><input data-rmemo placeholder="처리 메모 (예: 다음 주부터 10:50 차 추가)" value="${esc(r.memo||"")}" maxlength="300">
+        ${st!=="seen"&&st!=="done"?'<button class="btn ghost small" data-rst="seen">확인함</button>':""}${st!=="done"?'<button class="btn green small" data-rst="done">처리 완료</button>':'<button class="btn ghost small" data-rst="seen">다시 확인함으로</button>'}<button class="btn ghost small" data-rsave>메모 저장</button></div></div>`; }).join("")
+    || `<div class="muted" style="padding:18px;text-align:center">${RQ.f==="new"?"새 요청이 없습니다":"요청이 없습니다"}</div>`;
+}
+function startReq(){
+  if(!can("req")||startReq.on) return; startReq.on=true;
+  onValue(ref(db,"requests"),s=>{ RQ.all=s.val()||{}; drawReq(); },()=>{});
+  onValue(ref(db,"config/reqCfg"),s=>{ const on=!!((s.val()||{}).on); $("rqOnSeg").querySelectorAll("button").forEach(b=>b.classList.toggle("on",(b.dataset.rqon==="1")===on));
+    $("rqOnMsg").textContent=on?"지금 성도님 화면에 보입니다. 잠그면 버튼이 사라지고 새 요청도 막힙니다.":"잠겨 있으면 성도님 화면에 버튼이 보이지 않고, 요청도 들어오지 않습니다."; },()=>{});
+  $("rqOnSeg").addEventListener("click",async e=>{ const b=e.target.closest("[data-rqon]"); if(!b) return; const on=b.dataset.rqon==="1";
+    try{ await set(ref(db,"config/reqCfg"),{on}); toast(on?"성도님 화면에 ‘셔틀 요청하기’를 보입니다":"‘셔틀 요청하기’를 잠갔습니다"); }catch(_){ toast("바꾸지 못했습니다 — 데이터베이스 규칙을 새로 게시했는지 확인해 주세요"); } });
+  $("rqFilter").addEventListener("click",e=>{ const b=e.target.closest("[data-rq]"); if(!b) return; RQ.f=b.dataset.rq;
+    $("rqFilter").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b)); drawReq(); });
+  $("rqList").addEventListener("click",async e=>{ const c=e.target.closest("[data-rk]"); if(!c) return; const k=c.dataset.rk, memo=c.querySelector("[data-rmemo]").value.trim().slice(0,300);
+    const b=e.target.closest("[data-rst],[data-rsave]"); if(!b) return;
+    const v={memo, by:(curUser()||{}).email||""}; if(b.dataset.rst) v.st=b.dataset.rst;
+    try{ await update(ref(db,"requests/"+k),v); toast(b.dataset.rst==="done"?"처리 완료로 바꿨습니다":b.dataset.rst?"확인함으로 바꿨습니다":"메모를 저장했습니다"); }catch(_){ toast("저장하지 못했습니다 — 데이터베이스 규칙을 새로 게시했는지 확인해 주세요"); } });
+}
 async function startAdmin(){
   if(started) return; started=true;
+  startLog(); startReq();
+  try{ if(!sessionStorage.getItem("hccLogin")){ sessionStorage.setItem("hccLogin","1"); const u=curUser(); if(u&&u.email) _set(push(ref(db,"adminLog/"+kstDay(Date.now()))),{by:u.email,ts:serverTimestamp(),act:"로그인",what:"관리자 페이지",p:"login"}).catch(()=>{}); } }catch(_){}
   checkRain(); setInterval(checkRain, 60*60e3);
   map=await MapKit.create("map",{zoomControl:true, kakaoKey: await getKakaoKey(db,ref,get)});
   mainStopL=map.layer(); drawMainStops();
@@ -2382,11 +2498,17 @@ function prevRange(kind,r){ // 비교할 바로 전 기간
 }
 // 하루 요약 만들기
 function summarize(logs,board,peak){
-  const out={v:1};
+  const out={v:2};
   ["yatap","park"].forEach(r=>{
-    const o={runs:0,legs:0,ride:sumAll((board||{})[r]),hours:{},drivers:{}};
+    const o={runs:0,legs:0,ride:sumAll((board||{})[r]),hours:{},drivers:{},min:0,minN:0,drvMin:{},leg:{}};
     Object.entries(logs||{}).forEach(([sid,s])=>{ if(!s||s.route!==r) return; o.runs++;
       const nm=safeKey(s.name||(A.pins[s.pin]&&A.pins[s.pin].name)||"기사님"); o.drivers[nm]=(o.drivers[nm]||0)+1;
+      // 운행 시간: 운행 시작 ~ 운행 종료 (종료를 누르지 않은 운행은 빼고 셈)
+      if(s.start && s.end && s.end>s.start){ const m=Math.round((s.end-s.start)/60e3); if(m>0 && m<16*60){ o.min+=m; o.minN++; o.drvMin[nm]=(o.drvMin[nm]||0)+m; } }
+      // 구간 시간: 종점 출발(dep) ~ 다음 종점 도착(다음 회차 시작)
+      const L=Object.entries(s.legs||{}).map(([k,l])=>({k:+k,...(l||{})})).sort((a,b)=>a.k-b.k);
+      L.forEach((l,i)=>{ const nx=L[i+1]; if(!nx||!nx.t||!l.from||l.from==="운행 시작"||!l.to) return; const st=l.dep||l.t; if(!st||nx.t<=st) return;
+        const m=(nx.t-st)/60e3; if(m<1||m>120) return; const key=safeKey(l.from+" → "+l.to); const x=o.leg[key]||(o.leg[key]={m:0,n:0}); x.m+=m; x.n++; });
       Object.entries(s.legs||{}).forEach(([k,l])=>{ o.legs++; const t=board&&board[r]&&board[r][s.bus]&&board[r][s.bus][`${sid}_${k}`];
         let n=0; if(t) Object.values(t).forEach(v=>{ n+=+((v&&v.n)||0); });
         if(n && l && l.t){ const h="h"+new Date(l.t+9*3600e3).getUTCHours(); o.hours[h]=(o.hours[h]||0)+n; } }); });
@@ -2397,7 +2519,7 @@ function summarize(logs,board,peak){
 }
 async function daySummary(date,today){
   if(date>today) return null;
-  if(date<today && PER.all && PER.all[date]) return PER.all[date];
+  if(date<today && PER.all && PER.all[date] && PER.all[date].v>=2) return PER.all[date];
   const [ls,bs,ps]=await Promise.all([get(ref(db,"logs/"+date)),get(ref(db,"board/"+date)),get(ref(db,"waitpeak/"+date)).catch(()=>({val:()=>null}))]);
   const sm=summarize(ls.val(),bs.val(),ps.val()); sm.ts=Date.now();
   if(date<today){ PER.all[date]=sm; try{ await set(ref(db,"stats/days/"+date),sm); }catch(_){} }
@@ -2413,12 +2535,15 @@ async function loadRange(r,onProg){
   return res;
 }
 function aggregate(days,routes){
-  const T={ride:0,runs:0,legs:0,days:0,hours:{},drivers:{},dow:[0,0,0,0,0,0,0],dowN:[0,0,0,0,0,0,0],wait:{},byDate:{}};
-  Object.entries(days).forEach(([d,sm])=>{ let dr=0, run=0;
+  const T={ride:0,runs:0,legs:0,days:0,hours:{},drivers:{},min:0,minN:0,minDays:0,drvMin:{},leg:{},dow:[0,0,0,0,0,0,0],dowN:[0,0,0,0,0,0,0],wait:{},byDate:{}};
+  Object.entries(days).forEach(([d,sm])=>{ let dr=0, run=0, dm=0;
     routes.forEach(r=>{ const o=sm[r]; if(!o) return; dr+=o.ride||0; run+=o.runs||0; T.legs+=o.legs||0;
       Object.entries(o.hours||{}).forEach(([h,n])=>T.hours[h]=(T.hours[h]||0)+n);
       Object.entries(o.drivers||{}).forEach(([k,n])=>T.drivers[k]=(T.drivers[k]||0)+n);
+      T.min+=o.min||0; dm+=o.min||0; T.minN+=o.minN||0; Object.entries(o.drvMin||{}).forEach(([k,m])=>T.drvMin[k]=(T.drvMin[k]||0)+m);
+      Object.entries(o.leg||{}).forEach(([k,x])=>{ const y=T.leg[r+":"+k]||(T.leg[r+":"+k]={m:0,n:0,r,k}); y.m+=x.m; y.n+=x.n; });
       Object.entries(o.waitMax||{}).forEach(([st,n])=>{ const key=r+":"+st; if(!T.wait[key]||n>T.wait[key].n) T.wait[key]={n,d,r,st}; }); });
+    if(dm>0) T.minDays++;
     T.ride+=dr; T.runs+=run; T.byDate[d]={ride:dr,runs:run,y:(sm.yatap&&routes.includes("yatap"))?sm.yatap.ride||0:0,p:(sm.park&&routes.includes("park"))?sm.park.ride||0:0};
     if(run||dr){ T.days++; const w=new Date(d+"T00:00:00Z").getUTCDay(); T.dow[w]+=dr; T.dowN[w]++; } });
   return T;
@@ -2434,6 +2559,7 @@ function barsHtml(list,fmt){
   const max=Math.max(1,...list.map(x=>x.y+x.p));
   return `<div class="pbars">${list.map(x=>`<div class="pb${x.sun?' sun':''}" title="${x.lab}: ${x.y+x.p}명"><span class="pv">${(x.y+x.p)||""}</span><div class="pcol"><i class="py" style="height:${x.y/max*100}%"></i><i class="pp" style="height:${x.p/max*100}%"></i></div><span class="pl">${x.lab}</span></div>`).join("")}</div>`;
 }
+function fmtMin(m){ m=Math.round(m||0); const h=Math.floor(m/60), r=m%60; return h?`${h}시간${r?` ${r}분`:''}`:`${r}분`; }
 function pct(a,b){ if(!b) return ""; const v=Math.round((a-b)/b*100); return v===0?`<span>지난 기간과 같음</span>`:`<span class="${v>0?'up':'down'}">지난 기간보다 ${v>0?"+":""}${v}%</span>`; }
 async function drawPeriod(){
   if(PER.busy) return; PER.busy=true;
@@ -2451,7 +2577,7 @@ async function drawPeriod(){
     const avgLeg = T.legs? (T.ride/T.legs).toFixed(1) : "0";
     let h=`<div class="grid"><div class="stat"><b>${T.ride.toLocaleString()}명</b><span>탑승 (앱) ${pct(T.ride,P.ride)}</span></div>
       <div class="stat"><b>${T.runs}회</b><span>운행 횟수 ${pct(T.runs,P.runs)}</span></div>
-      <div class="stat"><b>${T.days}일</b><span>운행한 날</span></div>
+      <div class="stat"><b>${T.minN?fmtMin(T.min/T.minN):"–"}</b><span>한 번 운행 평균 시간 ${T.minN&&P.minN?pct(T.min/T.minN,P.min/P.minN):""}</span></div>
       <div class="stat"><b>${avgLeg}명</b><span>회차당 평균 탑승</span></div></div>`;
     if(!T.ride && !T.runs){ $("perOut").innerHTML=h+`<div class="empty" style="padding:14px 2px">이 기간에는 운행 기록이 없습니다.</div>`; PER.busy=false; return; }
     const B=buckets(PER.kind,r,T);
@@ -2464,7 +2590,10 @@ async function drawPeriod(){
     const drv=Object.entries(T.drivers).sort((a,b)=>b[1]-a[1]);
     const wt=Object.values(T.wait).sort((a,b)=>b.n-a.n);
     const stName=(r0,id)=>((ROUTES[r0]&&ROUTES[r0].stops.find(s=>s.id===id))||{name:id}).name;
-    h+=`<div class="pgrid"><div class="pbox"><h3>기사님별 운행 횟수 <small>감사와 배차 참고용</small></h3>${drv.length?`<table>${drv.map(([n,c],i)=>`<tr><td>${i+1}</td><td>${esc(n)}</td><td style="text-align:right"><b>${c}회</b></td></tr>`).join("")}</table>`:'<div class="muted">기록 없음</div>'}</div>
+    const lg=Object.values(T.leg).sort((a,b)=>a.r.localeCompare(b.r)||b.n-a.n);
+    h+=`<div class="pgrid"><div class="pbox"><h3>운행 시간 <small>운행 시작 ~ 운행 종료 · 총 ${fmtMin(T.min)} (${T.minDays}일)</small></h3>${T.minN?`<table><tr><td>운행 ${T.minN}회 평균</td><td style="text-align:right"><b>${fmtMin(T.min/T.minN)}</b></td></tr><tr><td>하루 평균 (운행한 날)</td><td style="text-align:right"><b>${fmtMin(T.min/Math.max(1,T.minDays))}</b></td></tr>${T.runs>T.minN?`<tr><td colspan="2" class="muted">‘운행 종료’를 누르지 않은 ${T.runs-T.minN}회는 빼고 계산했습니다</td></tr>`:""}</table>`:'<div class="muted">운행 종료까지 기록된 운행이 없습니다</div>'}</div>
+      <div class="pbox"><h3>구간별 평균 걸린 시간 <small>종점 출발 ~ 다음 종점 도착</small></h3>${lg.length?`<table>${lg.map(x=>`<tr><td><i class="dot" style="background:${ROUTES[x.r].color}"></i>${esc(x.k)}</td><td>${x.n}회</td><td style="text-align:right"><b>${fmtMin(x.m/x.n)}</b></td></tr>`).join("")}</table>`:'<div class="muted">기록 없음</div>'}</div></div>`;
+    h+=`<div class="pgrid"><div class="pbox"><h3>기사님별 운행 <small>감사와 배차 참고용</small></h3>${drv.length?`<table><tr class="muted"><td></td><td>기사님</td><td style="text-align:right">횟수</td><td style="text-align:right">운행 시간</td></tr>${drv.map(([n,c],i)=>`<tr><td>${i+1}</td><td>${esc(n)}</td><td style="text-align:right"><b>${c}회</b></td><td style="text-align:right">${T.drvMin[n]?fmtMin(T.drvMin[n]):"–"}</td></tr>`).join("")}</table>`:'<div class="muted">기록 없음</div>'}</div>
       <div class="pbox"><h3>정류장별 가장 많이 기다린 날 <small>‘기다려요’·자동 알림 기준</small></h3>${wt.length?`<table>${wt.map(x=>`<tr><td><i class="dot" style="background:${ROUTES[x.r].color}"></i>${esc(stName(x.r,x.st))}</td><td>${x.d}</td><td style="text-align:right"><b>${x.n}명</b></td></tr>`).join("")}</table>`:'<div class="muted">기록 없음 (기사님 앱이 운행 중일 때 기록됩니다)</div>'}</div></div>`;
     $("perOut").innerHTML=h;
   }catch(e){ $("perOut").innerHTML=`<div class="empty">통계를 불러오지 못했습니다. 데이터베이스 규칙을 게시했는지 확인해 주세요.</div>`; }
@@ -2573,7 +2702,7 @@ async function loadDay(date){
       const rows=legs.map(l=>{ const trip=`${s.sid}_${l.k}`; const t=board?.[s.route]?.[s.bus]?.[trip]; let n=0, ppl=0; if(t) Object.values(t).forEach(v=>{n+=+(v?.n||0);ppl++;}); tot+=n;
         return `<tr><td>${l.k}회차</td><td>${esc(l.from)}${l.to?' → '+esc(l.to):''}</td><td>${hm(l.t)}</td><td>${hm(l.dep)}</td><td><b>${n}명</b> <span class="muted">(${ppl}건)</span></td></tr>`; }).join("");
       h+=`<div class="card"><h2><span class="chip" style="background:${busColor(s.route)}">${s.bus}호차</span> ${ROUTES[s.route]?.name||s.route} · ${esc(nm)}
-        <small>${hm(s.start)} ~ ${s.end?hm(s.end):'(종료 안 누름)'} · 탑승 ${tot}명</small>
+        <small>${hm(s.start)} ~ ${s.end?hm(s.end):'(종료 안 누름)'}${s.end&&s.start&&s.end>s.start?` · ${fmtMin((s.end-s.start)/60e3)} 운행`:''} · 탑승 ${tot}명</small>
         ${!isSuper()?"":`<button class="btn ghost" style="margin-left:auto;padding:6px 12px;font-size:13px;color:#B91C1C" data-delrun="${esc(s.sid)}" data-label="${esc(s.bus+'호차 '+hm(s.start))}">🗑 이 운행 지우기</button>`}</h2>
         <div class="tblwrap"><table><tr><th>회차</th><th>출발 정류장 → 방향</th><th>도착/시작</th><th>출발</th><th>탑승 (앱)</th></tr>${rows}</table></div></div>`;
     });

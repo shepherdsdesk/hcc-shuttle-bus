@@ -186,6 +186,21 @@
   .modal .box p{margin:0 0 16px;font-weight:900;font-size:17px;color:var(--ink)}
   .modal .row2{display:flex;gap:8px}
   .modal .row2 button{flex:1}
+  .reqcard{display:flex;align-items:center;gap:12px;justify-content:space-between}
+  .reqcard b{display:block;font-size:16px;color:var(--ink)}
+  .reqcard small{display:block;font-size:13px;color:#5B6478;margin-top:3px;word-break:keep-all}
+  .reqcard .btn{flex:none;padding:12px 16px;white-space:nowrap}
+  .modal .reqbox{width:min(400px,92%);text-align:left;max-height:90vh;overflow:auto}
+  .modal .reqbox p{text-align:center}
+  .reqcats{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+  .reqcats button{border:1.5px solid var(--line);background:#fff;border-radius:14px;padding:14px;font-size:16px;font-weight:700;color:var(--ink);text-align:left;cursor:pointer}
+  .reqcats button.on{border-color:var(--navy);background:#EEF2FB;color:var(--navy)}
+  .reqbox textarea,.reqwho input{width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:12px;padding:12px;font:inherit;font-size:15px;resize:none}
+  .reqcnt{text-align:right;font-size:12px;color:#8A93A6;margin:4px 2px 8px}
+  .reqback{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;color:var(--ink);margin:2px 0 8px}
+  .reqback input{width:20px;height:20px}
+  .reqwho{display:flex;gap:8px;margin-bottom:8px}
+  .reqnote{font-size:12.5px;color:#8A93A6;margin-bottom:14px;word-break:keep-all}
   .cnt{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px}
   .cnt.pick{grid-template-columns:repeat(2,1fr)}
   .cnt.pick button{font-size:18px;padding:14px 0;line-height:1.3}
@@ -383,6 +398,10 @@ body.dmoving .wbadge{display:none}
         <p id="installMsg"></p>
         <button class="btn navy hide" id="installBtn" style="margin-top:10px;width:100%;padding:13px">홈 화면에 추가</button>
       </div>
+      <div class="card reqcard hide">
+        <div><b>셔틀에 바라는 점이 있으세요?</b><small>불편한 점, 고마운 마음, 바라는 정류장을 알려 주세요</small></div>
+        <button class="btn navy" id="reqOpen" type="button">셔틀 요청하기</button>
+      </div>
       <div class="foot">만든 사람 AI목양지원센터 · 이세진 목사<br>셔틀 문의 : 교회 안내실 031-780-9600 · 지도 © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a></div>
     </div>
   </section>
@@ -475,6 +494,22 @@ body.dmoving .wbadge{display:none}
     <li>버스를 타거나 정류장을 떠나면 자동으로 빠집니다.</li>
     <li>언제든 아래 <b>📍 정류장 자동 알림</b> 버튼으로 끌 수 있어요.</li></ul>
   <div class="row2"><button class="btn ghost" id="awNo">괜찮아요</button><button class="btn navy" id="awYes">좋아요</button></div></div></div>
+<div class="modal" id="reqModal" role="dialog" aria-modal="true" aria-labelledby="reqH"><div class="box reqbox">
+  <p id="reqH">셔틀 요청하기</p>
+  <div class="reqcats" id="reqCats">
+    <button type="button" data-cat="정류장·시간이 불편해요">정류장·시간이 불편해요</button>
+    <button type="button" data-cat="버스가 늦었어요">버스가 늦었어요</button>
+    <button type="button" data-cat="이런 정류장이 있으면 좋겠어요">이런 정류장이 있으면 좋겠어요</button>
+    <button type="button" data-cat="기사님께 감사해요">기사님께 감사해요</button>
+    <button type="button" data-cat="기타">기타</button>
+  </div>
+  <textarea id="reqText" maxlength="200" rows="3" placeholder="하고 싶은 말을 짧게 적어 주세요 (적지 않아도 됩니다)"></textarea>
+  <div class="reqcnt"><span id="reqLen">0</span> / 200</div>
+  <label class="reqback"><input type="checkbox" id="reqBack"> 답을 받고 싶어요</label>
+  <div class="reqwho hide" id="reqWho"><input id="reqName" maxlength="20" placeholder="성함"><input id="reqPhone" maxlength="20" inputmode="tel" placeholder="전화번호"></div>
+  <div class="reqnote">이름을 적지 않으면 누가 보냈는지 알 수 없게 보내집니다.</div>
+  <div class="row2"><button class="btn ghost" id="reqNo" type="button">취소</button><button class="btn navy" id="reqSend" type="button" disabled>보내기</button></div>
+</div></div>
 <div class="modal" id="cntModal"><div class="box"><p id="cntTitle">몇 분이 함께 타셨나요?</p><div class="cnt" id="cntBtns"><button data-n="1">1</button><button data-n="2">2</button><button data-n="3">3</button><button data-n="4">4</button><button data-n="5">5</button></div><div class="row2"><button class="btn ghost" id="cntNo">취소</button></div></div></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -1247,6 +1282,30 @@ $("ride").addEventListener("click", async e=>{
   }
   if(act==="unwait"){ await clearWait(); $("ride")._h=null; drawRide(); }
 });
+// ---------- 셔틀 요청하기 (성도님 → 관리자) ----------
+let REQ_CAT="";
+function reqReset(){ REQ_CAT=""; $("reqCats").querySelectorAll("button").forEach(b=>b.classList.remove("on")); $("reqText").value=""; $("reqLen").textContent="0";
+  $("reqBack").checked=false; $("reqWho").classList.add("hide"); $("reqName").value=""; $("reqPhone").value=""; $("reqSend").disabled=true; }
+$("reqOpen").onclick=()=>{ reqReset(); $("reqModal").classList.add("show"); };
+$("reqNo").onclick=()=>$("reqModal").classList.remove("show");
+$("reqCats").addEventListener("click",e=>{ const b=e.target.closest("[data-cat]"); if(!b) return; REQ_CAT=b.dataset.cat;
+  $("reqCats").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b)); $("reqSend").disabled=false; });
+$("reqText").addEventListener("input",()=>{ $("reqLen").textContent=$("reqText").value.length; });
+$("reqBack").onchange=()=>$("reqWho").classList.toggle("hide",!$("reqBack").checked);
+$("reqSend").onclick=async()=>{
+  if(!REQ_CAT) return;
+  const last=+(storage.get("reqLast")||0); if(Date.now()-last<60e3){ toast("잠시 후 다시 보내 주세요","1분에 한 번 보낼 수 있어요."); return; }
+  const v={cat:REQ_CAT, route:S.route, ts:serverTimestamp()}; const t=$("reqText").value.trim().slice(0,200); if(t) v.text=t;
+  if($("reqBack").checked){ const n=$("reqName").value.trim().slice(0,20), p=$("reqPhone").value.trim().slice(0,20);
+    if(!n&&!p){ toast("성함이나 전화번호를 적어 주세요","답을 받지 않으시려면 체크를 풀어 주세요."); return; }
+    if(n) v.name=n; if(p) v.phone=p; }
+  $("reqSend").disabled=true;
+  try{ await authReady; v.uid=uid; const k=push(ref(db,"requests")).key;
+    await update(ref(db),{["requests/"+k]:v, ["reqLast/"+uid]:serverTimestamp()});
+    storage.set("reqLast",String(Date.now())); $("reqModal").classList.remove("show");
+    toast("요청을 보냈어요","소중한 의견 감사합니다. 셔틀 담당자가 확인합니다.");
+  }catch(_){ $("reqSend").disabled=false; toast("보내지 못했어요","잠시 후 다시 눌러 주세요."); }
+};
 $("cntNo").onclick=()=>{ $("cntModal").classList.remove("show"); S.cntMode="board"; };
 // 기다림 저장: 숫자(waitc)는 모두 저장, 길 위치(wait)는 '어디서나' 노선에서 정류장 밖일 때만 (기사님 지도 주황 점)
 async function saveWait(n){
@@ -1483,6 +1542,7 @@ async function startSaint(){
   onValue(ref(db,"live"), s=>{ if(DEMO) return; const v=s.val()||{}; S.live={yatap:v.yatap||{}, park:v.park||{}}; refreshSaint(); });
   ["yatap","park"].forEach(r=>onValue(ref(db,"waitc/"+r), s=>{ if(DEMO) return; S.waitc[r]=s.val()||{}; $("stops")._h=null; drawStopList(); }, ()=>{}));
   onValue(ref(db,"config"), s=>{ const c=s.val()||{}; applyBrand(c);
+    { const on=!!(c.reqCfg&&c.reqCfg.on); document.querySelector(".reqcard").classList.toggle("hide",!on); if(!on) $("reqModal").classList.remove("show"); }   // 관리자가 켠 때만 보임
     WAIT_CFG=c.waitCfg||{}; drawAutoBtn(); if(anyAutoRoute()){ autoStart(); setTimeout(askAutoConsent,2500); } else { autoStop(); autoRemove(); }
     if(waitCfgOf(S.route).mode==="off" && waitingNow()) clearWait();
     PARK_TIMES = parseTimes(c.parkTimes); TIMES = c.times||{};
