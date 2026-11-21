@@ -259,6 +259,19 @@
   .wortbl .wb{display:flex;gap:4px}
   .wortbl .wb .btn{padding:5px 9px}
   @media (max-width:700px){ .wortbl .wh{display:none} .wortbl .wr{grid-template-columns:1fr 1fr;padding:8px;border:1px solid #EEF1F6;border-radius:10px} }
+  /* 메뉴 묶음 (주제·빈도별) */
+  #tabs{gap:10px}
+  .ngrp{border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:6px;background:rgba(255,255,255,.03)}
+  .ngrp.hide{display:none}
+  #tabs .nghead{width:100%;display:flex;align-items:center;gap:7px;border:0;background:transparent;color:#fff;padding:8px;border-radius:12px;cursor:pointer;font-size:15px}
+  #tabs .nghead b{font-weight:800;white-space:nowrap}
+  .ngic{width:20px;height:20px;flex:none}
+  .ngtag{font-size:11px;font-weight:700;color:#C7D2FE;background:rgba(255,255,255,.12);padding:2px 8px;border-radius:999px;white-space:nowrap}
+  .ngchev{width:18px;height:18px;margin-left:auto;flex:none;opacity:.8;transition:transform .2s}
+  .ngrp.shut .ngchev{transform:rotate(180deg)}
+  .ngbody{display:flex;flex-direction:column;gap:2px;margin-top:2px}
+  .ngrp.shut .ngbody{display:none}
+  .ngbody button{width:100%}
   /* ===== 메뉴 아이콘 · 기기별 · 화면 색 ===== */
   #tabs button .tic{width:20px;height:20px;flex:none;opacity:.9}
   .menuBtn{display:none;border:0;background:#fff;color:var(--ink);width:42px;height:42px;border-radius:12px;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 0 var(--line)}
@@ -313,6 +326,10 @@
     #tabs button .lv,#tabs button .tl{display:none!important}
     #tabs button{justify-content:center;padding:11px 0;width:56px}
     #tabs button .tic{width:22px;height:22px}
+    .ngrp{border:0;background:none;border-top:1px solid rgba(255,255,255,.14);border-radius:0;padding:8px 0 0}
+    .ngrp:first-child{border-top:0;padding-top:0}
+    #tabs .nghead{display:none}
+    .ngrp.shut .ngbody{display:flex}
     .themedots{flex-direction:column;align-items:center}
     .who{padding:10px 0 0;text-align:center}
     .who button{padding:6px 6px;font-size:11px}
@@ -500,17 +517,27 @@
     <nav class="side">
       <div class="brand"><div class="ic brandIc"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg></div><div><b class="sideBrand">HCC 셔틀 관리</b><small>관리자 페이지</small></div></div>
       <div id="tabs">
-        <button data-tab="now" class="on">운행 현황<span class="lv"><i></i>실시간</span></button>
-        <button data-tab="drivers">기사님 관리</button>
-        <button data-tab="notice">공지 · 교회 소식</button>
-        <button data-tab="times">시간표</button>
-        <button data-tab="stops">정류장 · 노선</button>
-        <button data-tab="tv">TV 화면</button>
-        <button data-tab="stats">통계</button>
-        <button data-tab="req">성도 요청<span class="rqn hide" id="reqBadge"></span></button>
-        <button data-tab="demo">시연</button>
-        <button data-tab="admins">관리자</button>
-        <button data-tab="brand">기본 설정</button>
+        <div class="ngrp" data-g="run"><button type="button" class="nghead" aria-expanded="true"><svg class="ngic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"></svg><b>운행</b><span class="ngtag">매일 사용</span><svg class="ngchev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button><div class="ngbody">
+          <button data-tab="now" class="on">운행 현황<span class="lv"><i></i>실시간</span></button>
+          <button data-tab="req">성도 요청<span class="rqn hide" id="reqBadge"></span></button>
+        </div></div>
+        <div class="ngrp" data-g="set"><button type="button" class="nghead" aria-expanded="true"><svg class="ngic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"></svg><b>운행 설정</b><span class="ngtag">가끔 수정</span><svg class="ngchev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button><div class="ngbody">
+          <button data-tab="times">시간표</button>
+          <button data-tab="stops">정류장 · 노선</button>
+          <button data-tab="drivers">기사님 관리</button>
+        </div></div>
+        <div class="ngrp" data-g="info"><button type="button" class="nghead" aria-expanded="true"><svg class="ngic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"></svg><b>안내</b><span class="ngtag">필요할 때</span><svg class="ngchev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button><div class="ngbody">
+          <button data-tab="notice">공지 · 교회 소식</button>
+          <button data-tab="tv">TV 화면</button>
+        </div></div>
+        <div class="ngrp" data-g="log"><button type="button" class="nghead" aria-expanded="true"><svg class="ngic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"></svg><b>기록</b><span class="ngtag">가끔 확인</span><svg class="ngchev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button><div class="ngbody">
+          <button data-tab="stats">통계</button>
+          <button data-tab="demo">시연</button>
+        </div></div>
+        <div class="ngrp" data-g="adm"><button type="button" class="nghead" aria-expanded="true"><svg class="ngic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"></svg><b>관리</b><span class="ngtag">최고관리자</span><svg class="ngchev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button><div class="ngbody">
+          <button data-tab="admins">관리자</button>
+          <button data-tab="brand">기본 설정</button>
+        </div></div>
       </div>
       <div class="themebox"><small>화면 색</small><div class="themedots" id="themeDots"></div></div>
       <div class="who" id="who"></div>
@@ -1348,10 +1375,11 @@ const isSuper=()=>ME.role!=="staff";
 const can=p=>isSuper() || !!(ME.perm&&ME.perm[p]);
 const TAB_PERM={now:"now",drivers:"drivers",notice:"notice",times:"times",stops:"stops",tv:"tv",stats:"stats",req:"req",demo:"now",admins:"*",brand:"*"};
 function applyPerms(){
-  document.querySelectorAll("#tabs button").forEach(b=>{ const p=TAB_PERM[b.dataset.tab]; b.classList.toggle("hide", p==="*" ? !isSuper() : !can(p)); });
+  document.querySelectorAll("#tabs button[data-tab]").forEach(b=>{ const p=TAB_PERM[b.dataset.tab]; b.classList.toggle("hide", p==="*" ? !isSuper() : !can(p)); });
+  document.querySelectorAll("#tabs .ngrp").forEach(g=>g.classList.toggle("hide",!g.querySelector("button[data-tab]:not(.hide)")));
   document.querySelectorAll(".superOnly").forEach(el=>el.classList.toggle("hide",!isSuper()));
   const cur=document.querySelector(`#tabs button[data-tab="${curTab}"]`);
-  if(!cur || cur.classList.contains("hide")){ const f=document.querySelector("#tabs button:not(.hide)"); if(f) f.click(); }
+  if(!cur || cur.classList.contains("hide")){ const f=document.querySelector("#tabs button[data-tab]:not(.hide)"); if(f) f.click(); }
   const r=$("myRole"); if(r) r.textContent=isSuper()?"최고 관리자":"일반 관리자";
 }
 async function loadMe(u){
@@ -1371,14 +1399,27 @@ const TAB_ICON={
   demo:'<circle cx="12" cy="12" r="9"/><path d="M10 8.5v7l6-3.5z"/>',
   admins:'<path d="M12 3l7 3v6c0 4.6-3 7.7-7 9-4-1.3-7-4.4-7-9V6z"/><path d="M9 12l2 2 4-4"/>',
   brand:'<circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M2.5 12h3M18.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/>'};
-document.querySelectorAll("#tabs button").forEach(b=>{ const lv=b.querySelector(".lv"); const t=[...b.childNodes].filter(n=>n.nodeType===3).map(n=>n.textContent).join("").trim();
+document.querySelectorAll("#tabs button[data-tab]").forEach(b=>{ const lv=b.querySelector(".lv"); const t=[...b.childNodes].filter(n=>n.nodeType===3).map(n=>n.textContent).join("").trim();
   [...b.childNodes].filter(n=>n.nodeType===3).forEach(n=>n.remove());
   b.insertAdjacentHTML("afterbegin",`<svg class="tic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TAB_ICON[b.dataset.tab]||""}</svg><span class="tl">${t}</span>`);
   b.title=t; if(lv) b.appendChild(lv); });
 // 휴대폰: ☰ 메뉴
 $("menuBtn").onclick=()=>document.body.classList.toggle("navopen");
 $("navShade").onclick=()=>document.body.classList.remove("navopen");
-$("tabs").addEventListener("click",()=>document.body.classList.remove("navopen"));
+$("tabs").addEventListener("click",e=>{ if(e.target.closest("button[data-tab]")) document.body.classList.remove("navopen"); });
+// 메뉴 묶음: 아이콘, 접고 펴기 (이 기기에 기억)
+const NG_ICON={run:'<path d="M5 17V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v11"/><path d="M5 11h14M4 17h16"/><circle cx="8" cy="19" r="1.5"/><circle cx="16" cy="19" r="1.5"/>',
+  set:'<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>',
+  info:'<path d="M4 10v4h3l6 4V6L7 10z"/><path d="M16.5 9a4 4 0 0 1 0 6"/>',
+  log:'<path d="M5 20V11M11 20V5M17 20v-6M3 20h18"/>',
+  adm:'<path d="M12 3l7 3v6c0 4.6-3 7.7-7 9-4-1.3-7-4.4-7-9V6z"/><path d="M9 12l2 2 4-4"/>'};
+let NG_SHUT={}; try{ NG_SHUT=JSON.parse(localStorage.getItem("adminNavShut")||"{}")||{}; }catch(_){}
+document.querySelectorAll("#tabs .ngrp").forEach(g=>{ const k=g.dataset.g, h=g.querySelector(".nghead");
+  g.querySelector(".ngic").innerHTML=NG_ICON[k]||"";
+  const set=v=>{ g.classList.toggle("shut",v); h.setAttribute("aria-expanded",String(!v)); };
+  set(!!NG_SHUT[k]);
+  h.onclick=()=>{ const v=!g.classList.contains("shut"); set(v); NG_SHUT[k]=v; try{ localStorage.setItem("adminNavShut",JSON.stringify(NG_SHUT)); }catch(_){} };
+});
 // 관리자 화면 색 (이 기기에만 기억)
 const THEMES=[["navy","네이비"],["lavender","라벤더"],["sage","세이지"],["beige","웜 베이지"],["dark","다크"]];
 function setTheme(t){ if(!THEMES.some(x=>x[0]===t)) t="navy"; document.body.dataset.theme=t; try{ localStorage.setItem("adminTheme",t); }catch(_){}
@@ -1392,9 +1433,10 @@ try{ setTheme(localStorage.getItem("adminTheme")||"navy"); }catch(_){ setTheme("
 const TITLES={now:"운행 현황",drivers:"기사님 관리",notice:"공지 · 교회 소식",times:"시간표",stops:"정류장 · 노선",tv:"TV 화면",stats:"통계",req:"성도 요청",demo:"시연",admins:"관리자",brand:"기본 설정"};
 function nowSub(){ const d=new Date(now()+9*3600e3); return `${d.getUTCMonth()+1}월 ${d.getUTCDate()}일 ${["주일","월요일","화요일","수요일","목요일","금요일","토요일"][d.getUTCDay()]} · ${d.getUTCHours()}:${String(d.getUTCMinutes()).padStart(2,"0")} 기준`; }
 let curTab="now";
-$("tabs").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return;
+$("tabs").addEventListener("click",e=>{ const b=e.target.closest("button[data-tab]"); if(!b) return;
   curTab=b.dataset.tab;
-  document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("on",x===b));
+  const gg=b.closest(".ngrp"); if(gg&&gg.classList.contains("shut")) gg.querySelector(".nghead").click();
+  document.querySelectorAll("#tabs button[data-tab]").forEach(x=>x.classList.toggle("on",x===b));
   ["now","drivers","notice","times","stops","tv","stats","req","demo","admins","brand"].forEach(t=>$("tab-"+t).classList.toggle("hide",t!==curTab));
   $("pageTitle").textContent=TITLES[curTab]; $("pageSub").textContent= curTab==="now"? nowSub() : "";
   $("rf").classList.toggle("hide", !(curTab==="now"||curTab==="stats"));
